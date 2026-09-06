@@ -2,6 +2,7 @@
 import { walletService } from "../services/walletService.js";
 import { categoryService } from "../services/categoryService.js";
 import { transactionService } from "../services/transactionService.js";
+import { creditCardService } from "../services/creditCardService.js";
 import { quickExpenseBar } from "../components/quickExpenseBar.js";
 
 export const dashboardView = {
@@ -10,10 +11,12 @@ export const dashboardView = {
     container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tu información...</div>`;
 
     try {
-      const [wallets, categories, transactions] = await Promise.all([
+      // 1. Añadido creditCards a la consulta
+      const [wallets, categories, transactions, creditCards] = await Promise.all([
         walletService.getWallets(),
         categoryService.getCategories(),
-        transactionService.getTransactions()
+        transactionService.getTransactions(),
+        creditCardService.getCreditCards()
       ]);
 
       // Cálculos del mes
@@ -40,7 +43,7 @@ export const dashboardView = {
               <span class="metric-value">$ ${totalExpense.toLocaleString("es-CO", { minimumFractionDigits: 0 })}</span>
             </div>
             <div class="metric-card card-balance">
-              <span class="metric-label"><i class="fa-solid fa-scale-balanced"></i> BALANCE </span>
+              <span class="metric-label"><i class="fa-solid fa-scale-balanced"></i> BALANCE</span>
               <span class="metric-value ${netBalance < 0 ? "text-danger" : "text-success"}">
                 $ ${netBalance.toLocaleString("es-CO", { minimumFractionDigits: 0 })}
               </span>
@@ -94,11 +97,12 @@ export const dashboardView = {
         </div>
       `;
 
-      // Montar la barra de gasto rápido
+      // 2. Pasamos creditCards a la barra rápida
       quickExpenseBar.render({
         containerId: "quick-expense-container",
         wallets,
         categories,
+        creditCards,
         onTransactionSaved: () => {
           dashboardView.render(containerId);
         }

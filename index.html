@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>LUKA</title>
   
   <!-- FontAwesome Icons -->
@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="css/views.css" />
 </head>
 <body>
+  <!-- BARRA SUPERIOR -->
   <header class="navbar">
     <div class="brand">
       <i class="fa-solid fa-bolt"></i> LUKA
@@ -21,37 +22,29 @@
     
     <!-- Pestañas de Navegación -->
     <div id="nav-tabs" class="nav-links" style="display: none;">
-      <button id="nav-dashboard" class="nav-item-btn active">
-        <i class="fa-solid fa-house"></i> Inicio
-      </button>
-      <button id="nav-wallets" class="nav-item-btn">
-        <i class="fa-solid fa-wallet"></i> Billeteras
-      </button>
-      <button id="nav-subs" class="nav-item-btn">
-        <i class="fa-solid fa-calendar-days"></i> Suscripciones
-      </button>
-      <button id="nav-savings" class="nav-item-btn">
-        <i class="fa-solid fa-piggy-bank"></i> Ahorros
-      </button>
-      <button id="nav-analytics" class="nav-item-btn">
-        <i class="fa-solid fa-chart-pie"></i> Análisis
-      </button>
+      <button class="nav-item-btn active" data-tab="dashboard"><i class="fa-solid fa-house"></i> Inicio</button>
+      <button class="nav-item-btn" data-tab="wallets"><i class="fa-solid fa-wallet"></i> Billeteras</button>
+      <button class="nav-item-btn" data-tab="cards"><i class="fa-solid fa-credit-card"></i> Tarjetas</button>
+      <button class="nav-item-btn" data-tab="subs"><i class="fa-solid fa-calendar-days"></i> Suscripciones</button>
+      <button class="nav-item-btn" data-tab="savings"><i class="fa-solid fa-piggy-bank"></i> Ahorros</button>
+      <button class="nav-item-btn" data-tab="analytics"><i class="fa-solid fa-chart-pie"></i> Análisis</button>
     </div>
 
     <!-- Menú de Usuario -->
-    <div id="user-menu" style="display: none; align-items: center; gap: 0.75rem;">
-      <span id="user-name" style="font-size: 0.85rem; font-weight: 600;"></span>
+    <div id="user-menu" style="display: none; align-items: center; gap: 0.6rem;">
+      <span id="user-name" style="font-size: 0.8rem; font-weight: 600; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
       <button id="btn-logout" class="btn btn-secondary btn-sm" title="Cerrar sesión">
         <i class="fa-solid fa-arrow-right-from-bracket"></i>
       </button>
     </div>
   </header>
 
+  <!-- CONTENIDO PRINCIPAL -->
   <main class="container">
     <div id="app"></div>
   </main>
 
-  <!-- Marca de agua en la esquina inferior izquierda -->
+  <!-- Marca de agua -->
   <div class="watermark-author">
     by: <span>Santiago Escobar</span>
   </div>
@@ -61,17 +54,12 @@
     import { authView } from "./js/views/authView.js";
     import { walletsView } from "./js/views/walletsView.js";
     import { dashboardView } from "./js/views/dashboardView.js";
+    import { creditCardsView } from "./js/views/creditCardsView.js";
     import { subscriptionsView } from "./js/views/subscriptionsView.js";
     import { savingsView } from "./js/views/SavingsView.js";
     import { analyticsView } from "./js/views/analyticsView.js";
 
     const navTabs = document.getElementById("nav-tabs");
-    const navDashboard = document.getElementById("nav-dashboard");
-    const navWallets = document.getElementById("nav-wallets");
-    const navSubs = document.getElementById("nav-subs");
-    const navSavings = document.getElementById("nav-savings");
-    const navAnalytics = document.getElementById("nav-analytics");
-
     const userMenu = document.getElementById("user-menu");
     const userName = document.getElementById("user-name");
     const logoutBtn = document.getElementById("btn-logout");
@@ -80,30 +68,27 @@
 
     function switchView(tab) {
       currentTab = tab;
-      navDashboard.classList.toggle("active", tab === "dashboard");
-      navWallets.classList.toggle("active", tab === "wallets");
-      navSubs.classList.toggle("active", tab === "subs");
-      navSavings.classList.toggle("active", tab === "savings");
-      navAnalytics.classList.toggle("active", tab === "analytics");
 
-      if (tab === "dashboard") {
-        dashboardView.render("app");
-      } else if (tab === "wallets") {
-        walletsView.render("app");
-      } else if (tab === "subs") {
-        subscriptionsView.render("app");
-      } else if (tab === "savings") {
-        savingsView.render("app");
-      } else if (tab === "analytics") {
-        analyticsView.render("app");
-      }
+      document.querySelectorAll("[data-tab]").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === tab);
+      });
+
+      if (tab === "dashboard") dashboardView.render("app");
+      else if (tab === "wallets") walletsView.render("app");
+      else if (tab === "cards") creditCardsView.render("app");
+      else if (tab === "subs") subscriptionsView.render("app");
+      else if (tab === "savings") savingsView.render("app");
+      else if (tab === "analytics") analyticsView.render("app");
+
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    navDashboard.addEventListener("click", () => switchView("dashboard"));
-    navWallets.addEventListener("click", () => switchView("wallets"));
-    navSubs.addEventListener("click", () => switchView("subs"));
-    navSavings.addEventListener("click", () => switchView("savings"));
-    navAnalytics.addEventListener("click", () => switchView("analytics"));
+    document.addEventListener("click", (e) => {
+      const navBtn = e.target.closest("[data-tab]");
+      if (navBtn) {
+        switchView(navBtn.dataset.tab);
+      }
+    });
 
     async function initApp() {
       try {
@@ -116,16 +101,12 @@
         } else {
           userMenu.style.display = "none";
           navTabs.style.display = "none";
-          authView.render("app", () => {
-            initApp();
-          });
+          authView.render("app", () => initApp());
         }
       } catch (err) {
         userMenu.style.display = "none";
         navTabs.style.display = "none";
-        authView.render("app", () => {
-          initApp();
-        });
+        authView.render("app", () => initApp());
       }
     }
 

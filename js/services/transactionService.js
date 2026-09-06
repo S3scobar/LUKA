@@ -1,5 +1,6 @@
 // js/services/transactionService.js
 import { supabase } from "../supabaseClient.js";
+import { walletService } from "./walletService.js";
 
 export const transactionService = {
   // Registrar un gasto o ingreso
@@ -33,7 +34,7 @@ export const transactionService = {
     return data;
   },
 
-  // Obtener transacciones de un mes específico
+  // Obtener transacciones del mes
   async getTransactions(year = null, month = null) {
     const now = new Date();
     const currentYear = year !== null ? year : now.getFullYear();
@@ -58,7 +59,7 @@ export const transactionService = {
     return data || [];
   },
 
-  // Obtener transacciones de todo el año (NUEVO)
+  // Obtener transacciones del año
   async getYearlyTransactions(year = null) {
     const targetYear = year !== null ? year : new Date().getFullYear();
     const startDate = `${targetYear}-01-01`;
@@ -79,8 +80,39 @@ export const transactionService = {
     return data || [];
   },
 
-  // Eliminar transacción
+  // Eliminar transacción (SINCRONIZACIÓN: si es de tarjeta de crédito, borra la compra y restaura cupo)
   async deleteTransaction(id) {
+    // 1. Verificar si está vinculada a una compra en credit_card_purchases
+    const { data: linkedPurchase } = await supabase
+      .from("credit_card_purchases")
+      .select("*, card:credit_cards(id, wallet_id, credit_limit)")
+      .eq("transaction_id", id)
+      .maybeSingle();
+
+    if (linkedPurchase) {
+      // Eliminar la compra en credit_card_purchases
+      await supabase.from("credit_card_purchases").delete().eq("id", linkedPurchase.id);
+
+      // Restaurar el cupo disponible
+      const totalImpact = Number(linkedPurchase.total_amount) + Number(linkedPurchase.advance_fee || 0);
+      if (linkedPurchase.card?.wallet_id) {
+        const { data: wallet } = await supabase
+          .from("wallets")
+          .select("balance")
+          .eq("id", linkedPurchase.card.wallet_id)
+          .single();
+
+        if (wallet) {
+          const restoredBalance = Math.min(
+            Number(linkedPurchase.card.credit_limit),
+            Number(wallet.balance) + totalImpact
+          );
+          await walletService.updateWallet(linkedPurchase.card.wallet_id, { balance: restoredBalance });
+        }
+      }
+    }
+
+    // 2. Eliminar de transactions
     const { error } = await supabase
       .from("transactions")
       .delete()

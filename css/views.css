@@ -1061,3 +1061,292 @@
   font-size: 0.75rem;
   color: var(--text-muted);
 }
+/* ==========================================
+   ESTILOS DE TARJETA DE CRÉDITO
+   ========================================== */
+
+.cards-tabs-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.card-tab-btn {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.card-tab-btn.active {
+  background: #8B5CF6;
+  color: #fff;
+  border-color: #8B5CF6;
+}
+
+/* Tarjeta Visual Premium */
+.credit-card-visual {
+  color: #fff;
+  padding: 1.5rem;
+  border-radius: 20px;
+  box-shadow: 0 15px 30px -5px rgba(139, 92, 246, 0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 190px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-visual-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-chip {
+  font-size: 1.8rem;
+  color: #FCD34D;
+}
+
+.card-brand-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.card-visual-numbers {
+  font-family: monospace;
+  font-size: 1.1rem;
+  letter-spacing: 3px;
+  opacity: 0.85;
+  margin: 1rem 0;
+}
+
+.card-visual-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.card-visual-footer small {
+  font-size: 0.65rem;
+  opacity: 0.75;
+  display: block;
+  letter-spacing: 0.5px;
+}
+
+.card-visual-footer strong {
+  font-size: 1.15rem;
+}
+
+.text-avail {
+  color: #34D399;
+}
+
+/* Extracto Card */
+.statement-card {
+  background: #F8FAFC;
+  border: 2px solid #E2E8F0;
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.statement-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+.statement-title {
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.statement-header p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.statement-total {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #DC2626;
+}
+
+.statement-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-muted);
+}
+
+.breakdown-item strong {
+  color: var(--text-main);
+}
+
+.total-debt-row {
+  border-top: 1px dashed var(--border);
+  padding-top: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+.statement-actions {
+  margin-top: 1rem;
+}
+
+.card-action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.card-action-buttons .btn {
+  flex: 1;
+}
+
+/* Lista de compras diferidas */
+.purchases-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.purchase-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.85rem;
+}
+
+.purchase-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.purchase-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.purchase-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.purchase-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.badge-advance {
+  background: #FEF3C7;
+  color: #D97706;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.purchase-meta {
+  display: flex;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.purchase-installment-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+/* Botón para eliminar compras diferidas o avances */
+.btn-delete-purchase {
+  background: none;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 0.45rem;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-delete-purchase:hover {
+  color: var(--danger);
+  background: #FEE2E2;
+}
+/* Botón de editar tarjeta sobre la tarjeta gráfica */
+.btn-card-edit {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.btn-card-edit:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.08);
+}
+/* Banner de tarjeta al día */
+.statement-paid-banner {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.statement-paid-banner p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
