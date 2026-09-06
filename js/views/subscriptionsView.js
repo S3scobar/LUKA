@@ -178,33 +178,37 @@ export const subscriptionsView = {
 // ==========================================
 // MODAL PARA CONFIRMAR PAGO Y PASAR A GASTO
 // ==========================================
+// MODAL PARA CONFIRMAR PAGO (CON MONTO EDITABLE PARA TARJETAS/SERVICIOS)
 function showPaySubscriptionModal({ sub, wallets, categories, onSave }) {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
   
-  // Categoría sugerida o primera de gastos
   const defaultCategoryId = sub.category_id || (categories.length > 0 ? categories[0].id : null);
   const defaultWalletId = sub.wallet_id || (wallets.length > 0 ? wallets[0].id : null);
 
   modal.innerHTML = `
     <div class="modal-content" style="max-width: 420px;">
       <div class="modal-header">
-        <h4><i class="fa-solid fa-receipt text-primary"></i> Confirmar Pago de Suscripción</h4>
+        <h4><i class="fa-solid fa-receipt text-primary"></i> Confirmar Pago de ${sub.name}</h4>
         <button id="btn-close-pay-modal" class="modal-close-btn">&times;</button>
       </div>
 
       <form id="pay-sub-form">
-        <p style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--text-muted);">
-          Se registrará el gasto de <strong>${sub.name}</strong> por 
-          <strong style="color: var(--text-main);">$ ${Number(sub.amount).toLocaleString("es-CO")}</strong> en tu historial del mes.
-        </p>
+        <!-- Campo para ingresar el valor exacto del extracto o factura -->
+        <div class="form-group">
+          <label>Valor exacto a pagar este mes ($)</label>
+          <input type="number" id="pay-amount" step="any" min="1" value="${sub.amount}" required autofocus />
+          <small style="color: var(--text-muted); font-size: 0.75rem;">
+            Si es tarjeta de crédito o servicio público, digita el monto real de tu extracto/factura.
+          </small>
+        </div>
 
         <div class="form-group">
-          <label>¿De qué billetera se pagó?</label>
+          <label>¿De qué cuenta se debitó / pagó?</label>
           <select id="pay-wallet-id" required>
             ${wallets.map(w => `
               <option value="${w.id}" ${w.id === defaultWalletId ? "selected" : ""}>
-                ${w.name} (Saldo: $ ${Number(w.balance).toLocaleString("es-CO")})
+                ${w.name} ($ ${Number(w.balance).toLocaleString("es-CO")})
               </option>
             `).join("")}
           </select>
@@ -236,18 +240,24 @@ function showPaySubscriptionModal({ sub, wallets, categories, onSave }) {
 
   modal.querySelector("#pay-sub-form").addEventListener("submit", async (e) => {
     e.preventDefault();
+    const finalAmount = parseFloat(modal.querySelector("#pay-amount").value);
     const wallet_id = modal.querySelector("#pay-wallet-id").value;
     const date = modal.querySelector("#pay-date").value;
     const errorDiv = modal.querySelector("#pay-modal-error");
 
+    if (isNaN(finalAmount) || finalAmount <= 0) {
+      errorDiv.textContent = "Ingresa un monto válido mayor a 0.";
+      errorDiv.style.display = "block";
+      return;
+    }
+
     try {
-      // Registrar el gasto en la tabla transactions
       await transactionService.addTransaction({
         wallet_id,
         category_id: defaultCategoryId,
         type: "expense",
-        title: sub.name, // Mismo nombre para vincularlo
-        amount: sub.amount,
+        title: `Pago: ${sub.name}`,
+        amount: finalAmount, // Registra el monto real digitado
         date
       });
 
