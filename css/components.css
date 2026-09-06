@@ -367,6 +367,7 @@
   background: #EFF6FF;
   color: var(--primary);
 }
+
 /* Botones de acción en tarjetas de billetera */
 .wallet-actions {
   display: flex;
@@ -387,4 +388,59 @@
 .btn-edit-wallet:hover {
   color: var(--primary);
   background-color: #E2E8F0;
+}
+
+/* ==========================================
+   BARRA DE MÓDULOS CON BARRITA DESLIZABLE VISIBLE
+   ========================================== */
+
+/* Bloquear que la página se mueva horizontalmente */
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100vw;
+  width: 100%;
+}
+
+/* El logo y el menú de usuario se quedan fijos a los extremos */
+.brand, #user-menu {
+  flex-shrink: 0;
+}
+
+/* Barra de pestañas deslizable con pista e indicador de 4px debajo */
+.nav-links {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  flex: 1;
+  padding-bottom: 6px; /* Espacio para que la barrita respire debajo de los botones */
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #94A3B8 #E2E8F0; /* thumb track */
+}
+
+/* Estilo de la barrita para Chrome, Brave, Safari, Edge y Android */
+.nav-links::-webkit-scrollbar {
+  height: 4px; /* Grosor sutil de la barrita */
+  display: block; /* Asegura que sea visible */
+}
+
+.nav-links::-webkit-scrollbar-track {
+  background: #E2E8F0; /* Pista gris de fondo */
+  border-radius: 4px;
+}
+
+.nav-links::-webkit-scrollbar-thumb {
+  background: #94A3B8; /* La barrita que se mueve */
+  border-radius: 4px;
+}
+
+.nav-links::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Evitar que los botones de los módulos se aplasten */
+.nav-item-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
