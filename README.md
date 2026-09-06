@@ -4,7 +4,7 @@
 ![Backend](https://img.shields.io/badge/Backend-Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
 ![Deploy](https://img.shields.io/badge/Deploy-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 ![Theme](https://img.shields.io/badge/Theme-Fintech_Slate_Blue-2563EB?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Completado-00C853?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Beta-00C853?style=for-the-badge)
 
 LUKA es una aplicación web progresiva orientada a la administración de finanzas personales, trazabilidad de gastos cotidianos, conciliación de cuentas y control de fondos de ahorro. El sistema está construido bajo una arquitectura cliente liviana basada en estándares web nativos (HTML5, CSS3, JavaScript ES Modules) y respaldada por Supabase (PostgreSQL, Row Level Security y funciones PL/pgSQL).
 
