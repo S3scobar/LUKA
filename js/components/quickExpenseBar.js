@@ -12,7 +12,7 @@ export const quickExpenseBar = {
     let savedAmount = "";
 
     const renderBar = () => {
-      // 1. Guardar lo que el usuario ya escribió para que NUNCA se borre al cambiar de cuenta
+      // Guardar lo escrito para no borrarlo
       const currentTitleInput = container.querySelector("#quick-title");
       const currentAmountInput = container.querySelector("#quick-amount");
       if (currentTitleInput) savedTitle = currentTitleInput.value;
@@ -38,7 +38,7 @@ export const quickExpenseBar = {
             </button>
           </div>
 
-          <!-- 2. SELECTOR DE CUENTA AL INICIO (ANTES DE LOS CAMPOS) -->
+          <!-- 2. BOTONES DE CUENTA COMPACTOS (SOLO ICONO Y NOMBRE) -->
           <div class="wallet-chips-section">
             <span class="action-hint">
               <i class="fa-solid fa-wallet"></i> ${activeType === "expense" ? "¿Con qué cuenta pagas?" : "¿A qué cuenta entra el dinero?"}
@@ -50,14 +50,13 @@ export const quickExpenseBar = {
                   <button type="button" class="wallet-chip-btn ${isSelected ? "selected" : ""}" data-id="${w.id}" style="${isSelected ? `border-color: ${w.color}; background-color: ${w.color}15; color: ${w.color};` : ""}">
                     <i class="fa-solid ${w.icon}"></i>
                     <span class="chip-name">${w.name}</span>
-                    <span class="chip-balance">$ ${Number(w.balance).toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
                   </button>
                 `;
               }).join("")}
             </div>
           </div>
 
-          <!-- 3. CUOTAS (Solo si es Tarjeta de Crédito) -->
+          <!-- 3. CUOTAS (Si es Tarjeta de Crédito) -->
           ${linkedCard && activeType === "expense" ? `
             <div class="credit-cuotas-bar">
               <div class="cuotas-row">
@@ -78,7 +77,7 @@ export const quickExpenseBar = {
             </div>
           ` : ""}
 
-          <!-- 4. CAMPOS DE TEXTO: CONCEPTO Y MONTO (Conserva siempre lo escrito) -->
+          <!-- 4. CAMPOS DE TEXTO: CONCEPTO Y MONTO -->
           <div class="quick-inputs-row">
             <div class="input-field input-title">
               <input type="text" id="quick-title" value="${savedTitle}" placeholder="${activeType === "expense" ? "¿En qué gastaste? (Ej. Almuerzo)" : "¿Concepto del ingreso? (Ej. Sueldo)"}" required autocomplete="off" />
@@ -148,7 +147,6 @@ export const quickExpenseBar = {
         renderBar();
       });
 
-      // Clic en chips de cuenta: cambia de cuenta conservando lo que ya se escribió
       container.querySelectorAll(".wallet-chip-btn").forEach(chip => {
         chip.addEventListener("click", () => {
           selectedWalletId = chip.dataset.id;
@@ -156,7 +154,6 @@ export const quickExpenseBar = {
         });
       });
 
-      // Formateo de miles en vivo
       amountInput.addEventListener("input", (e) => {
         const rawNumbers = e.target.value.replace(/\D/g, "");
         if (!rawNumbers) {
@@ -191,7 +188,6 @@ export const quickExpenseBar = {
 
       if (installmentsSelect) installmentsSelect.addEventListener("change", updateCreditSim);
 
-      // Guardar transacción
       const executeSave = async (categoryId) => {
         errorDiv.style.display = "none";
         const title = titleInput.value.trim();
@@ -233,7 +229,6 @@ export const quickExpenseBar = {
             });
           }
 
-          // Limpiar memoria y campos tras guardar con éxito
           savedTitle = "";
           savedAmount = "";
           titleInput.value = "";
