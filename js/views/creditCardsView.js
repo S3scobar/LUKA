@@ -1,5 +1,6 @@
 // js/views/creditCardsView.js
 import { creditCardService } from "../services/creditCardService.js";
+import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 import { walletService } from "../services/walletService.js";
 import { categoryService } from "../services/categoryService.js";
 import { transactionService } from "../services/transactionService.js";
@@ -33,14 +34,13 @@ export const creditCardsView = {
       const statement = creditCardService.calculateStatement(currentCard, purchases);
       const debitWallets = wallets.filter(w => w.id !== currentCard.wallet_id);
 
-      // VERIFICAR SI YA SE HIZO EL PAGO DE ESTA TARJETA EN EL MES ACTUAL
+      // Verificar si ya se realizó el pago de esta tarjeta en el mes en curso
       const cardPaymentsThisMonth = monthTransactions.filter(t => 
         t.type === "expense" && t.title.toLowerCase().includes(`pago tarjeta: ${currentCard.name.toLowerCase()}`)
       );
       const totalPaidThisMonth = cardPaymentsThisMonth.reduce((sum, t) => sum + Number(t.amount), 0);
       const isPaidThisMonth = totalPaidThisMonth > 0 && statement.totalDebt > 0;
 
-      // El monto a pagar este mes: si ya pagó, es $0. Si no ha pagado, es la cuota estimada
       const amountDueThisMonth = isPaidThisMonth ? 0 : statement.estimatedStatement;
 
       container.innerHTML = `
@@ -102,20 +102,19 @@ export const creditCardsView = {
             </div>
           </div>
 
-          <!-- EXTRACTO DEL MES (DISTINGUE SI YA PAGÓ LA CUOTA O SI ESTÁ PENDIENTE) -->
+          <!-- EXTRACTO DEL MES (Muestra $0 si ya pagó su cuota del mes) -->
           <div class="statement-card">
             <div class="statement-header">
               <div>
                 <span class="statement-title"><i class="fa-solid fa-file-invoice-dollar"></i> Extracto a Pagar este Mes</span>
                 <p>${isPaidThisMonth ? "¡Ya pagaste tu cuota de este periodo!" : "Cuota vigente, intereses y cuota de manejo"}</p>
               </div>
-              <h2 class="statement-total ${isPaidThisMonth ? "text-success" : ""} style="color: ${isPaidThisMonth ? "#10B981" : "#DC2626"};">
+              <h2 class="statement-total" style="color: ${isPaidThisMonth ? "#10B981" : "#DC2626"};">
                 $ ${amountDueThisMonth.toLocaleString("es-CO")}
               </h2>
             </div>
 
             ${isPaidThisMonth ? `
-              <!-- AVISO DE AL DÍA -->
               <div class="statement-paid-banner">
                 <i class="fa-solid fa-circle-check text-success" style="font-size: 1.3rem;"></i>
                 <div>
@@ -201,12 +200,11 @@ export const creditCardsView = {
                           <span>•</span>
                           <span>Fecha: ${p.purchase_date}</span>
                         </div>
-                        <!-- Barra de progreso -->
                         <div class="progress-bar-container" style="height: 7px; margin-top: 6px;">
                           <div class="progress-bar-fill" style="width: ${progress}%; background: ${isCompleted ? "#10B981" : "linear-gradient(90deg, #3B82F6, #10B981)"};"></div>
                         </div>
                         <div class="purchase-installment-text">
-                          <span>${isCompleted ? "Completamente pagada (3 de 3)" : `Cuota ${p.installments_paid} pagada de ${p.installments} ($ ${installmentVal.toLocaleString("es-CO")}/mes)`}</span>
+                          <span>${isCompleted ? "Completamente pagada" : `Cuota ${p.installments_paid} pagada de ${p.installments} ($ ${installmentVal.toLocaleString("es-CO")}/mes)`}</span>
                           <strong>${isCompleted ? "100%" : `${remaining} pendientes`}</strong>
                         </div>
                       </div>
@@ -302,7 +300,9 @@ export const creditCardsView = {
   }
 };
 
-// MODAL CREAR / EDITAR TARJETA
+// ====================================================
+// MODAL: CREAR / EDITAR TARJETA (CON FORMATEO DE MILES)
+// ====================================================
 function showCardModal({ card = null, onSave }) {
   const isEditing = !!card;
 
@@ -324,13 +324,16 @@ function showCardModal({ card = null, onSave }) {
         <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
           <div class="form-group">
             <label>Cupo Total ($)</label>
-            <input type="number" id="card-limit" min="1" step="any" value="${isEditing ? card.credit_limit : ""}" placeholder="Ej. 3500000" required />
+            <input type="text" id="card-limit" value="${isEditing ? card.credit_limit : ""}" placeholder="Ej. 3.500.000" required />
           </div>
           <div class="form-group">
             <label>Tasa (% E.A.)</label>
             <input type="number" id="card-rate" step="0.01" min="0" value="${isEditing ? card.interest_rate_ea : "25.00"}" placeholder="Ej. 25.5" required />
           </div>
         </div>
+        <small style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-top: -0.5rem; margin-bottom: 0.75rem;">
+          Actualiza la tasa cuando tu banco o la Superfinanciera la modifique.
+        </small>
 
         <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
           <div class="form-group">
@@ -346,7 +349,7 @@ function showCardModal({ card = null, onSave }) {
         <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
           <div class="form-group">
             <label>Cuota de manejo ($)</label>
-            <input type="number" id="card-fee" min="0" step="any" value="${isEditing ? card.management_fee : "0"}" placeholder="Ej. 30000" />
+            <input type="text" id="card-fee" value="${isEditing ? card.management_fee : "0"}" placeholder="Ej. 30.000" />
           </div>
           <div class="form-group">
             <label>Color</label>
@@ -381,6 +384,10 @@ function showCardModal({ card = null, onSave }) {
     if (e.target === modal) closeModal();
   });
 
+  // Vincular formateo en tiempo real a Cupo Total y Cuota de manejo
+  attachCurrencyInput(modal.querySelector("#card-limit"));
+  attachCurrencyInput(modal.querySelector("#card-fee"));
+
   const form = modal.querySelector("#card-form");
   const submitBtn = modal.querySelector("#btn-submit-card");
 
@@ -390,11 +397,11 @@ function showCardModal({ card = null, onSave }) {
     submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Guardando...`;
 
     const name = modal.querySelector("#card-name").value;
-    const credit_limit = modal.querySelector("#card-limit").value;
+    const credit_limit = parseCurrencyInput(modal.querySelector("#card-limit").value);
     const interest_rate_ea = modal.querySelector("#card-rate").value;
     const cutoff_day = modal.querySelector("#card-cutoff").value;
     const payment_due_day = modal.querySelector("#card-due").value;
-    const management_fee = modal.querySelector("#card-fee").value;
+    const management_fee = parseCurrencyInput(modal.querySelector("#card-fee").value);
     const color = modal.querySelector("#card-color").value;
     const errorDiv = modal.querySelector("#card-modal-error");
 
@@ -448,7 +455,9 @@ function showCardModal({ card = null, onSave }) {
   }
 }
 
-// MODAL AVANCE
+// ====================================================
+// MODAL: REGISTRAR AVANCE (CON FORMATEO DE MILES)
+// ====================================================
 function showPurchaseModal({ card, categories = [], debitWallets = [], isAdvance = true, onSave }) {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
@@ -469,7 +478,7 @@ function showPurchaseModal({ card, categories = [], debitWallets = [], isAdvance
         <div class="form-grid" style="grid-template-columns: 1.2fr 1fr;">
           <div class="form-group">
             <label>Monto a Retirar ($)</label>
-            <input type="number" id="pur-amount" step="any" min="1" placeholder="Ej. 300000" required autofocus />
+            <input type="text" id="pur-amount" placeholder="Ej. 300.000" required autofocus />
           </div>
 
           <div class="form-group">
@@ -484,7 +493,7 @@ function showPurchaseModal({ card, categories = [], debitWallets = [], isAdvance
         </div>
 
         <div class="form-group">
-          <label>Categoría</label>
+          <label>Categoría (¿En qué se usará el dinero?)</label>
           <select id="pur-category" required>
             ${categories.map(c => `<option value="${c.id}">${c.name}</option>`).join("")}
           </select>
@@ -501,7 +510,7 @@ function showPurchaseModal({ card, categories = [], debitWallets = [], isAdvance
 
         <div class="form-group">
           <label>Comisión por avance ($)</label>
-          <input type="number" id="pur-fee" min="0" step="any" value="6800" placeholder="Ej. 6800" />
+          <input type="text" id="pur-fee" value="6800" placeholder="Ej. 6.800" />
         </div>
 
         <div id="purchase-simulation" class="alert-info" style="font-size: 0.8rem; margin-top: 0.5rem;"></div>
@@ -528,7 +537,7 @@ function showPurchaseModal({ card, categories = [], debitWallets = [], isAdvance
   const submitBtn = modal.querySelector("#btn-submit-advance");
 
   const updateSim = () => {
-    const val = parseFloat(amountInput.value);
+    const val = parseCurrencyInput(amountInput.value);
     const installments = parseInt(installmentsSelect.value);
     if (!val || val <= 0) {
       simBox.style.display = "none";
@@ -548,7 +557,9 @@ function showPurchaseModal({ card, categories = [], debitWallets = [], isAdvance
     `;
   };
 
-  amountInput.addEventListener("input", updateSim);
+  // Formatear montos en vivo
+  attachCurrencyInput(amountInput, updateSim);
+  attachCurrencyInput(modal.querySelector("#pur-fee"));
   installmentsSelect.addEventListener("change", updateSim);
 
   modal.querySelector("#purchase-card-form").addEventListener("submit", async (e) => {
@@ -557,11 +568,11 @@ function showPurchaseModal({ card, categories = [], debitWallets = [], isAdvance
     submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Transfiriendo avance...`;
 
     const title = modal.querySelector("#pur-title").value;
-    const total_amount = modal.querySelector("#pur-amount").value;
+    const total_amount = parseCurrencyInput(modal.querySelector("#pur-amount").value);
     const installments = modal.querySelector("#pur-installments").value;
     const category_id = modal.querySelector("#pur-category").value;
     const target_wallet_id = modal.querySelector("#pur-target-wallet").value;
-    const advance_fee = modal.querySelector("#pur-fee").value || 0;
+    const advance_fee = parseCurrencyInput(modal.querySelector("#pur-fee").value) || 0;
     const errorDiv = modal.querySelector("#pur-modal-error");
 
     try {
@@ -586,10 +597,14 @@ function showPurchaseModal({ card, categories = [], debitWallets = [], isAdvance
   });
 }
 
-// MODAL PAGAR TARJETA
+// ====================================================
+// MODAL: PAGAR TARJETA (CON FORMATEO DE MILES)
+// ====================================================
 function showPayCardModal({ card, statement, suggestedAmount, debitWallets, onSave }) {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
+
+  const rawDefaultValue = suggestedAmount || statement.totalDebt || 0;
 
   modal.innerHTML = `
     <div class="modal-content" style="max-width: 420px;">
@@ -605,9 +620,9 @@ function showPayCardModal({ card, statement, suggestedAmount, debitWallets, onSa
 
         <div class="form-group">
           <label>¿Cuánto vas a pagar? ($)</label>
-          <input type="number" id="pay-card-val" min="1" step="any" value="${suggestedAmount || statement.totalDebt}" required autofocus />
+          <input type="text" id="pay-card-val" value="${rawDefaultValue}" required autofocus />
           <small style="color: var(--text-muted); font-size: 0.75rem;">
-            Monto sugerido para quedar al día: $ ${(suggestedAmount || statement.totalDebt).toLocaleString("es-CO")}.
+            Monto sugerido para quedar al día: $ ${(rawDefaultValue).toLocaleString("es-CO")}.
           </small>
         </div>
 
@@ -639,6 +654,9 @@ function showPayCardModal({ card, statement, suggestedAmount, debitWallets, onSa
     if (e.target === modal) closeModal();
   });
 
+  // Vincular formateo en tiempo real al input de pago
+  attachCurrencyInput(modal.querySelector("#pay-card-val"));
+
   const submitBtn = modal.querySelector("#btn-submit-paycard");
 
   modal.querySelector("#pay-card-form").addEventListener("submit", async (e) => {
@@ -646,7 +664,7 @@ function showPayCardModal({ card, statement, suggestedAmount, debitWallets, onSa
     submitBtn.disabled = true;
     submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Aplicando pago...`;
 
-    const payment_amount = modal.querySelector("#pay-card-val").value;
+    const payment_amount = parseCurrencyInput(modal.querySelector("#pay-card-val").value);
     const from_wallet_id = modal.querySelector("#pay-card-from").value;
     const errorDiv = modal.querySelector("#paycard-modal-error");
 

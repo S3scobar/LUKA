@@ -1,6 +1,7 @@
 // js/views/walletsView.js
 import { walletService } from "../services/walletService.js";
 import { categoryService } from "../services/categoryService.js";
+import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 
 const AVAILABLE_ICONS = [
   "fa-utensils", "fa-burger", "fa-pizza-slice", "fa-mug-hot", "fa-apple-whole",
@@ -24,7 +25,7 @@ export const walletsView = {
         categoryService.getCategories()
       ]);
 
-      let activeCategoryTab = "expense"; // 'expense' | 'income'
+      let activeCategoryTab = "expense";
 
       const renderContent = () => {
         const filteredCategories = allCategories.filter(c => c.type === activeCategoryTab);
@@ -35,7 +36,6 @@ export const walletsView = {
 
         container.innerHTML = `
           <div class="wallets-module">
-            <!-- SECCIÓN 1: BILLETERAS -->
             <div class="section-card">
               <div class="section-header">
                 <div>
@@ -54,7 +54,6 @@ export const walletsView = {
                 </div>
               </div>
 
-              <!-- Lista de Billeteras -->
               <div class="wallets-grid">
                 ${wallets.map(w => `
                   <div class="wallet-item" style="border-left: 5px solid ${w.color};">
@@ -78,7 +77,6 @@ export const walletsView = {
               </div>
             </div>
 
-            <!-- SECCIÓN 2: CATEGORÍAS -->
             <div class="section-card">
               <div class="section-header">
                 <div>
@@ -97,7 +95,6 @@ export const walletsView = {
                 </div>
               </div>
 
-              <!-- Pestañas Gasto / Ingreso -->
               <div class="cat-tabs-row">
                 <button type="button" id="tab-cat-expense" class="cat-tab-btn ${activeCategoryTab === "expense" ? "active" : ""}">
                   Gastos (${allCategories.filter(c => c.type === "expense").length})
@@ -109,7 +106,6 @@ export const walletsView = {
 
               <div id="fav-feedback" class="alert-info" style="display: none;"></div>
 
-              <!-- Grilla de Categorías -->
               <div class="categories-selection-grid">
                 ${filteredCategories.map(cat => {
                   const isFav = cat.type === "expense" && selectedFavoriteIds.includes(cat.id);
@@ -141,7 +137,6 @@ export const walletsView = {
           </div>
         `;
 
-        // 1. Evento para abrir modal de transferencia
         const btnTransfer = container.querySelector("#btn-transfer-money");
         if (btnTransfer) {
           btnTransfer.addEventListener("click", () => {
@@ -152,7 +147,6 @@ export const walletsView = {
           });
         }
 
-        // 2. Crear nueva billetera
         container.querySelector("#btn-show-wallet-form").addEventListener("click", () => {
           showWalletModal({
             wallet: null,
@@ -160,7 +154,6 @@ export const walletsView = {
           });
         });
 
-        // 3. Editar billetera / saldo
         container.querySelectorAll(".btn-edit-wallet").forEach(btn => {
           btn.addEventListener("click", () => {
             const walletId = btn.dataset.id;
@@ -172,7 +165,6 @@ export const walletsView = {
           });
         });
 
-        // 4. Eliminar billetera
         container.querySelectorAll(".btn-delete-wallet").forEach(btn => {
           btn.addEventListener("click", async () => {
             const walletId = btn.dataset.id;
@@ -184,7 +176,6 @@ export const walletsView = {
           });
         });
 
-        // Tabs de Categorías
         container.querySelector("#tab-cat-expense").addEventListener("click", () => {
           activeCategoryTab = "expense";
           renderContent();
@@ -194,7 +185,6 @@ export const walletsView = {
           renderContent();
         });
 
-        // Nueva Categoría
         container.querySelector("#btn-new-category").addEventListener("click", () => {
           showCategoryModal({
             type: activeCategoryTab,
@@ -202,7 +192,6 @@ export const walletsView = {
           });
         });
 
-        // Editar Categoría
         container.querySelectorAll(".btn-edit-cat").forEach(btn => {
           btn.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -215,7 +204,6 @@ export const walletsView = {
           });
         });
 
-        // Eliminar Categoría
         container.querySelectorAll(".btn-delete-cat").forEach(btn => {
           btn.addEventListener("click", async (e) => {
             e.stopPropagation();
@@ -232,7 +220,6 @@ export const walletsView = {
           });
         });
 
-        // Selección de Favoritas
         if (activeCategoryTab === "expense") {
           const cards = container.querySelectorAll(".category-manage-card");
           const countLabel = container.querySelector("#fav-count");
@@ -282,7 +269,7 @@ export const walletsView = {
                 feedback.style.display = "block";
                 setTimeout(() => { feedback.style.display = "none"; }, 3000);
               } catch (err) {
-                alert(err.message);
+                alert("Error: " + err.message);
               } finally {
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = `<i class="fa-solid fa-check"></i> Guardar Favoritas (<span id="fav-count">${selectedFavoriteIds.length}</span>/4)`;
@@ -300,9 +287,7 @@ export const walletsView = {
   }
 };
 
-// ==========================================
-// MODAL: TRANSFERIR DINERO ENTRE BILLETERAS
-// ==========================================
+// Modal Transferencia
 function showTransferModal({ wallets, onSave }) {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
@@ -342,9 +327,9 @@ function showTransferModal({ wallets, onSave }) {
 
         <div class="form-group">
           <label>Monto a Transferir ($)</label>
-          <input type="number" id="transfer-amount" step="any" min="1" placeholder="Ej. 150000" required autofocus />
+          <input type="text" id="transfer-amount" placeholder="Ej. 150.000" required autofocus />
           <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 2px;">
-            Este movimiento traspasa el saldo de forma directa sin alterar tus gastos ni ingresos del mes.
+            Este movimiento traspasa el saldo sin alterar tus gastos ni ingresos del mes.
           </small>
         </div>
 
@@ -367,11 +352,13 @@ function showTransferModal({ wallets, onSave }) {
     if (e.target === modal) closeModal();
   });
 
+  attachCurrencyInput(modal.querySelector("#transfer-amount"));
+
   modal.querySelector("#transfer-modal-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const from_wallet_id = modal.querySelector("#transfer-from-wallet").value;
     const to_wallet_id = modal.querySelector("#transfer-to-wallet").value;
-    const amount = modal.querySelector("#transfer-amount").value;
+    const amount = parseCurrencyInput(modal.querySelector("#transfer-amount").value);
     const errorDiv = modal.querySelector("#transfer-modal-error");
 
     try {
@@ -389,7 +376,7 @@ function showTransferModal({ wallets, onSave }) {
   });
 }
 
-// MODAL PARA CREAR / EDITAR BILLETERA
+// Modal Crear o Editar Billetera
 function showWalletModal({ wallet = null, onSave }) {
   const isEditing = !!wallet;
 
@@ -410,7 +397,7 @@ function showWalletModal({ wallet = null, onSave }) {
 
         <div class="form-group">
           <label>${isEditing ? "Saldo Actual Disponible ($)" : "Saldo Inicial ($)"}</label>
-          <input type="number" id="modal-wallet-balance" step="0.01" value="${isEditing ? wallet.balance : "0.00"}" required />
+          <input type="text" id="modal-wallet-balance" value="${isEditing ? wallet.balance : "0"}" placeholder="0" required />
         </div>
 
         <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
@@ -449,10 +436,12 @@ function showWalletModal({ wallet = null, onSave }) {
     if (e.target === modal) closeModal();
   });
 
+  attachCurrencyInput(modal.querySelector("#modal-wallet-balance"));
+
   modal.querySelector("#wallet-modal-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = modal.querySelector("#modal-wallet-name").value.trim();
-    const balance = parseFloat(modal.querySelector("#modal-wallet-balance").value);
+    const balance = parseCurrencyInput(modal.querySelector("#modal-wallet-balance").value);
     const color = modal.querySelector("#modal-wallet-color").value;
     const icon = modal.querySelector("#modal-wallet-icon").value;
     const errorDiv = modal.querySelector("#wallet-modal-error");
@@ -472,7 +461,7 @@ function showWalletModal({ wallet = null, onSave }) {
   });
 }
 
-// MODAL PARA CREAR / EDITAR CATEGORÍA
+// Modal Categoría
 function showCategoryModal({ category = null, type = "expense", onSave }) {
   const isEditing = !!category;
   let selectedIcon = isEditing ? category.icon : "fa-tag";

@@ -8,21 +8,27 @@ export const quickExpenseBar = {
     const container = document.getElementById(containerId);
     let activeType = "expense"; // 'expense' | 'income'
     let selectedWalletId = wallets.length > 0 ? wallets[0].id : null;
+    let savedTitle = "";
+    let savedAmount = "";
 
     const renderBar = () => {
+      // 1. Guardar lo que el usuario ya escribió para que NUNCA se borre al cambiar de cuenta
+      const currentTitleInput = container.querySelector("#quick-title");
+      const currentAmountInput = container.querySelector("#quick-amount");
+      if (currentTitleInput) savedTitle = currentTitleInput.value;
+      if (currentAmountInput) savedAmount = currentAmountInput.value;
+
       const expenseFavorites = categories
         .filter(c => c.type === "expense" && c.is_favorite)
         .sort((a, b) => a.favorite_order - b.favorite_order)
         .slice(0, 4);
 
       const allTypeCategories = categories.filter(c => c.type === activeType);
-
-      // Verificar si la billetera seleccionada corresponde a una tarjeta de crédito
       const linkedCard = creditCards.find(c => c.wallet_id === selectedWalletId);
 
       container.innerHTML = `
         <div class="quick-expense-card">
-          <!-- Toggle Gasto / Ingreso -->
+          <!-- 1. Toggle Gasto / Ingreso -->
           <div class="type-toggle-pill">
             <button type="button" id="tab-expense" class="toggle-btn ${activeType === "expense" ? "active expense" : ""}">
               <i class="fa-solid fa-arrow-trend-down"></i> Gasto
@@ -32,36 +38,30 @@ export const quickExpenseBar = {
             </button>
           </div>
 
-          <!-- Selector de Cuenta / Tarjeta -->
-          <div class="wallet-select-wrapper">
-            <label for="quick-wallet-select">
-              <i class="fa-solid fa-wallet"></i> Cuenta origen/destino:
-            </label>
-            <select id="quick-wallet-select" class="wallet-dropdown">
-              ${wallets.map(w => `
-                <option value="${w.id}" ${w.id === selectedWalletId ? "selected" : ""}>
-                  ${w.name} ($ ${Number(w.balance).toLocaleString("es-CO")})
-                </option>
-              `).join("")}
-            </select>
-          </div>
-
-          <!-- Fila de Inputs: Concepto + Monto -->
-          <div class="quick-inputs-row">
-            <div class="input-field input-title">
-              <input type="text" id="quick-title" placeholder="${activeType === "expense" ? "¿En qué gastaste? (Ej. Almuerzo)" : "¿Concepto del ingreso? (Ej. Sueldo)"}" required autocomplete="off" />
-            </div>
-            <div class="input-field input-amount">
-              <span class="currency-symbol">$</span>
-              <input type="number" id="quick-amount" placeholder="0" min="1" step="any" required />
+          <!-- 2. SELECTOR DE CUENTA AL INICIO (ANTES DE LOS CAMPOS) -->
+          <div class="wallet-chips-section">
+            <span class="action-hint">
+              <i class="fa-solid fa-wallet"></i> ${activeType === "expense" ? "¿Con qué cuenta pagas?" : "¿A qué cuenta entra el dinero?"}
+            </span>
+            <div class="wallet-chips-row">
+              ${wallets.map(w => {
+                const isSelected = w.id === selectedWalletId;
+                return `
+                  <button type="button" class="wallet-chip-btn ${isSelected ? "selected" : ""}" data-id="${w.id}" style="${isSelected ? `border-color: ${w.color}; background-color: ${w.color}15; color: ${w.color};` : ""}">
+                    <i class="fa-solid ${w.icon}"></i>
+                    <span class="chip-name">${w.name}</span>
+                    <span class="chip-balance">$ ${Number(w.balance).toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
+                  </button>
+                `;
+              }).join("")}
             </div>
           </div>
 
-          <!-- SELECTOR DINÁMICO DE CUOTAS (Solo si es Tarjeta de Crédito en modo Gasto) -->
+          <!-- 3. CUOTAS (Solo si es Tarjeta de Crédito) -->
           ${linkedCard && activeType === "expense" ? `
             <div class="credit-cuotas-bar">
               <div class="cuotas-row">
-                <label for="quick-installments"><i class="fa-solid fa-layer-group text-primary"></i> Diferir compra a:</label>
+                <label for="quick-installments"><i class="fa-solid fa-layer-group text-primary"></i> Cuotas de la compra:</label>
                 <select id="quick-installments" class="cuotas-select">
                   <option value="1">1 cuota (Sin interés)</option>
                   <option value="2">2 cuotas</option>
@@ -78,12 +78,23 @@ export const quickExpenseBar = {
             </div>
           ` : ""}
 
+          <!-- 4. CAMPOS DE TEXTO: CONCEPTO Y MONTO (Conserva siempre lo escrito) -->
+          <div class="quick-inputs-row">
+            <div class="input-field input-title">
+              <input type="text" id="quick-title" value="${savedTitle}" placeholder="${activeType === "expense" ? "¿En qué gastaste? (Ej. Almuerzo)" : "¿Concepto del ingreso? (Ej. Sueldo)"}" required autocomplete="off" />
+            </div>
+            <div class="input-field input-amount">
+              <span class="currency-symbol">$</span>
+              <input type="text" id="quick-amount" value="${savedAmount}" inputmode="numeric" placeholder="0" required autocomplete="off" />
+            </div>
+          </div>
+
           <div id="quick-error" class="alert-error" style="display: none; margin-top: 0.5rem;"></div>
 
-          <!-- Botones de Categorías (1 Clic) -->
+          <!-- 5. CATEGORÍAS (1 CLIC) -->
           <div class="categories-action-section">
             <span class="action-hint">
-              ${activeType === "expense" ? "Toca una categoría para registrar el gasto en 1 clic:" : "Selecciona la categoría del ingreso:"}
+              ${activeType === "expense" ? "Toca una categoría para guardar el gasto:" : "Toca una categoría para guardar el ingreso:"}
             </span>
 
             <div class="quick-icons-row">
@@ -118,10 +129,9 @@ export const quickExpenseBar = {
         </div>
       `;
 
-      // Eventos de interacción
+      // Eventos
       const tabExpense = container.querySelector("#tab-expense");
       const tabIncome = container.querySelector("#tab-income");
-      const walletSelect = container.querySelector("#quick-wallet-select");
       const titleInput = container.querySelector("#quick-title");
       const amountInput = container.querySelector("#quick-amount");
       const errorDiv = container.querySelector("#quick-error");
@@ -138,15 +148,30 @@ export const quickExpenseBar = {
         renderBar();
       });
 
-      walletSelect.addEventListener("change", (e) => {
-        selectedWalletId = e.target.value;
-        renderBar();
+      // Clic en chips de cuenta: cambia de cuenta conservando lo que ya se escribió
+      container.querySelectorAll(".wallet-chip-btn").forEach(chip => {
+        chip.addEventListener("click", () => {
+          selectedWalletId = chip.dataset.id;
+          renderBar();
+        });
       });
 
-      // Cálculo de cuota en vivo para tarjeta de crédito
+      // Formateo de miles en vivo
+      amountInput.addEventListener("input", (e) => {
+        const rawNumbers = e.target.value.replace(/\D/g, "");
+        if (!rawNumbers) {
+          e.target.value = "";
+          updateCreditSim();
+          return;
+        }
+        e.target.value = Number(rawNumbers).toLocaleString("es-CO");
+        updateCreditSim();
+      });
+
       const updateCreditSim = () => {
         if (!linkedCard || !installmentsSelect || !creditInfoBox) return;
-        const val = parseFloat(amountInput.value);
+        const rawNumbers = amountInput.value.replace(/\D/g, "");
+        const val = parseFloat(rawNumbers);
         const installments = parseInt(installmentsSelect.value);
 
         if (installments === 1) {
@@ -158,20 +183,20 @@ export const quickExpenseBar = {
           const firstInterest = val * monthlyRate;
           const firstCuota = Math.round(principalPart + firstInterest);
 
-          creditInfoBox.innerHTML = `<i class="fa-solid fa-calculator text-primary"></i> Pagarás aprox. <strong>$ ${firstCuota.toLocaleString("es-CO")}</strong> en la primera cuota (Capital: $ ${Math.round(principalPart).toLocaleString("es-CO")} + Int: $ ${Math.round(firstInterest).toLocaleString("es-CO")}).`;
+          creditInfoBox.innerHTML = `<i class="fa-solid fa-calculator text-primary"></i> Pagarás aprox. <strong>$ ${firstCuota.toLocaleString("es-CO")}</strong> en la cuota 1 (Capital: $ ${Math.round(principalPart).toLocaleString("es-CO")} + Int: $ ${Math.round(firstInterest).toLocaleString("es-CO")}).`;
         } else {
-          creditInfoBox.innerHTML = `Diferido a ${installments} cuotas con tasa de ${linkedCard.interest_rate_ea}% E.A.`;
+          creditInfoBox.innerHTML = `Diferido a ${installments} cuotas (${linkedCard.interest_rate_ea}% E.A.).`;
         }
       };
 
-      if (amountInput) amountInput.addEventListener("input", updateCreditSim);
       if (installmentsSelect) installmentsSelect.addEventListener("change", updateCreditSim);
 
       // Guardar transacción
       const executeSave = async (categoryId) => {
         errorDiv.style.display = "none";
         const title = titleInput.value.trim();
-        const amount = parseFloat(amountInput.value);
+        const rawNumbers = amountInput.value.replace(/\D/g, "");
+        const amount = parseFloat(rawNumbers);
 
         if (!title) {
           errorDiv.textContent = "Por favor escribe un nombre para el gasto.";
@@ -188,7 +213,6 @@ export const quickExpenseBar = {
         }
 
         try {
-          // Si es tarjeta de crédito en modo gasto
           if (linkedCard && activeType === "expense") {
             const installments = installmentsSelect ? parseInt(installmentsSelect.value) : 1;
             await creditCardService.addPurchase({
@@ -200,7 +224,6 @@ export const quickExpenseBar = {
               is_advance: false
             });
           } else {
-            // Gasto o ingreso normal en cuenta de débito/efectivo
             await transactionService.addTransaction({
               wallet_id: selectedWalletId,
               category_id: categoryId,
@@ -210,6 +233,9 @@ export const quickExpenseBar = {
             });
           }
 
+          // Limpiar memoria y campos tras guardar con éxito
+          savedTitle = "";
+          savedAmount = "";
           titleInput.value = "";
           amountInput.value = "";
 
@@ -220,14 +246,10 @@ export const quickExpenseBar = {
         }
       };
 
-      // Clic en los 4 iconos favoritos
       container.querySelectorAll(".btn-fav-category:not(.btn-more)").forEach(btn => {
-        btn.addEventListener("click", () => {
-          executeSave(btn.dataset.id);
-        });
+        btn.addEventListener("click", () => executeSave(btn.dataset.id));
       });
 
-      // Botón '+'
       const btnMore = container.querySelector("#btn-more-categories");
       if (btnMore) {
         btnMore.addEventListener("click", () => {

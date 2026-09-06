@@ -3,6 +3,7 @@ import { subscriptionService } from "../services/subscriptionService.js";
 import { walletService } from "../services/walletService.js";
 import { categoryService } from "../services/categoryService.js";
 import { transactionService } from "../services/transactionService.js";
+import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 
 export const subscriptionsView = {
   async render(containerId) {
@@ -10,7 +11,6 @@ export const subscriptionsView = {
     container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando suscripciones...</div>`;
 
     try {
-      // Obtenemos suscripciones, billeteras, categorías y las transacciones de este mes
       const [subscriptions, wallets, categories, monthTransactions] = await Promise.all([
         subscriptionService.getSubscriptions(),
         walletService.getWallets(),
@@ -21,14 +21,12 @@ export const subscriptionsView = {
       const activeSubs = subscriptions.filter(s => s.is_active);
       const totalMonthly = activeSubs.reduce((sum, s) => sum + Number(s.amount), 0);
 
-      // Calcular cuántas ya están pagadas este mes
       const paidSubsCount = activeSubs.filter(sub => 
         monthTransactions.some(t => t.type === "expense" && t.title.toLowerCase().includes(sub.name.toLowerCase()))
       ).length;
 
       container.innerHTML = `
         <div class="subscriptions-module">
-          <!-- Métricas de Suscripciones -->
           <div class="summary-cards-grid">
             <div class="metric-card">
               <span class="metric-label"><i class="fa-solid fa-repeat text-primary"></i> Gasto Fijo Mensual</span>
@@ -40,7 +38,6 @@ export const subscriptionsView = {
             </div>
           </div>
 
-          <!-- Listado de Suscripciones -->
           <div class="section-card">
             <div class="section-header">
               <div>
@@ -61,7 +58,6 @@ export const subscriptionsView = {
             ` : `
               <div class="subs-grid">
                 ${subscriptions.map(sub => {
-                  // Verificar si ya existe un gasto este mes con el nombre de la suscripción
                   const paidTx = monthTransactions.find(t => 
                     t.type === "expense" && t.title.toLowerCase().includes(sub.name.toLowerCase())
                   );
@@ -95,7 +91,6 @@ export const subscriptionsView = {
                       </div>
 
                       <div class="sub-actions">
-                        <!-- Botón de Acción: Pagar o Estado -->
                         ${sub.is_active ? (
                           isPaid ? `
                             <div class="paid-indicator" title="Pagado el ${paidTx.transaction_date}">
@@ -126,7 +121,6 @@ export const subscriptionsView = {
         </div>
       `;
 
-      // 1. Botón Nueva Suscripción
       container.querySelector("#btn-new-sub").addEventListener("click", () => {
         showSubscriptionModal({
           wallets,
@@ -135,7 +129,6 @@ export const subscriptionsView = {
         });
       });
 
-      // 2. Marcar como Pagada (abre confirmación de cuenta)
       container.querySelectorAll(".btn-pay-sub").forEach(btn => {
         btn.addEventListener("click", () => {
           const subId = btn.dataset.id;
@@ -149,7 +142,6 @@ export const subscriptionsView = {
         });
       });
 
-      // 3. Alternar Activa/Pausada
       container.querySelectorAll(".btn-toggle-sub").forEach(btn => {
         btn.addEventListener("click", async () => {
           const id = btn.dataset.id;
@@ -159,7 +151,6 @@ export const subscriptionsView = {
         });
       });
 
-      // 4. Eliminar
       container.querySelectorAll(".btn-delete-sub").forEach(btn => {
         btn.addEventListener("click", async () => {
           if (confirm("¿Deseas eliminar esta suscripción?")) {
@@ -175,10 +166,7 @@ export const subscriptionsView = {
   }
 };
 
-// ==========================================
-// MODAL PARA CONFIRMAR PAGO Y PASAR A GASTO
-// ==========================================
-// MODAL PARA CONFIRMAR PAGO (CON MONTO EDITABLE PARA TARJETAS/SERVICIOS)
+// Modal Pagar Suscripción
 function showPaySubscriptionModal({ sub, wallets, categories, onSave }) {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
@@ -194,10 +182,9 @@ function showPaySubscriptionModal({ sub, wallets, categories, onSave }) {
       </div>
 
       <form id="pay-sub-form">
-        <!-- Campo para ingresar el valor exacto del extracto o factura -->
         <div class="form-group">
           <label>Valor exacto a pagar este mes ($)</label>
-          <input type="number" id="pay-amount" step="any" min="1" value="${sub.amount}" required autofocus />
+          <input type="text" id="pay-amount" value="${sub.amount}" required autofocus />
           <small style="color: var(--text-muted); font-size: 0.75rem;">
             Si es tarjeta de crédito o servicio público, digita el monto real de tu extracto/factura.
           </small>
@@ -238,9 +225,11 @@ function showPaySubscriptionModal({ sub, wallets, categories, onSave }) {
     if (e.target === modal) closeModal();
   });
 
+  attachCurrencyInput(modal.querySelector("#pay-amount"));
+
   modal.querySelector("#pay-sub-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const finalAmount = parseFloat(modal.querySelector("#pay-amount").value);
+    const finalAmount = parseCurrencyInput(modal.querySelector("#pay-amount").value);
     const wallet_id = modal.querySelector("#pay-wallet-id").value;
     const date = modal.querySelector("#pay-date").value;
     const errorDiv = modal.querySelector("#pay-modal-error");
@@ -257,7 +246,7 @@ function showPaySubscriptionModal({ sub, wallets, categories, onSave }) {
         category_id: defaultCategoryId,
         type: "expense",
         title: `Pago: ${sub.name}`,
-        amount: finalAmount, // Registra el monto real digitado
+        amount: finalAmount,
         date
       });
 
@@ -290,7 +279,7 @@ function showSubscriptionModal({ wallets, categories, onSave }) {
         <div class="form-grid" style="grid-template-columns: 1.2fr 1fr;">
           <div class="form-group">
             <label>Monto Mensual ($)</label>
-            <input type="number" id="sub-amount" step="any" min="1" placeholder="Ej. 34000" required />
+            <input type="text" id="sub-amount" placeholder="Ej. 34.000" required />
           </div>
           <div class="form-group">
             <label>Día de Pago (1 - 31)</label>
@@ -331,10 +320,12 @@ function showSubscriptionModal({ wallets, categories, onSave }) {
     if (e.target === modal) closeModal();
   });
 
+  attachCurrencyInput(modal.querySelector("#sub-amount"));
+
   modal.querySelector("#sub-create-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = modal.querySelector("#sub-name").value.trim();
-    const amount = modal.querySelector("#sub-amount").value;
+    const amount = parseCurrencyInput(modal.querySelector("#sub-amount").value);
     const billing_day = modal.querySelector("#sub-day").value;
     const wallet_id = modal.querySelector("#sub-wallet").value || null;
     const category_id = modal.querySelector("#sub-category").value || null;

@@ -1350,3 +1350,59 @@
   color: var(--text-muted);
   margin-top: 2px;
 }
+/* Selector visual táctil de cuentas (Chips) */
+.wallet-chips-section {
+  margin-bottom: 1.15rem;
+}
+
+.wallet-chips-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 4px 2px 8px 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.wallet-chips-row::-webkit-scrollbar {
+  display: none;
+}
+
+.wallet-chip-btn {
+  background: #F8FAFC;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.55rem 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  user-select: none;
+}
+
+.wallet-chip-btn:hover {
+  border-color: #CBD5E1;
+  transform: translateY(-1px);
+}
+
+.wallet-chip-btn.selected {
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.chip-name {
+  font-weight: 700;
+}
+
+.chip-balance {
+  font-size: 0.75rem;
+  opacity: 0.85;
+  background: rgba(0, 0, 0, 0.06);
+  padding: 2px 6px;
+  border-radius: 8px;
+}

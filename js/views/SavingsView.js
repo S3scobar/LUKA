@@ -1,6 +1,7 @@
-// js/views/savingsView.js
+// js/views/SavingsView.js
 import { goalService } from "../services/goalService.js";
 import { walletService } from "../services/walletService.js";
+import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 
 const SAVING_ICONS = [
   "fa-piggy-bank", "fa-vault", "fa-box-archive", "fa-building-columns", 
@@ -23,7 +24,6 @@ export const savingsView = {
 
       container.innerHTML = `
         <div class="savings-module">
-          <!-- Tarjeta Principal: TOTAL AHORRADO -->
           <div class="total-savings-hero">
             <div class="hero-icon-box">
               <i class="fa-solid fa-piggy-bank"></i>
@@ -35,12 +35,11 @@ export const savingsView = {
             </div>
           </div>
 
-          <!-- Listado de Fondos: DÓNDE ESTÁ EL DINERO -->
           <div class="section-card">
             <div class="section-header">
               <div>
                 <h3><i class="fa-solid fa-vault"></i> ¿Dónde tienes guardado tu dinero?</h3>
-                <p>Tus fondos, cajitas y lugares de ahorro. Toca "+ Añadir Ahorro" para sumar más dinero a cualquiera.</p>
+                <p>Tus fondos y cajitas. Todo dinero añadido se descuenta de tu cuenta y se registra en gastos.</p>
               </div>
               <button id="btn-new-fund" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-plus"></i> Nuevo Fondo / Lugar
@@ -80,7 +79,6 @@ export const savingsView = {
                       </div>
 
                       ${hasTarget ? `
-                        <!-- Progreso si tiene meta fijada -->
                         <div class="fund-progress-wrap">
                           <div class="progress-bar-container">
                             <div class="progress-bar-fill" style="width: ${fund.progressPercentage}%;"></div>
@@ -92,7 +90,6 @@ export const savingsView = {
                         </div>
                       ` : ""}
 
-                      <!-- Botón para añadir cada vez más -->
                       <div class="fund-actions-bar">
                         <button class="btn btn-primary btn-sm btn-block btn-add-savings" data-id="${fund.id}" data-title="${fund.title}">
                           <i class="fa-solid fa-circle-plus"></i> Añadir Ahorro
@@ -107,9 +104,10 @@ export const savingsView = {
         </div>
       `;
 
-      // 1. Crear nuevo fondo
+      // 1. Crear nuevo fondo (ahora recibe la lista de wallets para elegir cuenta si hay dinero inicial)
       container.querySelector("#btn-new-fund").addEventListener("click", () => {
         showNewFundModal({
+          wallets,
           onSave: () => savingsView.render(containerId)
         });
       });
@@ -144,8 +142,8 @@ export const savingsView = {
   }
 };
 
-// Modal: Crear nuevo fondo o lugar de ahorro
-function showNewFundModal({ onSave }) {
+// Modal Crear Fondo (Pregunta de qué cuenta sale si se ingresa dinero inicial)
+function showNewFundModal({ wallets = [], onSave }) {
   let selectedIcon = "fa-piggy-bank";
 
   const modal = document.createElement("div");
@@ -159,19 +157,34 @@ function showNewFundModal({ onSave }) {
 
       <form id="fund-create-form">
         <div class="form-group">
-          <label>¿Dónde guardas este dinero? (Nombre del Fondo o Cuenta)</label>
-          <input type="text" id="fund-name" placeholder="Ej. Cajita Nequi, Fondo de Emergencia, Alcancía" required />
+          <label>Nombre del Fondo o Cuenta</label>
+          <input type="text" id="fund-name" placeholder="Ej. Cajita Nequi, Fondo de Emergencia" required />
         </div>
 
         <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
           <div class="form-group">
-            <label>Dinero Ahorrado Actual ($)</label>
-            <input type="number" id="fund-current" min="0" step="any" value="0" required />
+            <label>Dinero Inicial ($)</label>
+            <input type="text" id="fund-current" placeholder="0" value="0" required />
           </div>
           <div class="form-group">
-            <label>Meta Objetivo ($ Opcional)</label>
-            <input type="number" id="fund-target" min="0" step="any" placeholder="Ej. 1000000" />
+            <label>Meta ($ Opcional)</label>
+            <input type="text" id="fund-target" placeholder="Ej. 1.000.000" />
           </div>
+        </div>
+
+        <!-- Aparece automáticamente si el dinero inicial es mayor a 0 -->
+        <div class="form-group" id="initial-wallet-box" style="display: none;">
+          <label><i class="fa-solid fa-wallet"></i> ¿De qué cuenta sale el dinero inicial?</label>
+          <select id="fund-initial-wallet">
+            ${wallets.map((w, index) => `
+              <option value="${w.id}" ${index === 0 ? "selected" : ""}>
+                ${w.name} ($ ${Number(w.balance).toLocaleString("es-CO")})
+              </option>
+            `).join("")}
+          </select>
+          <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 2px; display: block;">
+            Se descontará de esta cuenta y se registrará en los gastos del mes.
+          </small>
         </div>
 
         <div class="form-group">
@@ -188,7 +201,7 @@ function showNewFundModal({ onSave }) {
         <div id="fund-modal-error" class="alert-error" style="display: none;"></div>
 
         <div class="form-actions" style="margin-top: 1.25rem;">
-          <button type="submit" class="btn btn-primary btn-block">Guardar Fondo de Ahorro</button>
+          <button type="submit" id="btn-submit-newfund" class="btn btn-primary btn-block">Guardar Fondo</button>
         </div>
       </form>
     </div>
@@ -202,6 +215,18 @@ function showNewFundModal({ onSave }) {
     if (e.target === modal) closeModal();
   });
 
+  const currentInput = modal.querySelector("#fund-current");
+  const walletBox = modal.querySelector("#initial-wallet-box");
+
+  // Mostrar el selector de cuenta solo si el dinero inicial es > 0
+  const toggleWalletBox = () => {
+    const val = parseCurrencyInput(currentInput.value);
+    walletBox.style.display = val > 0 ? "block" : "none";
+  };
+
+  attachCurrencyInput(currentInput, toggleWalletBox);
+  attachCurrencyInput(modal.querySelector("#fund-target"));
+
   const iconButtons = modal.querySelectorAll(".icon-choice");
   iconButtons.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -211,11 +236,17 @@ function showNewFundModal({ onSave }) {
     });
   });
 
+  const submitBtn = modal.querySelector("#btn-submit-newfund");
+
   modal.querySelector("#fund-create-form").addEventListener("submit", async (e) => {
     e.preventDefault();
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Guardando...`;
+
     const title = modal.querySelector("#fund-name").value.trim();
-    const current_amount = modal.querySelector("#fund-current").value;
-    const target_amount = modal.querySelector("#fund-target").value || (Number(current_amount) > 0 ? Number(current_amount) * 2 : 1000000);
+    const current_amount = parseCurrencyInput(modal.querySelector("#fund-current").value);
+    const target_amount = parseCurrencyInput(modal.querySelector("#fund-target").value) || (current_amount > 0 ? current_amount * 2 : 1000000);
+    const wallet_id = current_amount > 0 ? modal.querySelector("#fund-initial-wallet").value : null;
     const errorDiv = modal.querySelector("#fund-modal-error");
 
     try {
@@ -223,18 +254,21 @@ function showNewFundModal({ onSave }) {
         title,
         target_amount,
         current_amount,
-        icon: selectedIcon
+        icon: selectedIcon,
+        wallet_id
       });
       closeModal();
       if (onSave) onSave();
     } catch (err) {
       errorDiv.textContent = err.message || "Error al crear fondo";
       errorDiv.style.display = "block";
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = "Guardar Fondo";
     }
   });
 }
 
-// Modal: Añadir más dinero al ahorro
+// Modal Añadir Ahorro (Siempre va a gastos)
 function showAddSavingsModal({ fundId, fundTitle, wallets, onSave }) {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
@@ -252,28 +286,27 @@ function showAddSavingsModal({ fundId, fundTitle, wallets, onSave }) {
 
         <div class="form-group">
           <label>¿Cuánto dinero vas a añadir? ($)</label>
-          <input type="number" id="add-amount" step="any" min="1" placeholder="Ej. 50000" required autofocus />
+          <input type="text" id="add-amount" placeholder="Ej. 50.000" required autofocus />
         </div>
 
         <div class="form-group">
-          <label>Descontar de la cuenta:</label>
-          <select id="add-wallet-id">
-            <option value="">-- No descontar de ninguna cuenta --</option>
-            ${wallets.map(w => `
-              <option value="${w.id}">
+          <label><i class="fa-solid fa-wallet"></i> ¿De qué cuenta sale el dinero?</label>
+          <select id="add-wallet-id" required>
+            ${wallets.map((w, index) => `
+              <option value="${w.id}" ${index === 0 ? "selected" : ""}>
                 ${w.name} (Saldo: $ ${Number(w.balance).toLocaleString("es-CO")})
               </option>
             `).join("")}
           </select>
-          <small style="color: var(--text-muted); font-size: 0.75rem;">
-            Si seleccionas una cuenta, el dinero se descontará de ella y se sumará a este fondo de ahorro.
+          <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 3px; display: block;">
+            El dinero se descontará de esta cuenta y se sumará a tus <strong>gastos del mes</strong>.
           </small>
         </div>
 
         <div id="add-modal-error" class="alert-error" style="display: none;"></div>
 
         <div class="form-actions" style="margin-top: 1.25rem;">
-          <button type="submit" class="btn btn-primary btn-block">Confirmar y Añadir Ahorro</button>
+          <button type="submit" id="btn-submit-contrib" class="btn btn-primary btn-block">Confirmar y Añadir Ahorro</button>
         </div>
       </form>
     </div>
@@ -287,10 +320,17 @@ function showAddSavingsModal({ fundId, fundTitle, wallets, onSave }) {
     if (e.target === modal) closeModal();
   });
 
+  attachCurrencyInput(modal.querySelector("#add-amount"));
+
+  const submitBtn = modal.querySelector("#btn-submit-contrib");
+
   modal.querySelector("#add-savings-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const amount = modal.querySelector("#add-amount").value;
-    const wallet_id = modal.querySelector("#add-wallet-id").value || null;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Guardando aporte...`;
+
+    const amount = parseCurrencyInput(modal.querySelector("#add-amount").value);
+    const wallet_id = modal.querySelector("#add-wallet-id").value;
     const errorDiv = modal.querySelector("#add-modal-error");
 
     try {
@@ -300,6 +340,8 @@ function showAddSavingsModal({ fundId, fundTitle, wallets, onSave }) {
     } catch (err) {
       errorDiv.textContent = err.message || "Error al añadir ahorro";
       errorDiv.style.display = "block";
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = "Confirmar y Añadir Ahorro";
     }
   });
 }
