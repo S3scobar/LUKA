@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUKA</title>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  
+  <!-- Hojas de estilo -->
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/views.css" />
+</head>
+<body>
+  <header class="navbar">
+    <div class="brand">
+      <i class="fa-solid fa-bolt"></i> LUKA
+    </div>
+    
+    <!-- Pestañas de Navegación -->
+    <div id="nav-tabs" class="nav-links" style="display: none;">
+      <button id="nav-dashboard" class="nav-item-btn active">
+        <i class="fa-solid fa-house"></i> Inicio
+      </button>
+      <button id="nav-wallets" class="nav-item-btn">
+        <i class="fa-solid fa-wallet"></i> Billeteras
+      </button>
+      <button id="nav-subs" class="nav-item-btn">
+        <i class="fa-solid fa-calendar-days"></i> Suscripciones
+      </button>
+      <button id="nav-savings" class="nav-item-btn">
+        <i class="fa-solid fa-piggy-bank"></i> Ahorros
+      </button>
+      <button id="nav-analytics" class="nav-item-btn">
+        <i class="fa-solid fa-chart-pie"></i> Análisis
+      </button>
+    </div>
+
+    <!-- Menú de Usuario -->
+    <div id="user-menu" style="display: none; align-items: center; gap: 0.75rem;">
+      <span id="user-name" style="font-size: 0.85rem; font-weight: 600;"></span>
+      <button id="btn-logout" class="btn btn-secondary btn-sm" title="Cerrar sesión">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="app"></div>
+  </main>
+
+  <!-- Marca de agua en la esquina inferior izquierda -->
+  <div class="watermark-author">
+    by: <span>Santiago Escobar</span>
+  </div>
+
+  <script type="module">
+    import { authService } from "./js/services/authService.js";
+    import { authView } from "./js/views/authView.js";
+    import { walletsView } from "./js/views/walletsView.js";
+    import { dashboardView } from "./js/views/dashboardView.js";
+    import { subscriptionsView } from "./js/views/subscriptionsView.js";
+    import { savingsView } from "./js/views/savingsView.js";
+    import { analyticsView } from "./js/views/analyticsView.js";
+
+    const navTabs = document.getElementById("nav-tabs");
+    const navDashboard = document.getElementById("nav-dashboard");
+    const navWallets = document.getElementById("nav-wallets");
+    const navSubs = document.getElementById("nav-subs");
+    const navSavings = document.getElementById("nav-savings");
+    const navAnalytics = document.getElementById("nav-analytics");
+
+    const userMenu = document.getElementById("user-menu");
+    const userName = document.getElementById("user-name");
+    const logoutBtn = document.getElementById("btn-logout");
+
+    let currentTab = "dashboard";
+
+    function switchView(tab) {
+      currentTab = tab;
+      navDashboard.classList.toggle("active", tab === "dashboard");
+      navWallets.classList.toggle("active", tab === "wallets");
+      navSubs.classList.toggle("active", tab === "subs");
+      navSavings.classList.toggle("active", tab === "savings");
+      navAnalytics.classList.toggle("active", tab === "analytics");
+
+      if (tab === "dashboard") {
+        dashboardView.render("app");
+      } else if (tab === "wallets") {
+        walletsView.render("app");
+      } else if (tab === "subs") {
+        subscriptionsView.render("app");
+      } else if (tab === "savings") {
+        savingsView.render("app");
+      } else if (tab === "analytics") {
+        analyticsView.render("app");
+      }
+    }
+
+    navDashboard.addEventListener("click", () => switchView("dashboard"));
+    navWallets.addEventListener("click", () => switchView("wallets"));
+    navSubs.addEventListener("click", () => switchView("subs"));
+    navSavings.addEventListener("click", () => switchView("savings"));
+    navAnalytics.addEventListener("click", () => switchView("analytics"));
+
+    async function initApp() {
+      try {
+        const user = await authService.getCurrentUser();
+        if (user) {
+          userMenu.style.display = "flex";
+          navTabs.style.display = "flex";
+          userName.textContent = user.user_metadata?.full_name || user.email;
+          switchView(currentTab);
+        } else {
+          userMenu.style.display = "none";
+          navTabs.style.display = "none";
+          authView.render("app", () => {
+            initApp();
+          });
+        }
+      } catch (err) {
+        userMenu.style.display = "none";
+        navTabs.style.display = "none";
+        authView.render("app", () => {
+          initApp();
+        });
+      }
+    }
+
+    initApp();
+
+    authService.onAuthStateChanged((user) => {
+      if (!user) {
+        userMenu.style.display = "none";
+        navTabs.style.display = "none";
+        authView.render("app", () => initApp());
+      }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      await authService.signOut();
+      initApp();
+    });
+  </script>
+</body>
+</html>

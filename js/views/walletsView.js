@@ -1,0 +1,488 @@
+// js/views/walletsView.js
+import { walletService } from "../services/walletService.js";
+import { categoryService } from "../services/categoryService.js";
+
+// Lista de iconos comunes para finanzas
+const AVAILABLE_ICONS = [
+  "fa-utensils", "fa-burger", "fa-pizza-slice", "fa-mug-hot", "fa-apple-whole",
+  "fa-bus", "fa-car", "fa-gas-pump", "fa-train", "fa-plane",
+  "fa-house", "fa-bolt", "fa-faucet-drip", "fa-wifi", "fa-couch",
+  "fa-gamepad", "fa-film", "fa-music", "fa-ticket", "fa-dumbbell",
+  "fa-bag-shopping", "fa-cart-shopping", "fa-shirt", "fa-gift", "fa-tag",
+  "fa-heart-pulse", "fa-hospital", "fa-pills", "fa-paw",
+  "fa-graduation-cap", "fa-book", "fa-laptop",
+  "fa-briefcase", "fa-money-bill-wave", "fa-building-columns", "fa-chart-line", "fa-piggy-bank", "fa-wallet"
+];
+
+export const walletsView = {
+  async render(containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando billeteras y categorías...</div>`;
+
+    try {
+      const [wallets, allCategories] = await Promise.all([
+        walletService.getWallets(),
+        categoryService.getCategories()
+      ]);
+
+      let activeCategoryTab = "expense"; // 'expense' | 'income'
+
+      const renderContent = () => {
+        const filteredCategories = allCategories.filter(c => c.type === activeCategoryTab);
+        let selectedFavoriteIds = allCategories
+          .filter(c => c.type === "expense" && c.is_favorite)
+          .sort((a, b) => a.favorite_order - b.favorite_order)
+          .map(c => c.id);
+
+        container.innerHTML = `
+          <div class="wallets-module">
+            <!-- SECCIÓN 1: BILLETERAS -->
+            <div class="section-card">
+              <div class="section-header">
+                <div>
+                  <h3><i class="fa-solid fa-wallet"></i> Mis Billeteras</h3>
+                  <p>Cuentas de donde saldrá y entrará tu dinero. Puedes ajustar el saldo con el icono de lápiz.</p>
+                </div>
+                <button id="btn-show-wallet-form" class="btn btn-secondary btn-sm">
+                  <i class="fa-solid fa-plus"></i> Nueva Billetera
+                </button>
+              </div>
+
+              <!-- Lista de Billeteras -->
+              <div class="wallets-grid">
+                ${wallets.map(w => `
+                  <div class="wallet-item" style="border-left: 5px solid ${w.color};">
+                    <div class="wallet-item-icon" style="background-color: ${w.color}20; color: ${w.color};">
+                      <i class="fa-solid ${w.icon}"></i>
+                    </div>
+                    <div class="wallet-item-info">
+                      <span class="wallet-name">${w.name}</span>
+                      <span class="wallet-balance">$ ${Number(w.balance).toLocaleString("es-CO", { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div class="wallet-actions">
+                      <button class="btn-edit-wallet" data-id="${w.id}" title="Editar saldo o datos">
+                        <i class="fa-solid fa-pencil"></i>
+                      </button>
+                      <button class="btn-delete-wallet" data-id="${w.id}" title="Eliminar cuenta">
+                        <i class="fa-solid fa-trash-can"></i>
+                      </button>
+                    </div>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+
+            <!-- SECCIÓN 2: ADMINISTRADOR DE CATEGORÍAS -->
+            <div class="section-card">
+              <div class="section-header">
+                <div>
+                  <h3><i class="fa-solid fa-tags"></i> Categorías</h3>
+                  <p>Crea, edita o elimina categorías. En Gastos, toca una tarjeta para fijarla como favorita.</p>
+                </div>
+                <div class="section-actions">
+                  <button id="btn-new-category" class="btn btn-secondary btn-sm">
+                    <i class="fa-solid fa-plus"></i> Nueva Categoría
+                  </button>
+                  ${activeCategoryTab === "expense" ? `
+                    <button id="btn-save-favorites" class="btn btn-primary btn-sm">
+                      <i class="fa-solid fa-check"></i> Guardar Favoritas (<span id="fav-count">${selectedFavoriteIds.length}</span>/4)
+                    </button>
+                  ` : ""}
+                </div>
+              </div>
+
+              <!-- Pestañas Gasto / Ingreso -->
+              <div class="cat-tabs-row">
+                <button type="button" id="tab-cat-expense" class="cat-tab-btn ${activeCategoryTab === "expense" ? "active" : ""}">
+                  Gastos (${allCategories.filter(c => c.type === "expense").length})
+                </button>
+                <button type="button" id="tab-cat-income" class="cat-tab-btn ${activeCategoryTab === "income" ? "active" : ""}">
+                  Ingresos (${allCategories.filter(c => c.type === "income").length})
+                </button>
+              </div>
+
+              <div id="fav-feedback" class="alert-info" style="display: none;"></div>
+
+              <!-- Grilla de Categorías -->
+              <div class="categories-selection-grid">
+                ${filteredCategories.map(cat => {
+                  const isFav = cat.type === "expense" && selectedFavoriteIds.includes(cat.id);
+                  const orderIndex = selectedFavoriteIds.indexOf(cat.id) + 1;
+                  return `
+                    <div class="category-manage-card ${isFav ? "is-selected" : ""}" data-id="${cat.id}">
+                      ${cat.type === "expense" ? `
+                        <span class="fav-badge" title="Favorita">${isFav ? `#${orderIndex}` : "+"}</span>
+                      ` : ""}
+                      
+                      <div class="cat-icon-box" style="background-color: ${cat.color}25; color: ${cat.color};">
+                        <i class="fa-solid ${cat.icon}"></i>
+                      </div>
+                      <span class="cat-name">${cat.name}</span>
+
+                      <!-- Acciones Categoría -->
+                      <div class="cat-card-actions">
+                        <button type="button" class="btn-edit-cat" data-id="${cat.id}" title="Editar">
+                          <i class="fa-solid fa-pencil"></i>
+                        </button>
+                        <button type="button" class="btn-delete-cat" data-id="${cat.id}" title="Eliminar">
+                          <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                      </div>
+                    </div>
+                  `;
+                }).join("")}
+              </div>
+            </div>
+          </div>
+        `;
+
+        // 1. Crear nueva billetera
+        container.querySelector("#btn-show-wallet-form").addEventListener("click", () => {
+          showWalletModal({
+            wallet: null,
+            onSave: () => walletsView.render(containerId)
+          });
+        });
+
+        // 2. Editar billetera / modificar saldo
+        container.querySelectorAll(".btn-edit-wallet").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const walletId = btn.dataset.id;
+            const wallet = wallets.find(w => w.id === walletId);
+            showWalletModal({
+              wallet,
+              onSave: () => walletsView.render(containerId)
+            });
+          });
+        });
+
+        // 3. Eliminar billetera
+        container.querySelectorAll(".btn-delete-wallet").forEach(btn => {
+          btn.addEventListener("click", async () => {
+            const walletId = btn.dataset.id;
+            const wallet = wallets.find(w => w.id === walletId);
+            if (confirm(`¿Eliminar la cuenta "${wallet.name}"? Se conservará su historial de movimientos asociados.`)) {
+              await walletService.deleteWallet(walletId);
+              walletsView.render(containerId);
+            }
+          });
+        });
+
+        // Tabs de Categorías
+        container.querySelector("#tab-cat-expense").addEventListener("click", () => {
+          activeCategoryTab = "expense";
+          renderContent();
+        });
+        container.querySelector("#tab-cat-income").addEventListener("click", () => {
+          activeCategoryTab = "income";
+          renderContent();
+        });
+
+        // Botón Nueva Categoría
+        container.querySelector("#btn-new-category").addEventListener("click", () => {
+          showCategoryModal({
+            type: activeCategoryTab,
+            onSave: () => walletsView.render(containerId)
+          });
+        });
+
+        // Botones Editar Categoría
+        container.querySelectorAll(".btn-edit-cat").forEach(btn => {
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            const catId = btn.dataset.id;
+            const category = allCategories.find(c => c.id === catId);
+            showCategoryModal({
+              category,
+              onSave: () => walletsView.render(containerId)
+            });
+          });
+        });
+
+        // Botones Eliminar Categoría
+        container.querySelectorAll(".btn-delete-cat").forEach(btn => {
+          btn.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            const catId = btn.dataset.id;
+            const category = allCategories.find(c => c.id === catId);
+            if (confirm(`¿Eliminar la categoría "${category.name}"?`)) {
+              try {
+                await categoryService.deleteCategory(catId);
+                walletsView.render(containerId);
+              } catch (err) {
+                alert(err.message);
+              }
+            }
+          });
+        });
+
+        // Selección de Favoritas
+        if (activeCategoryTab === "expense") {
+          const cards = container.querySelectorAll(".category-manage-card");
+          const countLabel = container.querySelector("#fav-count");
+          const saveBtn = container.querySelector("#btn-save-favorites");
+          const feedback = container.querySelector("#fav-feedback");
+
+          cards.forEach(card => {
+            card.addEventListener("click", (e) => {
+              if (e.target.closest(".cat-card-actions")) return;
+
+              const catId = card.dataset.id;
+              const index = selectedFavoriteIds.indexOf(catId);
+
+              if (index !== -1) {
+                selectedFavoriteIds.splice(index, 1);
+              } else {
+                if (selectedFavoriteIds.length >= 4) {
+                  alert("Solo puedes tener hasta 4 categorías favoritas.");
+                  return;
+                }
+                selectedFavoriteIds.push(catId);
+              }
+
+              cards.forEach(c => {
+                const id = c.dataset.id;
+                const favIndex = selectedFavoriteIds.indexOf(id);
+                const badge = c.querySelector(".fav-badge");
+                if (favIndex !== -1) {
+                  c.classList.add("is-selected");
+                  if (badge) badge.textContent = `#${favIndex + 1}`;
+                } else {
+                  c.classList.remove("is-selected");
+                  if (badge) badge.textContent = "+";
+                }
+              });
+              if (countLabel) countLabel.textContent = selectedFavoriteIds.length;
+            });
+          });
+
+          if (saveBtn) {
+            saveBtn.addEventListener("click", async () => {
+              saveBtn.disabled = true;
+              saveBtn.textContent = "Guardando...";
+              try {
+                await categoryService.setFavoriteCategories(selectedFavoriteIds);
+                feedback.textContent = "¡Favoritas actualizadas con éxito!";
+                feedback.style.display = "block";
+                setTimeout(() => { feedback.style.display = "none"; }, 3000);
+              } catch (err) {
+                alert("Error: " + err.message);
+              } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = `<i class="fa-solid fa-check"></i> Guardar Favoritas (<span id="fav-count">${selectedFavoriteIds.length}</span>/4)`;
+              }
+            });
+          }
+        }
+      };
+
+      renderContent();
+
+    } catch (error) {
+      container.innerHTML = `<div class="alert-error">Error al cargar datos: ${error.message}</div>`;
+    }
+  }
+};
+
+// ==========================================
+// MODAL PARA CREAR / EDITAR BILLETERA (SALDO)
+// ==========================================
+function showWalletModal({ wallet = null, onSave }) {
+  const isEditing = !!wallet;
+
+  const modal = document.createElement("div");
+  modal.className = "modal-backdrop";
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-header">
+        <h4>${isEditing ? "Editar Billetera y Saldo" : "Nueva Billetera"}</h4>
+        <button id="btn-close-wallet-modal" class="modal-close-btn">&times;</button>
+      </div>
+
+      <form id="wallet-modal-form">
+        <div class="form-group">
+          <label>Nombre de la Cuenta</label>
+          <input type="text" id="modal-wallet-name" value="${isEditing ? wallet.name : ""}" placeholder="Ej. Bancolombia, Nequi, Efectivo" required />
+        </div>
+
+        <div class="form-group">
+          <label>${isEditing ? "Saldo Actual Disponible ($)" : "Saldo Inicial ($)"}</label>
+          <input type="number" id="modal-wallet-balance" step="0.01" value="${isEditing ? wallet.balance : "0.00"}" required />
+          ${isEditing ? `<small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 2px;">Puedes ajustar el saldo real si difiere de lo registrado.</small>` : ""}
+        </div>
+
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+          <div class="form-group">
+            <label>Color</label>
+            <input type="color" id="modal-wallet-color" value="${isEditing ? wallet.color : "#3B82F6"}" />
+          </div>
+          <div class="form-group">
+            <label>Icono</label>
+            <select id="modal-wallet-icon">
+              <option value="fa-wallet" ${isEditing && wallet.icon === "fa-wallet" ? "selected" : ""}>Billetera</option>
+              <option value="fa-money-bill-wave" ${isEditing && wallet.icon === "fa-money-bill-wave" ? "selected" : ""}>Efectivo</option>
+              <option value="fa-building-columns" ${isEditing && wallet.icon === "fa-building-columns" ? "selected" : ""}>Banco</option>
+              <option value="fa-credit-card" ${isEditing && wallet.icon === "fa-credit-card" ? "selected" : ""}>Tarjeta</option>
+              <option value="fa-piggy-bank" ${isEditing && wallet.icon === "fa-piggy-bank" ? "selected" : ""}>Ahorros</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="wallet-modal-error" class="alert-error" style="display: none; margin-top: 0.5rem;"></div>
+
+        <div class="form-actions" style="margin-top: 1.25rem;">
+          <button type="submit" class="btn btn-primary btn-block">
+            ${isEditing ? "Actualizar Billetera" : "Crear Billetera"}
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+  modal.querySelector("#btn-close-wallet-modal").addEventListener("click", closeModal);
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  modal.querySelector("#wallet-modal-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = modal.querySelector("#modal-wallet-name").value.trim();
+    const balance = parseFloat(modal.querySelector("#modal-wallet-balance").value);
+    const color = modal.querySelector("#modal-wallet-color").value;
+    const icon = modal.querySelector("#modal-wallet-icon").value;
+    const errorDiv = modal.querySelector("#wallet-modal-error");
+
+    try {
+      if (isEditing) {
+        await walletService.updateWallet(wallet.id, {
+          name,
+          balance,
+          color,
+          icon
+        });
+      } else {
+        await walletService.createWallet({
+          name,
+          balance,
+          color,
+          icon
+        });
+      }
+      closeModal();
+      if (onSave) onSave();
+    } catch (err) {
+      errorDiv.textContent = err.message || "Error al guardar la billetera";
+      errorDiv.style.display = "block";
+    }
+  });
+}
+
+// ==========================================
+// MODAL PARA CREAR / EDITAR CATEGORÍA
+// ==========================================
+function showCategoryModal({ category = null, type = "expense", onSave }) {
+  const isEditing = !!category;
+  let selectedIcon = isEditing ? category.icon : "fa-tag";
+  let selectedColor = isEditing ? category.color : "#3B82F6";
+
+  const modal = document.createElement("div");
+  modal.className = "modal-backdrop";
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="modal-header">
+        <h4>${isEditing ? "Editar Categoría" : "Nueva Categoría"}</h4>
+        <button id="btn-close-cat-form" class="modal-close-btn">&times;</button>
+      </div>
+
+      <form id="category-modal-form">
+        <div class="form-group">
+          <label>Nombre</label>
+          <input type="text" id="cat-form-name" value="${isEditing ? category.name : ""}" placeholder="Ej. Cine, Ropa, Gimnasio" required />
+        </div>
+
+        <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+          <div class="form-group">
+            <label>Tipo</label>
+            <select id="cat-form-type" ${isEditing ? "disabled" : ""}>
+              <option value="expense" ${(!isEditing && type === "expense") || (isEditing && category.type === "expense") ? "selected" : ""}>Gasto</option>
+              <option value="income" ${(!isEditing && type === "income") || (isEditing && category.type === "income") ? "selected" : ""}>Ingreso</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Color</label>
+            <input type="color" id="cat-form-color" value="${selectedColor}" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Selecciona un Icono</label>
+          <div class="icon-picker-grid">
+            ${AVAILABLE_ICONS.map(icon => `
+              <button type="button" class="icon-choice ${icon === selectedIcon ? "selected" : ""}" data-icon="${icon}">
+                <i class="fa-solid ${icon}"></i>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+
+        <div id="cat-modal-error" class="alert-error" style="display: none;"></div>
+
+        <div class="form-actions" style="margin-top: 1.25rem;">
+          <button type="submit" class="btn btn-primary btn-block">
+            ${isEditing ? "Guardar Cambios" : "Crear Categoría"}
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+  modal.querySelector("#btn-close-cat-form").addEventListener("click", closeModal);
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  const iconButtons = modal.querySelectorAll(".icon-choice");
+  iconButtons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      iconButtons.forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      selectedIcon = btn.dataset.icon;
+    });
+  });
+
+  modal.querySelector("#category-modal-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = modal.querySelector("#cat-form-name").value.trim();
+    const color = modal.querySelector("#cat-form-color").value;
+    const catType = modal.querySelector("#cat-form-type").value;
+    const errorDiv = modal.querySelector("#cat-modal-error");
+
+    try {
+      if (isEditing) {
+        await categoryService.updateCategory(category.id, {
+          name,
+          icon: selectedIcon,
+          color
+        });
+      } else {
+        await categoryService.createCategory({
+          name,
+          type: catType,
+          icon: selectedIcon,
+          color
+        });
+      }
+      closeModal();
+      if (onSave) onSave();
+    } catch (err) {
+      errorDiv.textContent = err.message || "Error al procesar la categoría";
+      errorDiv.style.display = "block";
+    }
+  });
+}
