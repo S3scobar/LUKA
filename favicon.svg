@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Fondo Squircle: Grafito Azul Marino (#0F172A) con bisel sutil -->
+  <rect x="36" y="36" width="440" height="440" rx="108" fill="#0F172A" />
+  <rect x="38" y="38" width="436" height="436" rx="106" fill="none" stroke="#334155" stroke-width="4" stroke-opacity="0.6" />
+
+  <!-- 1. Trazo vertical de la "L" (Azul Cobalto) -->
+  <path d="M 148 136 
+           H 228 
+           V 376 
+           H 148 
+           Z" 
+        fill="#2563EB" />
+
+  <!-- 2. Trazo horizontal con corte a 45° de velocidad (Azul Eléctrico) -->
+  <path d="M 228 300 
+           H 376 
+           L 300 376 
+           H 228 
+           Z" 
+        fill="#3B82F6" />
+
+  <!-- 3. Punto de equilibrio y rentabilidad (Verde Esmeralda) -->
+  <circle cx="356" cy="156" r="26" fill="#10B981" />
+</svg>
