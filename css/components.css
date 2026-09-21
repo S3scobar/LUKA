@@ -444,3 +444,158 @@ html, body {
   flex-shrink: 0;
   white-space: nowrap;
 }
+/* ==========================================
+   BOTÓN FLOTANTE DE TUTORIAL (ESQUINA INFERIOR)
+   ========================================== */
+
+.tutorial-fab {
+  position: fixed;
+  bottom: 22px;
+  right: 18px;
+  background: linear-gradient(135deg, #2563EB, #1D4ED8);
+  color: #FFFFFF;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  padding: 0.65rem 1.1rem;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+  cursor: pointer;
+  z-index: 1500;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.tutorial-fab i {
+  color: #FACC15; /* Bombillo amarillo encendido */
+  font-size: 1rem;
+  filter: drop-shadow(0 0 4px rgba(250, 204, 21, 0.6));
+}
+
+.tutorial-fab:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.5);
+}
+
+/* ==========================================
+   TUTORIAL MODAL (LIMPIO, SUAVE, SIN OSCURIDAD)
+   ========================================== */
+
+/* Fondo muy sutil (sin blur ni opacidad pesada) */
+.tour-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Ventanita modal centrada */
+.tour-card {
+  background: #FFFFFF;
+  border-radius: 24px;
+  padding: 1.6rem 1.6rem;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 9999;
+  border: 1px solid var(--border);
+  animation: popInCard 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.tour-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tour-badge {
+  background: #EFF6FF;
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.tour-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Icono grande de la pestaña */
+.tour-icon-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 0.2rem 0;
+}
+
+.tour-icon-box {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  box-shadow: 0 6px 14px -3px rgba(0, 0, 0, 0.08);
+}
+
+.tour-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-main);
+  text-align: center;
+}
+
+.tour-desc {
+  font-size: 0.88rem;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.tour-desc strong {
+  color: var(--text-main);
+}
+
+.tour-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0.4rem 0;
+}
+
+.tour-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #E2E8F0;
+  transition: all 0.2s;
+}
+
+.tour-dot.active {
+  width: 20px;
+  border-radius: 10px;
+  background: var(--primary);
+}
+
+.tour-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}

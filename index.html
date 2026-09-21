@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>LUKA</title>
   
+  <!-- Favicon Oficial LUKA -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
   
@@ -12,32 +15,34 @@
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/views.css" />
-  <!-- Favicon SVG Oficial LUKA -->
-  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 </head>
 <body>
-  <!-- BARRA SUPERIOR -->
+  <!-- HEADER MODERNO -->
   <header class="navbar">
-    <div class="brand">
-      <img src="favicon.svg" alt="LUKA" style="width: 24px; height: 24px; border-radius: 6px; vertical-align: middle;" /> LUKA
-    </div>
-    
-    <!-- Pestañas de Navegación -->
-    <div id="nav-tabs" class="nav-links" style="display: none;">
-      <button class="nav-item-btn active" data-tab="dashboard"><i class="fa-solid fa-house"></i> Inicio</button>
-      <button class="nav-item-btn" data-tab="wallets"><i class="fa-solid fa-wallet"></i> Billeteras</button>
-      <button class="nav-item-btn" data-tab="cards"><i class="fa-solid fa-credit-card"></i> Tarjetas</button>
-      <button class="nav-item-btn" data-tab="subs"><i class="fa-solid fa-calendar-days"></i> Suscripciones</button>
-      <button class="nav-item-btn" data-tab="savings"><i class="fa-solid fa-piggy-bank"></i> Ahorros</button>
-      <button class="nav-item-btn" data-tab="analytics"><i class="fa-solid fa-chart-pie"></i> Análisis</button>
+    <!-- Fila 1: Logo y Usuario -->
+    <div class="navbar-top">
+      <div class="brand">
+        <img src="favicon.svg" alt="LUKA" style="width: 22px; height: 22px; border-radius: 6px; vertical-align: middle;" /> LUKA
+      </div>
+      <!-- Menú de usuario compacto -->
+      <div id="user-menu" style="display: none; align-items: center;">
+        <span id="user-name" style="display: none;"></span>
+        <button id="btn-logout" class="btn btn-secondary btn-sm" title="Cerrar sesión" style="padding: 0.45rem 0.65rem; border-radius: 8px;">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
+      </div>
     </div>
 
-<!-- Menú de Usuario (Solo el botón de salir, limpio y compacto) -->
-    <div id="user-menu" style="display: none; align-items: center;">
-      <span id="user-name" style="display: none;"></span>
-      <button id="btn-logout" class="btn btn-secondary btn-sm" title="Cerrar sesión" style="padding: 0.45rem 0.65rem; border-radius: 8px;">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i>
-      </button>
+    <!-- Fila 2: Pestañas de Navegación con barrita visible -->
+    <div class="nav-links-scroll-container">
+      <div id="nav-tabs" class="nav-links" style="display: none;">
+        <button class="nav-item-btn active" data-tab="dashboard"><i class="fa-solid fa-house"></i> Inicio</button>
+        <button class="nav-item-btn" data-tab="wallets"><i class="fa-solid fa-wallet"></i> Billeteras</button>
+        <button class="nav-item-btn" data-tab="cards"><i class="fa-solid fa-credit-card"></i> Tarjetas</button>
+        <button class="nav-item-btn" data-tab="subs"><i class="fa-solid fa-calendar-days"></i> Suscripciones</button>
+        <button class="nav-item-btn" data-tab="savings"><i class="fa-solid fa-piggy-bank"></i> Ahorros</button>
+        <button class="nav-item-btn" data-tab="analytics"><i class="fa-solid fa-chart-pie"></i> Análisis</button>
+      </div>
     </div>
   </header>
 
@@ -46,10 +51,17 @@
     <div id="app"></div>
   </main>
 
-  <!-- Marca de agua -->
+  <!-- PIE DE PÁGINA -->
+<!-- Marca de agua -->
   <div class="watermark-author">
     by: <span>Santiago Escobar</span>
   </div>
+
+  <!-- BOTÓN FLOTANTE DE TUTORIAL (Esquina inferior derecha) -->
+  <button id="btn-start-tutorial" class="tutorial-fab" title="Ver Guía de LUKA" style="display: none;">
+    <i class="fa-solid fa-lightbulb"></i>
+    <span>Tutorial</span>
+  </button>
 
   <script type="module">
     import { authService } from "./js/services/authService.js";
@@ -60,11 +72,13 @@
     import { subscriptionsView } from "./js/views/subscriptionsView.js";
     import { savingsView } from "./js/views/SavingsView.js";
     import { analyticsView } from "./js/views/analyticsView.js";
+    import { tutorialTour } from "./js/components/tutorialTour.js";
 
     const navTabs = document.getElementById("nav-tabs");
     const userMenu = document.getElementById("user-menu");
     const userName = document.getElementById("user-name");
     const logoutBtn = document.getElementById("btn-logout");
+    const tutorialBtn = document.getElementById("btn-start-tutorial");
 
     let currentTab = "dashboard";
 
@@ -98,16 +112,26 @@
         if (user) {
           userMenu.style.display = "flex";
           navTabs.style.display = "flex";
-          userName.textContent = user.user_metadata?.full_name || user.email;
+          tutorialBtn.style.display = "flex";
+          if (userName) userName.textContent = user.user_metadata?.full_name || user.email;
+          
           switchView(currentTab);
+
+          // Inicializar tutorial sincronizado con el cambio dinámico de pestañas
+          tutorialTour.init({
+            userId: user.id,
+            onSwitchTab: (tab) => switchView(tab)
+          });
         } else {
           userMenu.style.display = "none";
           navTabs.style.display = "none";
+          tutorialBtn.style.display = "none";
           authView.render("app", () => initApp());
         }
       } catch (err) {
         userMenu.style.display = "none";
         navTabs.style.display = "none";
+        tutorialBtn.style.display = "none";
         authView.render("app", () => initApp());
       }
     }
@@ -118,6 +142,7 @@
       if (!user) {
         userMenu.style.display = "none";
         navTabs.style.display = "none";
+        tutorialBtn.style.display = "none";
         authView.render("app", () => initApp());
       }
     });
@@ -125,6 +150,10 @@
     logoutBtn.addEventListener("click", async () => {
       await authService.signOut();
       initApp();
+    });
+
+    tutorialBtn.addEventListener("click", () => {
+      tutorialTour.start();
     });
   </script>
 </body>
