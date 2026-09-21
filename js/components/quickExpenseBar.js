@@ -3,6 +3,41 @@ import { transactionService } from "../services/transactionService.js";
 import { creditCardService } from "../services/creditCardService.js";
 import { modalCategoryPicker } from "./modalCategoryPicker.js";
 
+// Función ligera de animación (salida de dinero para gastos, entrada para ingresos)
+function showExpenseAnimation(amount, type = "expense") {
+  const overlay = document.createElement("div");
+  overlay.className = "expense-anim-overlay";
+  const isExpense = type === "expense";
+
+  overlay.innerHTML = `
+    <div class="expense-anim-card ${isExpense ? "is-expense" : "is-income"}">
+      <div class="anim-illustration">
+        <!-- Si es gasto, el dinero vuela hacia afuera; si es ingreso, entra a la billetera -->
+        <span class="flying-particle particle-1"><i class="fa-solid ${isExpense ? "fa-money-bill-wave" : "fa-coins"}"></i></span>
+        <span class="flying-particle particle-2"><i class="fa-solid ${isExpense ? "fa-coins" : "fa-money-bill-wave"}"></i></span>
+        <span class="flying-particle particle-3"><i class="fa-solid ${isExpense ? "fa-money-bill" : "fa-hand-holding-dollar"}"></i></span>
+
+        <div class="wallet-anim-box">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+      </div>
+
+      <div class="anim-text-wrap">
+        <span class="anim-amount ${isExpense ? "text-danger" : "text-success"}">
+          ${isExpense ? "-" : "+"} $ ${Number(amount).toLocaleString("es-CO")}
+        </span>
+        <span class="anim-label">${isExpense ? "Registrando gasto..." : "Sumando a tus ingresos..."}</span>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  return () => {
+    overlay.classList.add("fade-out");
+    setTimeout(() => overlay.remove(), 250);
+  };
+}
 export const quickExpenseBar = {
   render({ containerId, wallets, categories, creditCards = [], onTransactionSaved }) {
     const container = document.getElementById(containerId);
@@ -12,7 +47,6 @@ export const quickExpenseBar = {
     let savedAmount = "";
 
     const renderBar = () => {
-      // Guardar lo escrito para no borrarlo
       const currentTitleInput = container.querySelector("#quick-title");
       const currentAmountInput = container.querySelector("#quick-amount");
       if (currentTitleInput) savedTitle = currentTitleInput.value;
@@ -38,7 +72,7 @@ export const quickExpenseBar = {
             </button>
           </div>
 
-          <!-- 2. BOTONES DE CUENTA COMPACTOS (SOLO ICONO Y NOMBRE) -->
+          <!-- 2. Botones de Cuenta al Inicio -->
           <div class="wallet-chips-section">
             <span class="action-hint">
               <i class="fa-solid fa-wallet"></i> ${activeType === "expense" ? "¿Con qué cuenta pagas?" : "¿A qué cuenta entra el dinero?"}
@@ -56,7 +90,7 @@ export const quickExpenseBar = {
             </div>
           </div>
 
-          <!-- 3. CUOTAS (Si es Tarjeta de Crédito) -->
+          <!-- 3. Cuotas (Si es Tarjeta) -->
           ${linkedCard && activeType === "expense" ? `
             <div class="credit-cuotas-bar">
               <div class="cuotas-row">
@@ -77,7 +111,7 @@ export const quickExpenseBar = {
             </div>
           ` : ""}
 
-          <!-- 4. CAMPOS DE TEXTO: CONCEPTO Y MONTO -->
+          <!-- 4. Campos de Texto -->
           <div class="quick-inputs-row">
             <div class="input-field input-title">
               <input type="text" id="quick-title" value="${savedTitle}" placeholder="${activeType === "expense" ? "¿En qué gastaste? (Ej. Almuerzo)" : "¿Concepto del ingreso? (Ej. Sueldo)"}" required autocomplete="off" />
@@ -90,7 +124,7 @@ export const quickExpenseBar = {
 
           <div id="quick-error" class="alert-error" style="display: none; margin-top: 0.5rem;"></div>
 
-          <!-- 5. CATEGORÍAS (1 CLIC) -->
+          <!-- 5. Categorías (1 Clic) -->
           <div class="categories-action-section">
             <span class="action-hint">
               ${activeType === "expense" ? "Toca una categoría para guardar el gasto:" : "Toca una categoría para guardar el ingreso:"}
@@ -188,6 +222,7 @@ export const quickExpenseBar = {
 
       if (installmentsSelect) installmentsSelect.addEventListener("change", updateCreditSim);
 
+      // Guardar transacción con animación
       const executeSave = async (categoryId) => {
         errorDiv.style.display = "none";
         const title = titleInput.value.trim();
@@ -207,6 +242,10 @@ export const quickExpenseBar = {
           amountInput.focus();
           return;
         }
+
+        // 1. Mostrar la animación visual de salida de dinero
+        const closeAnim = showExpenseAnimation(amount, activeType);
+        const startTime = Date.now();
 
         try {
           if (linkedCard && activeType === "expense") {
@@ -229,6 +268,14 @@ export const quickExpenseBar = {
             });
           }
 
+          // Garantizar que la animación se disfrute al menos 600ms antes de cerrarse
+          const elapsed = Date.now() - startTime;
+          if (elapsed < 600) {
+            await new Promise(r => setTimeout(r, 600 - elapsed));
+          }
+
+          closeAnim();
+
           savedTitle = "";
           savedAmount = "";
           titleInput.value = "";
@@ -236,6 +283,7 @@ export const quickExpenseBar = {
 
           if (onTransactionSaved) onTransactionSaved();
         } catch (err) {
+          closeAnim();
           errorDiv.textContent = err.message || "Error al registrar.";
           errorDiv.style.display = "block";
         }

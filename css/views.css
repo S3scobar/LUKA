@@ -1406,3 +1406,248 @@
   padding: 2px 6px;
   border-radius: 8px;
 }
+/* Interruptor de Desglose en Análisis (Gastos vs Ingresos) */
+.breakdown-toggle-pills {
+  display: flex;
+  background: #F1F5F9;
+  padding: 3px;
+  border-radius: 30px;
+  max-width: 360px;
+  margin: 0 auto 1.25rem auto;
+}
+
+.breakdown-toggle-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.9rem;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  white-space: nowrap; /* Evita que el texto se rompa en 2 renglones */
+}
+
+.breakdown-toggle-btn.active.expense {
+  background: #FEE2E2;
+  color: #DC2626;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+}
+
+.breakdown-toggle-btn.active.income {
+  background: #DCFCE7;
+  color: #15803D;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+}
+
+/* Alerta de mayor ingreso del mes */
+.top-income-alert {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  color: #166534;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+/* ==========================================
+   ANIMACIÓN SUAVE: GASTOS (ROJO) E INGRESOS (VERDE)
+   ========================================== */
+
+.expense-anim-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: fadeInOverlay 0.2s ease-out forwards;
+}
+
+.expense-anim-overlay.fade-out {
+  animation: fadeOutOverlay 0.25s ease-in forwards;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOutOverlay {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.expense-anim-card {
+  background: #FFFFFF;
+  padding: 1.6rem 2rem;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 220px;
+  animation: popInCard 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Tarjeta de Gasto (Rojo) */
+.expense-anim-card.is-expense {
+  border: 1.5px solid rgba(239, 68, 68, 0.25);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25), 0 0 25px rgba(239, 68, 68, 0.2);
+}
+
+/* Tarjeta de Ingreso (Verde) */
+.expense-anim-card.is-income {
+  border: 1.5px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25), 0 0 25px rgba(16, 185, 129, 0.25);
+}
+
+@keyframes popInCard {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.anim-illustration {
+  position: relative;
+  width: 90px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Billetera Roja (Gasto) */
+.expense-anim-card.is-expense .wallet-anim-box {
+  width: 64px;
+  height: 64px;
+  background: #FEE2E2;
+  color: #DC2626;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  box-shadow: 0 8px 16px -4px rgba(220, 38, 38, 0.3);
+  animation: walletShake 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes walletShake {
+  0% { transform: scale(1) translateY(0); }
+  100% { transform: scale(1.05) translateY(-3px); }
+}
+
+/* Billetera Verde (Ingreso) */
+.expense-anim-card.is-income .wallet-anim-box {
+  width: 64px;
+  height: 64px;
+  background: #DCFCE7;
+  color: #15803D;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  box-shadow: 0 8px 16px -4px rgba(21, 128, 61, 0.35);
+  animation: walletCatch 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes walletCatch {
+  0% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.08) translateY(-4px); }
+  100% { transform: scale(0.98) translateY(2px); }
+}
+
+/* Partículas */
+.flying-particle {
+  position: absolute;
+  font-size: 1.15rem;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.expense-anim-card.is-expense .flying-particle {
+  color: #EF4444;
+}
+
+.expense-anim-card.is-income .flying-particle {
+  color: #10B981;
+}
+
+/* ==========================================
+   TRAYECTORIAS DE SALIDA (GASTO - HACIA AFUERA)
+   ========================================== */
+.expense-anim-card.is-expense .particle-1 { animation: flyOutLeft 0.75s ease-out infinite; }
+.expense-anim-card.is-expense .particle-2 { animation: flyOutCenter 0.75s ease-out 0.2s infinite; }
+.expense-anim-card.is-expense .particle-3 { animation: flyOutRight 0.75s ease-out 0.4s infinite; }
+
+@keyframes flyOutLeft {
+  0% { transform: translate(0, 0) scale(0.9) rotate(0deg); opacity: 0.95; }
+  100% { transform: translate(-32px, -45px) scale(0.4) rotate(-35deg); opacity: 0; }
+}
+
+@keyframes flyOutCenter {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.95; }
+  100% { transform: translate(2px, -52px) scale(0.4) rotate(15deg); opacity: 0; }
+}
+
+@keyframes flyOutRight {
+  0% { transform: translate(0, 0) scale(0.9) rotate(0deg); opacity: 0.95; }
+  100% { transform: translate(32px, -45px) scale(0.4) rotate(35deg); opacity: 0; }
+}
+
+/* ==========================================
+   TRAYECTORIAS DE ENTRADA (INGRESO - HACIA LA BILLETERA)
+   ========================================== */
+.expense-anim-card.is-income .particle-1 { animation: flyInLeft 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite; }
+.expense-anim-card.is-income .particle-2 { animation: flyInCenter 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s infinite; }
+.expense-anim-card.is-income .particle-3 { animation: flyInRight 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s infinite; }
+
+@keyframes flyInLeft {
+  0% { transform: translate(-36px, -50px) scale(1.15) rotate(-35deg); opacity: 0; }
+  25% { opacity: 0.95; }
+  100% { transform: translate(0, 0) scale(0.3) rotate(0deg); opacity: 0; }
+}
+
+@keyframes flyInCenter {
+  0% { transform: translate(0, -56px) scale(1.15) rotate(20deg); opacity: 0; }
+  25% { opacity: 0.95; }
+  100% { transform: translate(0, 0) scale(0.3) rotate(0deg); opacity: 0; }
+}
+
+@keyframes flyInRight {
+  0% { transform: translate(36px, -50px) scale(1.15) rotate(35deg); opacity: 0; }
+  25% { opacity: 0.95; }
+  100% { transform: translate(0, 0) scale(0.3) rotate(0deg); opacity: 0; }
+}
+
+/* Textos */
+.anim-text-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.anim-amount {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.anim-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
