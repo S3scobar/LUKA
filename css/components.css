@@ -430,11 +430,11 @@ html, body {
   user-select: none !important;
 }
 
-/* 3. Menú de usuario fijo a la derecha */
+/* 3. Menú de usuario fijo a la derecha (SIN !important para poder ocultarse en login) */
 .user-menu-box {
-  display: flex !important;
-  align-items: center !important;
-  flex-shrink: 0 !important;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .btn-logout-icon {
@@ -455,38 +455,22 @@ html, body {
   color: var(--danger);
 }
 
-/* 4. Pestañas en el centro que toman el espacio restante y deslizan libremente */
+/* 4. Pestañas en el centro (SIN !important para poder ocultarse en login) */
 .nav-links {
-  display: flex !important;
-  flex-direction: row !important;
-  flex: 1 1 auto !important;
-  min-width: 0 !important;              /* CLAVE: Destraba el scroll horizontal en flexbox */
-  gap: 0.45rem !important;
-  overflow-x: auto !important;          /* Permite deslizar horizontalmente */
-  overflow-y: hidden !important;
-  white-space: nowrap !important;
-  -webkit-overflow-scrolling: touch !important; /* Inercia táctil en móviles */
-  touch-action: pan-x !important;               /* Habilita el gesto de deslizar */
-  padding-bottom: 5px !important;
-  padding-top: 2px !important;
-  scrollbar-width: thin !important;
-  scrollbar-color: #94A3B8 #E2E8F0 !important;
-}
-
-/* Barrita de desplazamiento visible de 4px */
-.nav-links::-webkit-scrollbar {
-  height: 4px !important;
-  display: block !important;
-}
-
-.nav-links::-webkit-scrollbar-track {
-  background: #E2E8F0 !important;
-  border-radius: 4px !important;
-}
-
-.nav-links::-webkit-scrollbar-thumb {
-  background: #94A3B8 !important;
-  border-radius: 4px !important;
+  display: flex;
+  flex-direction: row;
+  flex: 1 1 auto;
+  min-width: 0;              /* Destraba el scroll horizontal en flexbox */
+  gap: 0.45rem;
+  overflow-x: auto;          /* Deslizable con el dedo */
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  padding-bottom: 5px;
+  padding-top: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: #94A3B8 #E2E8F0;
 }
 
 /* Botones de pestaña */
