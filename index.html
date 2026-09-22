@@ -17,32 +17,29 @@
   <link rel="stylesheet" href="css/views.css" />
 </head>
 <body>
-  <!-- HEADER MODERNO -->
+  <!-- HEADER LIMPIO DE 1 FILA (DESLIZABLE) -->
   <header class="navbar">
-    <!-- Fila 1: Logo y Usuario -->
-    <div class="navbar-top">
-      <div class="brand">
-        <img src="favicon.svg" alt="LUKA" style="width: 22px; height: 22px; border-radius: 6px; vertical-align: middle;" /> LUKA
-      </div>
-      <!-- Menú de usuario compacto -->
-      <div id="user-menu" style="display: none; align-items: center;">
-        <span id="user-name" style="display: none;"></span>
-        <button id="btn-logout" class="btn btn-secondary btn-sm" title="Cerrar sesión" style="padding: 0.45rem 0.65rem; border-radius: 8px;">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i>
-        </button>
-      </div>
+    <!-- 1. Logo a la izquierda -->
+    <div class="brand">
+      <img src="favicon.svg" alt="LUKA" style="width: 22px; height: 22px; border-radius: 6px; vertical-align: middle;" /> LUKA
     </div>
 
-    <!-- Fila 2: Pestañas de Navegación con barrita visible -->
-    <div class="nav-links-scroll-container">
-      <div id="nav-tabs" class="nav-links" style="display: none;">
-        <button class="nav-item-btn active" data-tab="dashboard"><i class="fa-solid fa-house"></i> Inicio</button>
-        <button class="nav-item-btn" data-tab="wallets"><i class="fa-solid fa-wallet"></i> Billeteras</button>
-        <button class="nav-item-btn" data-tab="cards"><i class="fa-solid fa-credit-card"></i> Tarjetas</button>
-        <button class="nav-item-btn" data-tab="subs"><i class="fa-solid fa-calendar-days"></i> Suscripciones</button>
-        <button class="nav-item-btn" data-tab="savings"><i class="fa-solid fa-piggy-bank"></i> Ahorros</button>
-        <button class="nav-item-btn" data-tab="analytics"><i class="fa-solid fa-chart-pie"></i> Análisis</button>
-      </div>
+    <!-- 2. Pestañas en el centro (Deslizables con el pulgar) -->
+    <div id="nav-tabs" class="nav-links" style="display: none;">
+      <button class="nav-item-btn active" data-tab="dashboard"><i class="fa-solid fa-house"></i> Inicio</button>
+      <button class="nav-item-btn" data-tab="wallets"><i class="fa-solid fa-wallet"></i> Billeteras</button>
+      <button class="nav-item-btn" data-tab="cards"><i class="fa-solid fa-credit-card"></i> Tarjetas</button>
+      <button class="nav-item-btn" data-tab="subs"><i class="fa-solid fa-calendar-days"></i> Suscripciones</button>
+      <button class="nav-item-btn" data-tab="savings"><i class="fa-solid fa-piggy-bank"></i> Ahorros</button>
+      <button class="nav-item-btn" data-tab="analytics"><i class="fa-solid fa-chart-pie"></i> Análisis</button>
+    </div>
+
+    <!-- 3. Botón de salir a la derecha -->
+    <div id="user-menu" class="user-menu-box" style="display: none;">
+      <span id="user-name" style="display: none;"></span>
+      <button id="btn-logout" class="btn-logout-icon" title="Cerrar sesión">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </button>
     </div>
   </header>
 
@@ -51,13 +48,12 @@
     <div id="app"></div>
   </main>
 
-  <!-- PIE DE PÁGINA -->
-<!-- Marca de agua -->
+  <!-- Marca de agua original -->
   <div class="watermark-author">
     by: <span>Santiago Escobar</span>
   </div>
 
-  <!-- BOTÓN FLOTANTE DE TUTORIAL (Esquina inferior derecha) -->
+  <!-- BOTÓN FLOTANTE DE TUTORIAL -->
   <button id="btn-start-tutorial" class="tutorial-fab" title="Ver Guía de LUKA" style="display: none;">
     <i class="fa-solid fa-lightbulb"></i>
     <span>Tutorial</span>
@@ -117,7 +113,6 @@
           
           switchView(currentTab);
 
-          // Inicializar tutorial sincronizado con el cambio dinámico de pestañas
           tutorialTour.init({
             userId: user.id,
             onSwitchTab: (tab) => switchView(tab)
