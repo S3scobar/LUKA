@@ -2,6 +2,30 @@
 import { supabase } from "../supabaseClient.js";
 import { transactionService } from "./transactionService.js";
 
+// Función auxiliar para buscar la categoría de ahorro (o fallback) según el tipo
+async function resolveCategoryId(userId, type) {
+  const { data: ahorroCat } = await supabase
+    .from("categories")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("type", type)
+    .ilike("name", "%ahorro%")
+    .limit(1)
+    .maybeSingle();
+
+  if (ahorroCat) return ahorroCat.id;
+
+  const { data: fallbackCat } = await supabase
+    .from("categories")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("type", type)
+    .limit(1)
+    .maybeSingle();
+
+  return fallbackCat ? fallbackCat.id : null;
+}
+
 export const goalService = {
   // Obtener todos los fondos de ahorro
   async getGoals() {
@@ -14,12 +38,22 @@ export const goalService = {
 
     return (data || []).map(goal => ({
       ...goal,
-      progressPercentage: Math.min(100, Math.round((Number(goal.current_amount) / Number(goal.target_amount)) * 100))
+      progressPercentage: Math.min(
+        100,
+        Math.round((Number(goal.current_amount) / Number(goal.target_amount)) * 100)
+      )
     }));
   },
 
-  // Crear fondo de ahorro (AHORA REGISTRA EN GASTOS SI HAY DINERO INICIAL)
-  async createGoal({ title, target_amount, current_amount = 0, target_date = null, icon = "fa-piggy-bank", wallet_id = null }) {
+  // Crear fondo de ahorro (registra en gastos si hay dinero inicial y se seleccionó billetera)
+  async createGoal({
+    title,
+    target_amount,
+    current_amount = 0,
+    target_date = null,
+    icon = "fa-piggy-bank",
+    wallet_id = null
+  }) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Usuario no autenticado");
 
@@ -43,30 +77,9 @@ export const goalService = {
 
     if (error) throw error;
 
-    // 2. Si se puso dinero inicial y se eligió cuenta, registrar el gasto de inmediato
+    // 2. Si se ingresó dinero inicial y se eligió cuenta, registrar el gasto de inmediato
     if (initialAmount > 0 && wallet_id) {
-      let categoryId = null;
-      const { data: ahorroCat } = await supabase
-        .from("categories")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("type", "expense")
-        .ilike("name", "%ahorro%")
-        .limit(1)
-        .maybeSingle();
-
-      if (ahorroCat) {
-        categoryId = ahorroCat.id;
-      } else {
-        const { data: fallbackCat } = await supabase
-          .from("categories")
-          .select("id")
-          .eq("user_id", user.id)
-          .eq("type", "expense")
-          .limit(1)
-          .maybeSingle();
-        if (fallbackCat) categoryId = fallbackCat.id;
-      }
+      const categoryId = await resolveCategoryId(user.id, "expense");
 
       await transactionService.addTransaction({
         wallet_id,
@@ -94,7 +107,7 @@ export const goalService = {
       throw new Error("Debes seleccionar de qué cuenta saldrá el dinero.");
     }
 
-    // 1. Obtener el fondo de ahorro
+    // 1. Obtener el fondo de ahorro actual
     const { data: goal, error: fetchErr } = await supabase
       .from("saving_goals")
       .select("*")
@@ -115,31 +128,9 @@ export const goalService = {
 
     if (updateErr) throw updateErr;
 
-    // 3. Buscar categoría de 'Ahorro'
-    let categoryId = null;
-    const { data: ahorroCat } = await supabase
-      .from("categories")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("type", "expense")
-      .ilike("name", "%ahorro%")
-      .limit(1)
-      .maybeSingle();
+    // 3. Registrar en transacciones como gasto
+    const categoryId = await resolveCategoryId(user.id, "expense");
 
-    if (ahorroCat) {
-      categoryId = ahorroCat.id;
-    } else {
-      const { data: fallbackCat } = await supabase
-        .from("categories")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("type", "expense")
-        .limit(1)
-        .maybeSingle();
-      if (fallbackCat) categoryId = fallbackCat.id;
-    }
-
-    // 4. Registrar en transacciones como gasto
     await transactionService.addTransaction({
       wallet_id,
       category_id: categoryId,
@@ -151,7 +142,63 @@ export const goalService = {
     return updatedGoal;
   },
 
-  // Eliminar fondo
+  // Retirar dinero de un fondo de ahorro y enviarlo a una billetera
+  async withdrawFromGoal(goal_id, amount, wallet_id) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Usuario no autenticado");
+
+    const withdrawal = parseFloat(amount);
+    if (isNaN(withdrawal) || withdrawal <= 0) {
+      throw new Error("El monto a retirar debe ser mayor a 0.");
+    }
+
+    if (!wallet_id) {
+      throw new Error("Debes seleccionar a qué cuenta entrará el dinero.");
+    }
+
+    // 1. Obtener el fondo de ahorro
+    const { data: goal, error: fetchErr } = await supabase
+      .from("saving_goals")
+      .select("*")
+      .eq("id", goal_id)
+      .single();
+
+    if (fetchErr) throw fetchErr;
+
+    const currentTotal = Number(goal.current_amount);
+    if (withdrawal > currentTotal) {
+      throw new Error(
+        `No puedes retirar más de lo que tienes ahorrado ($ ${currentTotal.toLocaleString("es-CO")}).`
+      );
+    }
+
+    const newAmount = Math.max(0, currentTotal - withdrawal);
+
+    // 2. Descontar del fondo de ahorro
+    const { data: updatedGoal, error: updateErr } = await supabase
+      .from("saving_goals")
+      .update({ current_amount: newAmount })
+      .eq("id", goal_id)
+      .select()
+      .single();
+
+    if (updateErr) throw updateErr;
+
+    // 3. Registrar como ingreso en la billetera seleccionada
+    const categoryId = await resolveCategoryId(user.id, "income");
+
+    await transactionService.addTransaction({
+      wallet_id,
+      category_id: categoryId,
+      type: "income",
+      title: `Retiro de Ahorro: ${goal.title}`,
+      amount: withdrawal
+    });
+
+    return updatedGoal;
+  },
+
+  // Eliminar fondo de ahorro
   async deleteGoal(id) {
     const { error } = await supabase
       .from("saving_goals")
