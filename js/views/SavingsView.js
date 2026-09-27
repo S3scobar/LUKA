@@ -39,7 +39,7 @@ export const savingsView = {
             <div class="section-header">
               <div>
                 <h3><i class="fa-solid fa-vault"></i> ¿Dónde tienes guardado tu dinero?</h3>
-                <p>Tus fondos y cajitas. Todo dinero añadido se descuenta de tu cuenta y se registra en gastos.</p>
+                <p>Tus cajitas de ahorro. Puedes añadir dinero o retirarlo hacia tus billeteras.</p>
               </div>
               <button id="btn-new-fund" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-plus"></i> Nuevo Fondo / Lugar
@@ -57,6 +57,8 @@ export const savingsView = {
                 ${savingsFunds.map(fund => {
                   const hasTarget = Number(fund.target_amount) > 0;
                   const isCompleted = hasTarget && fund.progressPercentage >= 100;
+                  const currentNum = Number(fund.current_amount);
+                  const canWithdraw = currentNum > 0;
 
                   return `
                     <div class="fund-card">
@@ -75,24 +77,25 @@ export const savingsView = {
 
                       <div class="fund-balance-row">
                         <span class="fund-balance-label">Dinero ahorrado aquí:</span>
-                        <span class="fund-balance-val">$ ${Number(fund.current_amount).toLocaleString("es-CO", { minimumFractionDigits: 0 })}</span>
+                        <span class="fund-balance-val">$ ${currentNum.toLocaleString("es-CO", { minimumFractionDigits: 0 })}</span>
                       </div>
 
                       ${hasTarget ? `
                         <div class="fund-progress-wrap">
                           <div class="progress-bar-container">
-                            <div class="progress-bar-fill" style="width: ${fund.progressPercentage}%;"></div>
-                          </div>
-                          <div class="fund-target-meta">
-                            <span>Objetivo: $ ${Number(fund.target_amount).toLocaleString("es-CO")}</span>
+                            <div class="progress-bar-fill" style="width: ${fund.progressPercentage}\%;"></div>                           </div>                           <div class="fund-target-meta">                             <span>Objetivo: $ ${Number(fund.target_amount).toLocaleString("es-CO")}</span>
                             <strong>${fund.progressPercentage}%</strong>
                           </div>
                         </div>
                       ` : ""}
 
-                      <div class="fund-actions-bar">
-                        <button class="btn btn-primary btn-sm btn-block btn-add-savings" data-id="${fund.id}" data-title="${fund.title}">
-                          <i class="fa-solid fa-circle-plus"></i> Añadir Ahorro
+                      <!-- BOTONES: AÑADIR Y RETIRAR DINERO -->
+                      <div class="fund-actions-bar" style="display: flex; gap: 0.5rem; margin-top: 0.35rem;">
+                        <button class="btn btn-primary btn-sm btn-add-savings" data-id="${fund.id}" data-title="${fund.title}" style="flex: 1;">
+                          <i class="fa-solid fa-circle-plus"></i> Añadir
+                        </button>
+                        <button class="btn btn-secondary btn-sm btn-withdraw-savings" data-id="${fund.id}" data-title="${fund.title}" data-current="${currentNum}" style="flex: 1;" ${!canWithdraw ? "disabled title='Este fondo no tiene dinero para retirar'" : ""}>
+                          <i class="fa-solid fa-arrow-up-from-bracket"></i> Retirar
                         </button>
                       </div>
                     </div>
@@ -104,7 +107,7 @@ export const savingsView = {
         </div>
       `;
 
-      // 1. Crear nuevo fondo (ahora recibe la lista de wallets para elegir cuenta si hay dinero inicial)
+      // 1. Crear nuevo fondo
       container.querySelector("#btn-new-fund").addEventListener("click", () => {
         showNewFundModal({
           wallets,
@@ -126,7 +129,23 @@ export const savingsView = {
         });
       });
 
-      // 3. Eliminar fondo
+      // 3. NUEVO: Retirar dinero del ahorro
+      container.querySelectorAll(".btn-withdraw-savings:not([disabled])").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const fundId = btn.dataset.id;
+          const fundTitle = btn.dataset.title;
+          const currentAmount = parseFloat(btn.dataset.current);
+          showWithdrawSavingsModal({
+            fundId,
+            fundTitle,
+            currentAmount,
+            wallets,
+            onSave: () => savingsView.render(containerId)
+          });
+        });
+      });
+
+      // 4. Eliminar fondo
       container.querySelectorAll(".btn-delete-fund").forEach(btn => {
         btn.addEventListener("click", async () => {
           if (confirm("¿Estás seguro de eliminar este fondo de ahorro?")) {
@@ -142,7 +161,7 @@ export const savingsView = {
   }
 };
 
-// Modal Crear Fondo (Pregunta de qué cuenta sale si se ingresa dinero inicial)
+// Modal Crear Fondo
 function showNewFundModal({ wallets = [], onSave }) {
   let selectedIcon = "fa-piggy-bank";
 
@@ -172,7 +191,6 @@ function showNewFundModal({ wallets = [], onSave }) {
           </div>
         </div>
 
-        <!-- Aparece automáticamente si el dinero inicial es mayor a 0 -->
         <div class="form-group" id="initial-wallet-box" style="display: none;">
           <label><i class="fa-solid fa-wallet"></i> ¿De qué cuenta sale el dinero inicial?</label>
           <select id="fund-initial-wallet">
@@ -218,7 +236,6 @@ function showNewFundModal({ wallets = [], onSave }) {
   const currentInput = modal.querySelector("#fund-current");
   const walletBox = modal.querySelector("#initial-wallet-box");
 
-  // Mostrar el selector de cuenta solo si el dinero inicial es > 0
   const toggleWalletBox = () => {
     const val = parseCurrencyInput(currentInput.value);
     walletBox.style.display = val > 0 ? "block" : "none";
@@ -268,7 +285,7 @@ function showNewFundModal({ wallets = [], onSave }) {
   });
 }
 
-// Modal Añadir Ahorro (Siempre va a gastos)
+// Modal Añadir Ahorro
 function showAddSavingsModal({ fundId, fundTitle, wallets, onSave }) {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
@@ -294,7 +311,7 @@ function showAddSavingsModal({ fundId, fundTitle, wallets, onSave }) {
           <select id="add-wallet-id" required>
             ${wallets.map((w, index) => `
               <option value="${w.id}" ${index === 0 ? "selected" : ""}>
-                ${w.name} (Saldo: $ ${Number(w.balance).toLocaleString("es-CO")})
+                ${w.name} (Saldo:$ ${Number(w.balance).toLocaleString("es-CO")})
               </option>
             `).join("")}
           </select>
@@ -342,6 +359,111 @@ function showAddSavingsModal({ fundId, fundTitle, wallets, onSave }) {
       errorDiv.style.display = "block";
       submitBtn.disabled = false;
       submitBtn.innerHTML = "Confirmar y Añadir Ahorro";
+    }
+  });
+}
+
+// NUEVO MODAL: RETIRAR DINERO DEL AHORRO
+function showWithdrawSavingsModal({ fundId, fundTitle, currentAmount, wallets, onSave }) {
+  const modal = document.createElement("div");
+  modal.className = "modal-backdrop";
+  modal.innerHTML = `
+    <div class="modal-content" style="max-width: 400px;">
+      <div class="modal-header">
+        <h4><i class="fa-solid fa-arrow-up-from-bracket text-warning"></i> Retirar Ahorro</h4>
+        <button id="btn-close-withdraw-modal" class="modal-close-btn">&times;</button>
+      </div>
+
+      <form id="withdraw-savings-form">
+        <div style="background: #F8FAFC; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.75rem; margin-bottom: 1rem;">
+          <small style="color: var(--text-muted); display: block;">Retirando de:</small>
+          <strong style="font-size: 0.95rem;">${fundTitle}</strong>
+          <div style="margin-top: 4px; font-size: 0.85rem; color: var(--success); font-weight: 700;">
+            Disponible para retirar: $ ${currentAmount.toLocaleString("es-CO")}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label>¿Cuánto dinero vas a retirar? ($)</label>
+            <button type="button" id="btn-withdraw-all" class="btn-link" style="font-size: 0.75rem; color: var(--primary);">
+              Retirar todo ($ ${currentAmount.toLocaleString("es-CO")})
+            </button>
+          </div>
+          <input type="text" id="withdraw-amount" placeholder="Ej. 50.000" required autofocus />
+        </div>
+
+        <div class="form-group">
+          <label><i class="fa-solid fa-wallet"></i> ¿A qué cuenta entra el dinero?</label>
+          <select id="withdraw-wallet-id" required>
+            ${wallets.map((w, index) => `
+              <option value="${w.id}" ${index === 0 ? "selected" : ""}>
+                ${w.name} (Saldo actual:$ ${Number(w.balance).toLocaleString("es-CO")})
+              </option>
+            `).join("")}
+          </select>
+          <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 3px; display: block;">
+            El dinero saldrá de esta cajita y se sumará inmediatamente al saldo de tu billetera seleccionada.
+          </small>
+        </div>
+
+        <div id="withdraw-modal-error" class="alert-error" style="display: none;"></div>
+
+        <div class="form-actions" style="margin-top: 1.25rem;">
+          <button type="submit" id="btn-submit-withdraw" class="btn btn-primary btn-block">Confirmar Retiro</button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const closeModal = () => modal.remove();
+  modal.querySelector("#btn-close-withdraw-modal").addEventListener("click", closeModal);
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  const amountInput = modal.querySelector("#withdraw-amount");
+  attachCurrencyInput(amountInput);
+
+  // Botón atajo para retirar el 100% disponible
+  modal.querySelector("#btn-withdraw-all").addEventListener("click", () => {
+    amountInput.value = currentAmount.toLocaleString("es-CO");
+  });
+
+  const submitBtn = modal.querySelector("#btn-submit-withdraw");
+
+  modal.querySelector("#withdraw-savings-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const amount = parseCurrencyInput(amountInput.value);
+    const wallet_id = modal.querySelector("#withdraw-wallet-id").value;
+    const errorDiv = modal.querySelector("#withdraw-modal-error");
+
+    if (isNaN(amount) || amount <= 0) {
+      errorDiv.textContent = "Ingresa un valor válido mayor a 0.";
+      errorDiv.style.display = "block";
+      return;
+    }
+
+    if (amount > currentAmount) {
+      errorDiv.textContent = `No puedes retirar más de lo que tienes ahorrado en esta cajita ($ ${currentAmount.toLocaleString("es-CO")}).`;
+      errorDiv.style.display = "block";
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Procesando retiro...`;
+
+    try {
+      await goalService.withdrawFromGoal(fundId, amount, wallet_id);
+      closeModal();
+      if (onSave) onSave();
+    } catch (err) {
+      errorDiv.textContent = err.message || "Error al retirar dinero";
+      errorDiv.style.display = "block";
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = "Confirmar Retiro";
     }
   });
 }
