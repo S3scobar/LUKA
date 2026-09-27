@@ -20,13 +20,15 @@ export const dashboardView = {
         creditCardService.getCreditCards()
       ]);
 
-      // 1. Saldo Total Real (Suma acumulada del balance de todas las billeteras)
-      const totalBalance = (wallets || []).reduce(
-        (sum, w) => sum + (parseFloat(w.balance) || 0),
-        0
-      );
+      // 1. Identificar las billeteras vinculadas a tarjetas de crédito
+      const creditCardWalletIds = new Set((creditCards || []).map(cc => cc.wallet_id));
 
-      // 2. Flujo del mes (Ingresos, Gastos y Balance del periodo)
+      // 2. Saldo Total Real (SOLO cuentas de dinero propio: efectivo, ahorros, débito; sin cupos de crédito)
+      const totalBalance = (wallets || [])
+        .filter(w => !creditCardWalletIds.has(w.id))
+        .reduce((sum, w) => sum + (parseFloat(w.balance) || 0), 0);
+
+      // 3. Flujo del periodo (Ingresos, Gastos y Balance neto del mes)
       const totalIncome = transactions
         .filter(t => t.type === "income")
         .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -39,7 +41,7 @@ export const dashboardView = {
 
       container.innerHTML = `
         <div class="dashboard-module">
-          <!-- 1. Tarjetas de Resumen (Saldo Total + Métricas del Mes) -->
+          <!-- 1. Tarjetas de Resumen (Saldo Total + Flujo del Mes) -->
           <div class="summary-cards-grid">
             <div class="metric-card card-total">
               <span class="metric-label"><i class="fa-solid fa-wallet"></i> Saldo Total</span>
@@ -74,7 +76,7 @@ export const dashboardView = {
               <span class="badge-count">${transactions.length} en total</span>
             </div>
 
-            <div id=\"transactions-container\">
+            <div id="transactions-container">
               <!-- Renderizado dinámico -->
             </div>
           </div>
@@ -157,17 +159,19 @@ export const dashboardView = {
             renderList();
           });
         }
-
-        transContainer.querySelectorAll(".btn-delete-trans").forEach(btn => {
-          btn.addEventListener("click", async () => {
-            const id = btn.dataset.id;
-            if (confirm("¿Deseas eliminar este movimiento? Su valor volverá a tu cuenta.")) {
-              await transactionService.deleteTransaction(id);
-              dashboardView.render(containerId);
-            }
-          });
-        });
       };
+
+      // Delegación de eventos para eliminar movimientos
+      transContainer.addEventListener("click", async (e) => {
+        const btn = e.target.closest(".btn-delete-trans");
+        if (!btn) return;
+
+        const id = btn.dataset.id;
+        if (confirm("¿Deseas eliminar este movimiento? Su valor volverá a tu cuenta.")) {
+          await transactionService.deleteTransaction(id);
+          dashboardView.render(containerId);
+        }
+      });
 
       renderList();
 
