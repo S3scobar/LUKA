@@ -4,8 +4,8 @@ import { walletService } from "../services/walletService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 
 const SAVING_ICONS = [
-  "fa-piggy-bank", "fa-vault", "fa-box-archive", "fa-building-columns", 
-  "fa-wallet", "fa-money-bill-wave", "fa-car", "fa-house", "fa-plane", 
+  "fa-piggy-bank", "fa-vault", "fa-box-archive", "fa-building-columns",
+  "fa-wallet", "fa-money-bill-wave", "fa-car", "fa-house", "fa-plane",
   "fa-laptop", "fa-mobile-screen", "fa-gamepad", "fa-graduation-cap", "fa-shield-heart"
 ];
 
@@ -59,6 +59,7 @@ export const savingsView = {
                   const isCompleted = hasTarget && fund.progressPercentage >= 100;
                   const currentNum = Number(fund.current_amount);
                   const canWithdraw = currentNum > 0;
+                  const yieldRate = Number(fund.yield_rate) || 0;
 
                   return `
                     <div class="fund-card">
@@ -68,6 +69,11 @@ export const savingsView = {
                         </div>
                         <div class="fund-title-wrap">
                           <span class="fund-name">${fund.title}</span>
+                          ${yieldRate > 0 ? `
+                            <span class="badge-yield" style="background: rgba(16, 185, 129, 0.15); color: #10B981; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">
+                              <i class="fa-solid fa-arrow-trend-up"></i> +${yieldRate}% E.A.
+                            </span>
+                          ` : ""}
                           ${isCompleted ? `<span class="badge-success">¡Objetivo Cumplido!</span>` : ""}
                         </div>
                         <button class="btn-delete-fund" data-id="${fund.id}" title="Eliminar fondo">
@@ -129,7 +135,7 @@ export const savingsView = {
         });
       });
 
-      // 3. NUEVO: Retirar dinero del ahorro
+      // 3. Retirar dinero del ahorro
       container.querySelectorAll(".btn-withdraw-savings:not([disabled])").forEach(btn => {
         btn.addEventListener("click", () => {
           const fundId = btn.dataset.id;
@@ -177,7 +183,7 @@ function showNewFundModal({ wallets = [], onSave }) {
       <form id="fund-create-form">
         <div class="form-group">
           <label>Nombre del Fondo o Cuenta</label>
-          <input type="text" id="fund-name" placeholder="Ej. Cajita Nequi, Fondo de Emergencia" required />
+          <input type="text" id="fund-name" placeholder="Ej. Cajita Nu, Fondo de Emergencia" required />
         </div>
 
         <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
@@ -189,6 +195,15 @@ function showNewFundModal({ wallets = [], onSave }) {
             <label>Meta ($ Opcional)</label>
             <input type="text" id="fund-target" placeholder="Ej. 1.000.000" />
           </div>
+        </div>
+
+        <!-- CAMPO DE RENDIMIENTO ANUAL -->
+        <div class="form-group">
+          <label><i class="fa-solid fa-chart-line text-success"></i> Rendimiento Anual (% E.A. Opcional)</label>
+          <input type="number" id="fund-yield" placeholder="Ej. 13 (Cajitas Nu, Lulo, Ualá)" step="0.1" min="0" />
+          <small style="color: var(--text-muted); font-size: 0.75rem; margin-top: 2px; display: block;">
+            Si genera rentabilidad, tu dinero crecerá diariamente con interés compuesto.
+          </small>
         </div>
 
         <div class="form-group" id="initial-wallet-box" style="display: none;">
@@ -263,6 +278,7 @@ function showNewFundModal({ wallets = [], onSave }) {
     const title = modal.querySelector("#fund-name").value.trim();
     const current_amount = parseCurrencyInput(modal.querySelector("#fund-current").value);
     const target_amount = parseCurrencyInput(modal.querySelector("#fund-target").value) || (current_amount > 0 ? current_amount * 2 : 1000000);
+    const yield_rate = parseFloat(modal.querySelector("#fund-yield").value) || 0;
     const wallet_id = current_amount > 0 ? modal.querySelector("#fund-initial-wallet").value : null;
     const errorDiv = modal.querySelector("#fund-modal-error");
 
@@ -272,7 +288,8 @@ function showNewFundModal({ wallets = [], onSave }) {
         target_amount,
         current_amount,
         icon: selectedIcon,
-        wallet_id
+        wallet_id,
+        yield_rate // <-- Se envía la tasa al servicio
       });
       closeModal();
       if (onSave) onSave();
@@ -363,7 +380,7 @@ function showAddSavingsModal({ fundId, fundTitle, wallets, onSave }) {
   });
 }
 
-// NUEVO MODAL: RETIRAR DINERO DEL AHORRO
+// Modal Retirar Dinero del Ahorro
 function showWithdrawSavingsModal({ fundId, fundTitle, currentAmount, wallets, onSave }) {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
@@ -427,7 +444,6 @@ function showWithdrawSavingsModal({ fundId, fundTitle, currentAmount, wallets, o
   const amountInput = modal.querySelector("#withdraw-amount");
   attachCurrencyInput(amountInput);
 
-  // Botón atajo para retirar el 100% disponible
   modal.querySelector("#btn-withdraw-all").addEventListener("click", () => {
     amountInput.value = currentAmount.toLocaleString("es-CO");
   });
