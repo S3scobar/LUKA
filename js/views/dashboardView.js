@@ -20,6 +20,13 @@ export const dashboardView = {
         creditCardService.getCreditCards()
       ]);
 
+      // 1. Saldo Total Real (Suma acumulada del balance de todas las billeteras)
+      const totalBalance = (wallets || []).reduce(
+        (sum, w) => sum + (parseFloat(w.balance) || 0),
+        0
+      );
+
+      // 2. Flujo del mes (Ingresos, Gastos y Balance del periodo)
       const totalIncome = transactions
         .filter(t => t.type === "income")
         .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -32,8 +39,12 @@ export const dashboardView = {
 
       container.innerHTML = `
         <div class="dashboard-module">
-          <!-- 1. Tarjetas de Resumen Mensual -->
+          <!-- 1. Tarjetas de Resumen (Saldo Total + Métricas del Mes) -->
           <div class="summary-cards-grid">
+            <div class="metric-card card-total">
+              <span class="metric-label"><i class="fa-solid fa-wallet"></i> Saldo Total</span>
+              <span class="metric-value text-primary">$ ${totalBalance.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
+            </div>
             <div class="metric-card card-income">
               <span class="metric-label"><i class="fa-solid fa-arrow-down"></i> Ingresos</span>
               <span class="metric-value text-success">$ ${totalIncome.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
@@ -63,7 +74,7 @@ export const dashboardView = {
               <span class="badge-count">${transactions.length} en total</span>
             </div>
 
-            <div id="transactions-container">
+            <div id=\"transactions-container\">
               <!-- Renderizado dinámico -->
             </div>
           </div>
