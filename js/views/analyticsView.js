@@ -28,10 +28,18 @@ export const analyticsView = {
   },
 
   // ==========================================
-  // VISTA MENSUAL (DESGLOSE REAL POR CATEGORÍA)
+  // VISTA MENSUAL (DESGLOSE REAL Y COMPARATIVA)
   // ==========================================
   async renderMonthly(container, containerId) {
-    const transactions = await transactionService.getTransactions(this.currentYear, this.currentMonth);
+    // 1. Determinar el mes anterior para la comparativa
+    const prevMonth = this.currentMonth === 1 ? 12 : this.currentMonth - 1;
+    const prevYear = this.currentMonth === 1 ? this.currentYear - 1 : this.currentYear;
+
+    // 2. Consultar en paralelo las transacciones del mes actual y del mes anterior
+    const [transactions, prevTransactions] = await Promise.all([
+      transactionService.getTransactions(this.currentYear, this.currentMonth),
+      transactionService.getTransactions(prevYear, prevMonth)
+    ]);
 
     const incomeTx = transactions.filter(t => t.type === "income");
     const expenseTx = transactions.filter(t => t.type === "expense");
@@ -40,12 +48,49 @@ export const analyticsView = {
     const totalExpense = expenseTx.reduce((sum, t) => sum + Number(t.amount), 0);
     const netBalance = totalIncome - totalExpense;
 
-    // Agrupación corregida: usa el category_id real o el nombre de la categoría para no unificar todo
+    // 3. Comparación con el mes anterior a la misma fecha (Día de corte)
+    const today = new Date();
+    const isCurrentActiveMonth = (this.currentYear === today.getFullYear() && this.currentMonth === (today.getMonth() + 1));
+    const cutoffDay = isCurrentActiveMonth ? today.getDate() : 31;
+
+    // Filtrar gastos ocurridos hasta el día de corte
+    const currentExpensePace = expenseTx
+      .filter(t => {
+        const day = new Date(t.transaction_date + "T00:00:00").getDate();
+        return day <= cutoffDay;
+      })
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+
+    const prevExpensePace = prevTransactions
+      .filter(t => {
+        if (t.type !== "expense") return false;
+        const day = new Date(t.transaction_date + "T00:00:00").getDate();
+        return day <= cutoffDay;
+      })
+      .reduce((sum, t) => sum + Number(t.amount), 0);
+
+    // Si hay datos previos se calcula el porcentaje; si no, se prepara el mensaje informativo
+    let paceComparison = null;
+    if (prevExpensePace > 0) {
+      const diffPercent = ((currentExpensePace - prevExpensePace) / prevExpensePace) * 100;
+      paceComparison = {
+        hasData: true,
+        diffPercent: Math.abs(diffPercent).toFixed(1),
+        isLower: diffPercent <= 0,
+        cutoffDay
+      };
+    } else {
+      paceComparison = {
+        hasData: false,
+        cutoffDay
+      };
+    }
+
+    // 4. Agrupación por categoría
     const groupByCategory = (txList, total) => {
       const map = {};
 
       txList.forEach(t => {
-        // Clave única por categoría: usa category_id o el nombre propio de la categoría
         const catKey = t.category_id || t.category?.id || (t.category?.name ? `name-${t.category.name}` : `sin-cat-${t.type}`);
         const catName = t.category?.name || (t.type === "income" ? "Otros Ingresos" : "Sin Categoría");
         const catIcon = t.category?.icon || (t.type === "income" ? "fa-money-bill-wave" : "fa-tag");
@@ -105,16 +150,28 @@ export const analyticsView = {
           </button>
         </div>
 
-        <!-- 3 Métricas del Mes -->
+        <!-- Tarjetas de Métricas -->
         <div class="summary-cards-grid">
           <div class="metric-card card-income">
             <span class="metric-label"><i class="fa-solid fa-arrow-down"></i> Ingresos</span>
             <span class="metric-value text-success">$ ${totalIncome.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
           </div>
+
           <div class="metric-card card-expense">
             <span class="metric-label"><i class="fa-solid fa-arrow-up"></i> Gastos</span>
             <span class="metric-value text-danger">$ ${totalExpense.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
+            ${paceComparison.hasData ? `
+              <small style="font-size: 0.73rem; display: block; margin-top: 3px; font-weight: 700; color: ${paceComparison.isLower ? '#10B981' : '#EF4444'};">
+                <i class="fa-solid ${paceComparison.isLower ? 'fa-arrow-down' : 'fa-arrow-up'}"></i>
+                ${paceComparison.isLower ? `-${paceComparison.diffPercent}%` : `+${paceComparison.diffPercent}%`} vs mes ant.
+              </small>
+            ` : `
+              <small style="font-size: 0.72rem; display: block; margin-top: 3px; color: var(--text-muted); font-weight: 500;">
+                <i class="fa-solid fa-circle-info"></i> Primer mes
+              </small>
+            `}
           </div>
+
           <div class="metric-card card-balance">
             <span class="metric-label"><i class="fa-solid fa-scale-balanced"></i> Balance</span>
             <span class="metric-value ${netBalance < 0 ? "text-danger" : "text-success"}">
@@ -123,9 +180,28 @@ export const analyticsView = {
           </div>
         </div>
 
+        <!-- Banner Comparativo Inteligente -->
+        ${paceComparison.hasData ? `
+          <div class="pace-insight-banner" style="background: ${paceComparison.isLower ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; border: 1px solid ${paceComparison.isLower ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}; border-radius: 10px; padding: 0.8rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 0.88rem; color: ${paceComparison.isLower ? '#065F46' : '#991B1B'};">
+            <i class="fa-solid ${paceComparison.isLower ? 'fa-circle-check text-success' : 'fa-triangle-exclamation text-danger'}" style="font-size: 1.15rem;"></i>
+            <span>
+              ${paceComparison.isLower 
+                ? `Has gastado un <strong>${paceComparison.diffPercent}% menos</strong> que el mes pasado a esta misma fecha (al día ${paceComparison.cutoffDay}). ¡Excelente ritmo!` 
+                : `Has gastado un <strong>${paceComparison.diffPercent}% más</strong> que el mes pasado a esta misma fecha (al día ${paceComparison.cutoffDay}).`
+              }
+            </span>
+          </div>
+        ` : `
+          <div class="pace-insight-banner" style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 10px; padding: 0.8rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 0.88rem; color: #1E40AF;">
+            <i class="fa-solid fa-circle-info" style="font-size: 1.15rem; color: #3B82F6;"></i>
+            <span>
+              <strong>Primer periodo registrado:</strong> No hay gastos registrados en el mes anterior. La comparativa de ritmo de gasto se activará automáticamente a partir del próximo mes.
+            </span>
+          </div>
+        `}
+
         <!-- SECCIÓN PRINCIPAL: DESGLOSE POR CATEGORÍA -->
         <div class="section-card">
-          <!-- Toggle para elegir Gastos o Ingresos -->
           <div class="breakdown-toggle-pills">
             <button type="button" id="toggle-breakdown-expense" class="breakdown-toggle-btn ${isExpenseActive ? "active expense" : ""}">
               <i class="fa-solid fa-arrow-trend-down"></i> Gastos ($ ${totalExpense.toLocaleString("es-CO", { maximumFractionDigits: 0 })})
@@ -146,14 +222,14 @@ export const analyticsView = {
               <div class="${isExpenseActive ? "top-expense-alert" : "top-income-alert"}">
                 <i class="fa-solid ${isExpenseActive ? "fa-fire text-danger" : "fa-trophy text-success"}"></i>
                 <span>
-                  Mayor ${isExpenseActive ? "gasto" : "ingreso"}: <strong>${topItem.name}</strong> con 
-                  <strong>$ ${topItem.amount.toLocaleString("es-CO")}</strong> 
+                  Mayor ${isExpenseActive ? "gasto" : "ingreso"}: <strong>${topItem.name}</strong> con
+                  <strong>$ ${topItem.amount.toLocaleString("es-CO")}</strong>
                   (${topItem.percentage}% del total de ${isExpenseActive ? "gastos" : "ingresos"}).
                 </span>
               </div>
             ` : ""}
 
-            <!-- Barra Segmentada con todos los colores de categorías -->
+            <!-- Barra Segmentada -->
             <div class="segmented-bar-container">
               ${activeList.map(item => `
                 <div class="bar-segment" style="width: ${item.exactPercentage}%; background-color: ${item.color};" title="${item.name}: ${item.percentage}%"></div>
@@ -253,28 +329,19 @@ export const analyticsView = {
         </div>
 
         <div class="section-card">
-          <div class="section-header">
-            <div>
-              <h3><i class="fa-solid fa-chart-column"></i> Comparativa Mes a Mes</h3>
-              <p>Comportamiento de entradas vs salidas de dinero</p>
-            </div>
-            <div class="chart-legend">
-              <span class="legend-item"><span class="legend-box income-box"></span> Ingreso</span>
-              <span class="legend-item"><span class="legend-box expense-box"></span> Gasto</span>
-            </div>
-          </div>
-
-          <div class="annual-chart-container">
+          <h4 class="section-title"><i class="fa-solid fa-chart-simple"></i> Comparativa Mensual de Ingresos y Gastos</h4>
+          
+          <div class="annual-chart-wrapper">
             ${monthsData.map((m, idx) => {
-              const incHeight = Math.max(3, Math.round((m.income / maxVal) * 115));
-              const expHeight = Math.max(3, Math.round((m.expense / maxVal) * 115));
-              const shortMonth = MONTH_NAMES[idx].slice(0, 3);
+              const incomeHeight = Math.round((m.income / maxVal) * 100);
+              const expenseHeight = Math.round((m.expense / maxVal) * 100);
+              const shortMonth = MONTH_NAMES[idx].substring(0, 3);
 
               return `
-                <div class="chart-month-col">
-                  <div class="bars-pair">
-                    <div class="bar-income" style="height: ${m.income > 0 ? incHeight : 0}px;" title="${MONTH_NAMES[idx]}: Ingreso$ ${m.income.toLocaleString("es-CO")}"></div>
-                    <div class="bar-expense" style="height: ${m.expense > 0 ? expHeight : 0}px;" title="${MONTH_NAMES[idx]}: Gasto$ ${m.expense.toLocaleString("es-CO")}"></div>
+                <div class="month-col">
+                  <div class="month-bars">
+                    <div class="bar bar-income" style="height: ${incomeHeight}%;" title="Ingresos (${MONTH_NAMES[idx]}):$ ${m.income.toLocaleString("es-CO")}"></div>
+                    <div class="bar bar-expense" style="height: ${expenseHeight}%;" title="Gastos (${MONTH_NAMES[idx]}):$ ${m.expense.toLocaleString("es-CO")}"></div>
                   </div>
                   <span class="month-col-label">${shortMonth}</span>
                 </div>
