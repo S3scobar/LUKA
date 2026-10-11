@@ -13,22 +13,24 @@ export const dashboardView = {
     container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tu información...</div>`;
 
     try {
-      const [wallets, categories, transactions, creditCards] = await Promise.all([
+      // 1. Consultar todos los datos necesarios en paralelo (incluyendo el resumen de tarjetas)
+      const [wallets, categories, transactions, creditCards, ccSummary] = await Promise.all([
         walletService.getWallets(),
         categoryService.getCategories(),
         transactionService.getTransactions(),
-        creditCardService.getCreditCards()
+        creditCardService.getCreditCards(),
+        creditCardService.getTotalStatementSummary()
       ]);
 
-      // 1. Identificar las billeteras vinculadas a tarjetas de crédito
+      // 2. Identificar las billeteras vinculadas a tarjetas de crédito
       const creditCardWalletIds = new Set((creditCards || []).map(cc => cc.wallet_id));
 
-      // 2. Saldo Total Real (SOLO cuentas de dinero propio: efectivo, ahorros, débito; sin cupos de crédito)
+      // 3. Saldo Total Real (SOLO cuentas de dinero propio: efectivo, ahorros, débito; sin cupos de crédito)
       const totalBalance = (wallets || [])
         .filter(w => !creditCardWalletIds.has(w.id))
         .reduce((sum, w) => sum + (parseFloat(w.balance) || 0), 0);
 
-      // 3. Flujo del periodo (Ingresos, Gastos y Balance neto del mes)
+      // 4. Flujo del periodo (Ingresos, Gastos y Balance neto del mes)
       const totalIncome = transactions
         .filter(t => t.type === "income")
         .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -63,6 +65,32 @@ export const dashboardView = {
             </div>
           </div>
 
+          <!-- BANNER: EXTRACTO DE TARJETAS ESTE MES (OPCIÓN 1) -->
+          ${ccSummary && ccSummary.hasCards ? `
+            <div class="card-statement-banner ${ccSummary.totalDue > 0 ? 'banner-due' : 'banner-paid'}">
+              <div class="banner-statement-left">
+                <div class="banner-statement-icon">
+                  <i class="fa-solid ${ccSummary.totalDue > 0 ? 'fa-credit-card' : 'fa-circle-check'}"></i>
+                </div>
+                <div class="banner-statement-text">
+                  <div class="banner-statement-title">
+                    ${ccSummary.totalDue > 0 ? 'Por pagar en tarjeta este mes' : 'Tarjetas de crédito'}                   </div>                   <div class="banner-statement-amount">                     $ ${ccSummary.totalDue.toLocaleString("es-CO", { maximumFractionDigits: 0 })}
+                  </div>
+                  <small class="banner-statement-sub">
+                    ${ccSummary.totalDue > 0 
+                      ? (ccSummary.earliestDueDay ? `Pagar antes del día ${ccSummary.earliestDueDay}` : 'Cuota mensual pendiente')
+                      : '¡Estás al día este mes!'}
+                  </small>
+                </div>
+              </div>
+              ${ccSummary.totalDue > 0 ? `
+                <button type="button" id="btn-pay-cc-from-dashboard" class="btn btn-sm btn-primary">
+                  <i class="fa-solid fa-money-bill-transfer"></i> Pagar
+                </button>
+              ` : ''}
+            </div>
+          ` : ''}
+
           <!-- 2. Barra de Registro Rápido -->
           <div id="quick-expense-container"></div>
 
@@ -93,6 +121,15 @@ export const dashboardView = {
           dashboardView.render(containerId);
         }
       });
+
+      // AQUÍ VA EL EVENTO: Al hacer clic en Pagar, te lleva a la pestaña de Tarjetas
+      const btnPayCC = container.querySelector("#btn-pay-cc-from-dashboard");
+      if (btnPayCC) {
+        btnPayCC.addEventListener("click", () => {
+          const cardsTabBtn = document.querySelector('[data-tab="cards"]');
+          if (cardsTabBtn) cardsTabBtn.click();
+        });
+      }
 
       // Renderizar lista de movimientos con opción Ver todos
       const transContainer = container.querySelector("#transactions-container");

@@ -38,6 +38,7 @@ function showExpenseAnimation(amount, type = "expense") {
     setTimeout(() => overlay.remove(), 250);
   };
 }
+
 export const quickExpenseBar = {
   render({ containerId, wallets, categories, creditCards = [], onTransactionSaved }) {
     const container = document.getElementById(containerId);
@@ -45,12 +46,15 @@ export const quickExpenseBar = {
     let selectedWalletId = wallets.length > 0 ? wallets[0].id : null;
     let savedTitle = "";
     let savedAmount = "";
+    let savedZeroInterest = false;
 
     const renderBar = () => {
       const currentTitleInput = container.querySelector("#quick-title");
       const currentAmountInput = container.querySelector("#quick-amount");
+      const currentZeroInt = container.querySelector("#quick-zero-interest");
       if (currentTitleInput) savedTitle = currentTitleInput.value;
       if (currentAmountInput) savedAmount = currentAmountInput.value;
+      if (currentZeroInt) savedZeroInterest = currentZeroInt.checked;
 
       const expenseFavorites = categories
         .filter(c => c.type === "expense" && c.is_favorite)
@@ -105,6 +109,15 @@ export const quickExpenseBar = {
                   <option value="36">36 cuotas</option>
                 </select>
               </div>
+
+              <!-- Casilla 0% Interés / Convenio (se activa si hay más de 1 cuota) -->
+              <div id="quick-zero-interest-wrap" class="zero-interest-wrap" style="display: none; margin: 6px 0 2px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+                  <input type="checkbox" id="quick-zero-interest" ${savedZeroInterest ? "checked" : ""} style="width: 16px; height: 16px; accent-color: var(--success, #10B981); cursor: pointer;" />
+                  <span><i class="fa-solid fa-tag text-success"></i> 0% Interés (Convenio con el comercio)</span>
+                </label>
+              </div>
+
               <div id="quick-credit-info" class="credit-info-box">
                 <i class="fa-solid fa-shield-halved text-success"></i> 1 cuota: Pagas al corte sin intereses corrientes.
               </div>
@@ -135,7 +148,7 @@ export const quickExpenseBar = {
                 ${expenseFavorites.map(cat => `
                   <button type="button" class="btn-fav-category" data-id="${cat.id}" title="${cat.name}">
                     <div class="fav-icon-box" style="background-color: ${cat.color}20; color: ${cat.color};">
-                      <i class="fa-solid ${cat.icon}"></i>
+                      <i class="fa-solid ${catIcon(cat)}"></i>
                     </div>
                     <span class="fav-label">${cat.name}</span>
                   </button>
@@ -151,7 +164,7 @@ export const quickExpenseBar = {
                 ${allTypeCategories.map(cat => `
                   <button type="button" class="btn-fav-category" data-id="${cat.id}">
                     <div class="fav-icon-box" style="background-color: ${cat.color}20; color: ${cat.color};">
-                      <i class="fa-solid ${cat.icon}"></i>
+                      <i class="fa-solid ${catIcon(cat)}"></i>
                     </div>
                     <span class="fav-label">${cat.name}</span>
                   </button>
@@ -162,6 +175,10 @@ export const quickExpenseBar = {
         </div>
       `;
 
+      function catIcon(cat) {
+        return cat.icon || (activeType === "expense" ? "fa-tag" : "fa-money-bill-wave");
+      }
+
       // Eventos
       const tabExpense = container.querySelector("#tab-expense");
       const tabIncome = container.querySelector("#tab-income");
@@ -170,6 +187,8 @@ export const quickExpenseBar = {
       const errorDiv = container.querySelector("#quick-error");
       const installmentsSelect = container.querySelector("#quick-installments");
       const creditInfoBox = container.querySelector("#quick-credit-info");
+      const zeroInterestCheck = container.querySelector("#quick-zero-interest");
+      const zeroInterestWrap = container.querySelector("#quick-zero-interest-wrap");
 
       tabExpense.addEventListener("click", () => {
         activeType = "expense";
@@ -204,9 +223,18 @@ export const quickExpenseBar = {
         const rawNumbers = amountInput.value.replace(/\D/g, "");
         const val = parseFloat(rawNumbers);
         const installments = parseInt(installmentsSelect.value);
+        const isZeroInt = zeroInterestCheck ? zeroInterestCheck.checked : false;
+
+        // Mostrar u ocultar el checkbox según si hay más de 1 cuota
+        if (zeroInterestWrap) {
+          zeroInterestWrap.style.display = installments > 1 ? "block" : "none";
+        }
 
         if (installments === 1) {
           creditInfoBox.innerHTML = `<i class="fa-solid fa-shield-halved text-success"></i> 1 cuota: Pagas al corte sin intereses corrientes.`;
+        } else if (isZeroInt && val && val > 0) {
+          const quota = Math.round(val / installments);
+          creditInfoBox.innerHTML = `<i class="fa-solid fa-tag text-success"></i> <strong>0% Interés:</strong> Pagarás <strong>$ ${quota.toLocaleString("es-CO")}/mes</strong> en cada cuota (Sin intereses por convenio).`;
         } else if (val && val > 0) {
           const rateEA = Number(linkedCard.interest_rate_ea) / 100;
           const monthlyRate = Math.pow(1 + rateEA, 1 / 12) - 1;
@@ -215,12 +243,24 @@ export const quickExpenseBar = {
           const firstCuota = Math.round(principalPart + firstInterest);
 
           creditInfoBox.innerHTML = `<i class="fa-solid fa-calculator text-primary"></i> Pagarás aprox. <strong>$ ${firstCuota.toLocaleString("es-CO")}</strong> en la cuota 1 (Capital: $ ${Math.round(principalPart).toLocaleString("es-CO")} + Int: $ ${Math.round(firstInterest).toLocaleString("es-CO")}).`;
+        } else if (isZeroInt) {
+          creditInfoBox.innerHTML = `<i class="fa-solid fa-tag text-success"></i> Diferido a ${installments} cuotas sin interés (0% por convenio).`;
         } else {
           creditInfoBox.innerHTML = `Diferido a ${installments} cuotas (${linkedCard.interest_rate_ea}% E.A.).`;
         }
       };
 
-      if (installmentsSelect) installmentsSelect.addEventListener("change", updateCreditSim);
+      if (installmentsSelect) {
+        installmentsSelect.addEventListener("change", updateCreditSim);
+        // Inicializar visibilidad del checkbox según la opción actual
+        if (zeroInterestWrap) {
+          zeroInterestWrap.style.display = parseInt(installmentsSelect.value) > 1 ? "block" : "none";
+        }
+      }
+
+      if (zeroInterestCheck) {
+        zeroInterestCheck.addEventListener("change", updateCreditSim);
+      }
 
       // Guardar transacción con animación
       const executeSave = async (categoryId) => {
@@ -243,20 +283,22 @@ export const quickExpenseBar = {
           return;
         }
 
-        // 1. Mostrar la animación visual de salida de dinero
         const closeAnim = showExpenseAnimation(amount, activeType);
         const startTime = Date.now();
 
         try {
           if (linkedCard && activeType === "expense") {
             const installments = installmentsSelect ? parseInt(installmentsSelect.value) : 1;
+            const isZeroInterest = zeroInterestCheck ? zeroInterestCheck.checked : false;
+
             await creditCardService.addPurchase({
               card_id: linkedCard.id,
               category_id: categoryId,
               title,
               total_amount: amount,
               installments,
-              is_advance: false
+              is_advance: false,
+              is_zero_interest: isZeroInterest // <-- Envía la marca de convenio 0%
             });
           } else {
             await transactionService.addTransaction({
@@ -268,7 +310,6 @@ export const quickExpenseBar = {
             });
           }
 
-          // Garantizar que la animación se disfrute al menos 600ms antes de cerrarse
           const elapsed = Date.now() - startTime;
           if (elapsed < 600) {
             await new Promise(r => setTimeout(r, 600 - elapsed));
@@ -278,6 +319,7 @@ export const quickExpenseBar = {
 
           savedTitle = "";
           savedAmount = "";
+          savedZeroInterest = false;
           titleInput.value = "";
           amountInput.value = "";
 

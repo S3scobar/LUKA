@@ -653,3 +653,122 @@ html, body {
   align-items: center;
   margin-top: 0.5rem;
 }
+/* ==========================================
+   BANNER DE EXTRACTO DE TARJETA EN INICIO
+   ========================================== */
+.card-statement-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.15rem;
+  border-radius: var(--radius-md, 12px);
+  margin-bottom: 1.25rem;
+  transition: transform 0.2s ease;
+}
+
+.banner-statement-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.banner-statement-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.banner-statement-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748B);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.banner-statement-amount {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.banner-statement-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted, #64748B);
+}
+
+/* Estado pendiente de pago */
+.banner-due {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(245, 158, 11, 0.08));
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.banner-due .banner-statement-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+}
+
+.banner-due .banner-statement-amount {
+  color: #EF4444;
+}
+
+/* Estado al día (pagado) */
+.banner-paid {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.banner-paid .banner-statement-icon {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10B981;
+}
+
+.banner-paid .banner-statement-amount {
+  color: #10B981;
+}
+/* =========================================================
+   CATEGORÍAS DESLIZABLES EN LA BARRA DE GASTO RÁPIDO
+   ========================================================= */
+
+/* 1. Contenedor padre con protección de desbordamiento */
+.categories-action-section {
+  width: 100%;
+  min-width: 0; /* Previene el bug de flexbox en móviles */
+}
+
+/* 2. Fila deslizable horizontal con el pulgar */
+.quick-icons-row {
+  display: flex !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  gap: 0.65rem !important;
+  padding: 4px 2px 8px 2px !important;
+  -webkit-overflow-scrolling: touch; /* Desplazamiento inercial suave en iPhone y Android */
+  scroll-behavior: smooth;
+  scrollbar-width: thin; /* Barra sutil en Firefox */
+}
+
+/* 3. Evitar que los botones se aplasten o deformen */
+.btn-fav-category {
+  flex: 0 0 auto !important; /* Clave: mantiene su tamaño perfecto sin comprimirse */
+  width: 72px !important;   /* Ancho consistente para cada botón */
+}
+
+/* 4. Estilo de la barrita de desplazamiento (idéntica a la del menú superior) */
+.quick-icons-row::-webkit-scrollbar {
+  height: 4px;
+}
+
+.quick-icons-row::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.4);
+  border-radius: 4px;
+}
+
+.quick-icons-row::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.6);
+  border-radius: 4px;
+}

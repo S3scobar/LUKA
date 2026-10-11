@@ -129,8 +129,8 @@ export const creditCardService = {
     return data || [];
   },
 
-  // Registrar compra o avance con vinculación bidireccional
-  async addPurchase({ card_id, category_id, title, total_amount, installments = 1, is_advance = false, advance_fee = 0, target_wallet_id = null }) {
+  // Registrar compra o avance (DESCUENTA CUPO SIN DUPLICAR GASTO EN TRANSACTIONS)
+  async addPurchase({ card_id, category_id, title, total_amount, installments = 1, is_advance = false, advance_fee = 0, target_wallet_id = null, is_zero_interest = false }) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Usuario no autenticado");
 
@@ -158,19 +158,7 @@ export const creditCardService = {
       if (fallbackCat) finalCategoryId = fallbackCat.id;
     }
 
-    // 1. Registrar primero la transacción en el historial de gastos para obtener su ID
-    let createdTx = null;
-    if (card.wallet_id) {
-      createdTx = await transactionService.addTransaction({
-        wallet_id: card.wallet_id,
-        category_id: finalCategoryId,
-        type: "expense",
-        title: is_advance ? `Avance: ${title.trim()}` : `${title.trim()} (${installments} cuotas)`,
-        amount: is_advance ? totalImpact : (installments === 1 ? amount : Math.round(amount / installments))
-      });
-    }
-
-    // 2. Registrar la compra guardando el ID de la transacción
+    // 1. Registrar la compra diferida en credit_card_purchases
     const { data: purchase, error: purErr } = await supabase
       .from("credit_card_purchases")
       .insert([
@@ -184,21 +172,22 @@ export const creditCardService = {
           installments_paid: 0,
           is_advance,
           advance_fee: fee,
+          is_zero_interest: Boolean(is_zero_interest),
           purchase_date: new Date().toISOString().split("T")[0],
-          transaction_id: createdTx ? createdTx.id : null
+          transaction_id: null
         }
       ])
       .select()
       .single();
     if (purErr) throw purErr;
 
-    // 3. Descontar cupo disponible de la tarjeta
+    // 2. Descontar cupo disponible de la tarjeta
     if (card.wallet_id) {
-      const newAvailable = Number(card.wallet.balance) - totalImpact;
+      const newAvailable = Number(card.wallet?.balance || card.credit_limit) - totalImpact;
       await walletService.updateWallet(card.wallet_id, { balance: newAvailable });
     }
 
-    // 4. Si fue avance, sumar a la cuenta destino
+    // 3. Si fue avance en efectivo, sumar a la cuenta destino y registrar ingreso
     if (is_advance && target_wallet_id) {
       const { data: targetWallet } = await supabase
         .from("wallets")
@@ -211,12 +200,20 @@ export const creditCardService = {
           balance: Number(targetWallet.balance) + amount
         });
       }
+
+      await transactionService.addTransaction({
+        wallet_id: target_wallet_id,
+        category_id: null,
+        type: "income",
+        title: "Avance de Tarjeta de Crédito",
+        amount: amount
+      });
     }
 
     return purchase;
   },
 
-  // Eliminar compra/avance (restaura cupo Y borra del historial de Inicio)
+  // Eliminar compra/avance (restaura cupo)
   async deletePurchase(purchase_id) {
     const { data: purchase, error: fetchErr } = await supabase
       .from("credit_card_purchases")
@@ -228,16 +225,9 @@ export const creditCardService = {
 
     const totalImpact = Number(purchase.total_amount) + Number(purchase.advance_fee || 0);
 
-    // 1. Borrar la transacción vinculada en el historial de gastos (Inicio)
+    // 1. Borrar la transacción vinculada si existía
     if (purchase.transaction_id) {
       await supabase.from("transactions").delete().eq("id", purchase.transaction_id);
-    } else {
-      // Si no tenía ID, buscar por título aproximado
-      await supabase
-        .from("transactions")
-        .delete()
-        .eq("wallet_id", purchase.card?.wallet_id)
-        .ilike("title", `%${purchase.title}%`);
     }
 
     // 2. Eliminar el registro de compra diferida
@@ -267,7 +257,7 @@ export const creditCardService = {
     return true;
   },
 
-  // Pagar tarjeta (ACTUALIZA CUOTAS PAGADAS Y BARRA DE PROGRESO)
+  // Pagar tarjeta (ACTUALIZA CUOTAS PAGADAS Y REGISTRA EL GASTO EN LA CUENTA DÉBITO)
   async payCard({ card_id, payment_amount, from_wallet_id }) {
     const { data: { user } } = await supabase.auth.getUser();
     const payVal = parseFloat(payment_amount);
@@ -279,7 +269,7 @@ export const creditCardService = {
       .eq("id", card_id)
       .single();
 
-    // 1. Descontar dinero de la cuenta de ahorros (ej. Efectivo / Bancolombia)
+    // 1. Descontar dinero de la cuenta de ahorros/débito (ej. Bancolombia)
     const { data: fromWallet } = await supabase
       .from("wallets")
       .select("balance")
@@ -294,11 +284,11 @@ export const creditCardService = {
 
     // 2. Liberar cupo disponible en la tarjeta
     if (card.wallet_id) {
-      const restored = Math.min(Number(card.credit_limit), Number(card.wallet.balance) + payVal);
+      const restored = Math.min(Number(card.credit_limit), Number(card.wallet?.balance || 0) + payVal);
       await walletService.updateWallet(card.wallet_id, { balance: restored });
     }
 
-    // 3. ACTUALIZAR CUOTAS: Avanzar las compras pendientes para llenar la barra y saldarlas
+    // 3. ACTUALIZAR CUOTAS: Avanzar las compras pendientes
     const { data: activePurchases } = await supabase
       .from("credit_card_purchases")
       .select("*")
@@ -339,38 +329,78 @@ export const creditCardService = {
     return true;
   },
 
-  // Cálculo del extracto
-  calculateStatement(card, purchases) {
-    const creditLimit = Number(card.credit_limit);
-    const availableCredit = Number(card.wallet?.balance || 0);
+  // Cálculo del extracto mensual en tiempo real (Opción A: Proyección del próximo corte)
+  calculateStatement(card, purchases = []) {
+    const list = Array.isArray(purchases) ? purchases : [];
+    const creditLimit = Number(card?.credit_limit || 0);
+    const availableCredit = Number(card?.wallet?.balance ?? creditLimit);
     const totalDebt = Math.max(0, creditLimit - availableCredit);
 
-    const rateEA = Number(card.interest_rate_ea) / 100;
+    const cutoffDay = parseInt(card?.cutoff_day) || 1;
+    const paymentDueDay = parseInt(card?.payment_due_day) || 15;
+
+    const rateEA = Number(card?.interest_rate_ea || 0) / 100;
     const monthlyRate = Math.pow(1 + rateEA, 1 / 12) - 1;
+
+    // 1. Determinar el corte que se está acumulando / por liquidar (targetCutoff)
+    const now = new Date();
+    let targetCutoffYear = now.getFullYear();
+    let targetCutoffMonth = now.getMonth();
+    if (now.getDate() > cutoffDay) {
+      // Si el día de hoy ya superó el corte, acumulamos hacia el corte del mes siguiente
+      targetCutoffMonth += 1;
+      if (targetCutoffMonth > 11) {
+        targetCutoffMonth = 0;
+        targetCutoffYear += 1;
+      }
+    }
+    const targetCutoff = new Date(targetCutoffYear, targetCutoffMonth, cutoffDay, 23, 59, 59);
+
+    // 2. Determinar la fecha límite de pago para ese corte
+    let dueMonth = targetCutoff.getMonth();
+    let dueYear = targetCutoff.getFullYear();
+    if (paymentDueDay <= cutoffDay) {
+      dueMonth += 1;
+      if (dueMonth > 11) {
+        dueMonth = 0;
+        dueYear += 1;
+      }
+    }
+
+    const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+    const dueDateLabel = `${paymentDueDay} de ${monthNames[dueMonth]}`;
 
     let totalPrincipalToPayThisMonth = 0;
     let totalInterestThisMonth = 0;
 
     // Solo considerar las compras que tengan cuotas pendientes
-    const pendingPurchases = purchases.filter(p => p.installments_paid < p.installments);
+    const pendingPurchases = list.filter(p => p.installments_paid < p.installments);
 
     pendingPurchases.forEach(p => {
       const remainingInstallments = p.installments - p.installments_paid;
       const principalPerInstallment = Number(p.total_amount) / p.installments;
       const remainingDebt = principalPerInstallment * remainingInstallments;
 
+      // Si la compra se realizó antes o el día del corte objetivo, entra en la cuota
+      const pDate = new Date((p.purchase_date || "") + "T23:59:59");
+      if (!isNaN(pDate.getTime()) && pDate.getTime() > targetCutoff.getTime()) {
+        return; // Pertenece a un corte aún más futuro
+      }
+
       totalPrincipalToPayThisMonth += principalPerInstallment;
 
-      if (p.installments === 1 && !p.is_advance) {
-        // 1 cuota sin interés
+      if ((p.installments === 1 && !p.is_advance) || p.is_zero_interest) {
+        // 1 cuota sin interés o convenio comercial 0%
       } else {
         const interest = remainingDebt * monthlyRate;
         totalInterestThisMonth += interest;
       }
     });
 
-    const managementFee = Number(card.management_fee || 0);
-    const estimatedStatement = totalPrincipalToPayThisMonth + totalInterestThisMonth + managementFee;
+    const managementFee = Number(card?.management_fee || 0);
+    const hasCurrentCharges = (totalPrincipalToPayThisMonth > 0 || totalInterestThisMonth > 0);
+    const feeToCharge = hasCurrentCharges ? managementFee : 0;
+    const estimatedStatement = totalPrincipalToPayThisMonth + totalInterestThisMonth + feeToCharge;
 
     return {
       creditLimit,
@@ -379,9 +409,68 @@ export const creditCardService = {
       monthlyRatePercentage: (monthlyRate * 100).toFixed(2),
       totalPrincipalToPayThisMonth: Math.round(totalPrincipalToPayThisMonth),
       totalInterestThisMonth: Math.round(totalInterestThisMonth),
-      managementFee,
+      managementFee: feeToCharge,
       estimatedStatement: Math.round(estimatedStatement),
-      activePurchases: purchases // Mostrar todas para ver las cumplidas al 100% y las pendientes
+      dueDateLabel,
+      activePurchases: list
     };
+  },
+
+  // Resumen sincronizado para el banner de Inicio (Dashboard)
+  async getTotalStatementSummary() {
+    try {
+      const cards = await this.getCreditCards();
+      if (!cards || cards.length === 0) {
+        return { totalDue: 0, earliestDueDay: null, dueDateLabel: null, hasCards: false };
+      }
+
+      // Obtener transacciones del mes actual para verificar si ya se pagó la tarjeta este mes
+      const now = new Date();
+      const currentMonthTransactions = await transactionService.getTransactions(
+        now.getFullYear(),
+        now.getMonth() + 1
+      );
+
+      let totalDue = 0;
+      let earliestDueDay = null;
+      let dueDateLabel = null;
+
+      for (const card of cards) {
+        const purchases = await this.getPurchases(card.id);
+        const statement = this.calculateStatement(card, purchases);
+
+        if (statement.estimatedStatement <= 0) {
+          continue;
+        }
+
+        // Si ya se registró un pago de esta tarjeta en este mes
+        const isPaidThisMonth = (currentMonthTransactions || []).some(t =>
+          t.type === "expense" &&
+          t.title &&
+          t.title.toLowerCase().includes("pago tarjeta") &&
+          t.title.toLowerCase().includes(card.name.toLowerCase())
+        );
+
+        if (isPaidThisMonth) {
+          continue;
+        }
+
+        totalDue += statement.estimatedStatement;
+        const dueDay = parseInt(card.payment_due_day);
+        if (dueDay && (!earliestDueDay || dueDay < earliestDueDay)) {
+          earliestDueDay = dueDay;
+          dueDateLabel = statement.dueDateLabel;
+        }
+      }
+
+      return {
+        totalDue: Math.round(totalDue),
+        earliestDueDay,
+        dueDateLabel,
+        hasCards: true
+      };
+    } catch (e) {
+      return { totalDue: 0, earliestDueDay: null, dueDateLabel: null, hasCards: false };
+    }
   }
 };
