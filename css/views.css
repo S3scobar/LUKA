@@ -1651,3 +1651,215 @@
   font-weight: 600;
   color: var(--text-muted);
 }
+/* =========================================================
+   MÓDULO DE PRESUPUESTOS (DISEÑO LIMPIO Y DE ALTO CONTRASTE)
+   ========================================================= */
+
+/* 1. Tarjeta Resumen Principal (Hero Card) */
+.budget-hero-card {
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border, #E2E8F0);
+  border-radius: var(--radius-lg, 16px);
+  padding: 1.25rem 1.4rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.budget-hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.budget-hero-badge {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--primary, #2563EB);
+  background: rgba(37, 99, 235, 0.08);
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.budget-hero-pct-badge {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #2563EB;
+  background: rgba(37, 99, 235, 0.1);
+  padding: 3px 9px;
+  border-radius: 8px;
+}
+
+.budget-hero-pct-badge.is-warn {
+  color: #D97706;
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.budget-hero-pct-badge.is-danger {
+  color: #DC2626;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.budget-hero-amount-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.budget-hero-spent {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--text-main, #0F172A);
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.budget-hero-limit {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text-muted, #64748B);
+}
+
+/* Barra del resumen: 10px de grosor, pista definida y color vivo */
+.budget-hero-progress-track {
+  height: 10px;
+  width: 100%;
+  background: #E2E8F0;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 0.85rem;
+}
+
+.budget-hero-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.budget-hero-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--text-muted, #64748B);
+}
+
+.budget-hero-avail {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-main, #0F172A);
+}
+
+.budget-hero-avail strong {
+  color: #10B981;
+}
+
+/* 2. Lista de Tarjetas de Categorías */
+.budgets-list-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.budget-card {
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border, #E2E8F0);
+  border-radius: var(--radius-lg, 16px);
+  padding: 1.1rem 1.25rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+
+.budget-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  border-color: #CBD5E1;
+}
+
+.budget-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.budget-cat-info {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.budget-cat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.budget-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.budget-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main, #0F172A);
+  margin-bottom: 2px;
+}
+
+.budget-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted, #64748B);
+  font-weight: 500;
+}
+
+.budget-numbers {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main, #0F172A);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.budget-limit-divider {
+  color: var(--text-muted, #94A3B8);
+  font-weight: 400;
+  margin: 0 2px;
+}
+
+.budget-limit-val {
+  color: var(--text-muted, #64748B);
+  font-weight: 500;
+}
+
+/* Barra de progreso de la categoría: visible y con esquinas redondeadas */
+.budget-progress-track {
+  height: 9px;
+  width: 100%;
+  background: #E2E8F0;
+  border-radius: 999px;
+  margin-top: 0.85rem;
+  overflow: hidden;
+}
+
+.budget-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 4px;
+}

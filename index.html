@@ -28,6 +28,7 @@
     <div id="nav-tabs" class="nav-links" style="display: none;">
       <button class="nav-item-btn active" data-tab="dashboard"><i class="fa-solid fa-house"></i> Inicio</button>
       <button class="nav-item-btn" data-tab="wallets"><i class="fa-solid fa-wallet"></i> Billeteras</button>
+      <button class="nav-item-btn" data-tab="budgets"><i class="fa-solid fa-bullseye"></i> Presupuesto</button>
       <button class="nav-item-btn" data-tab="cards"><i class="fa-solid fa-credit-card"></i> Tarjetas</button>
       <button class="nav-item-btn" data-tab="subs"><i class="fa-solid fa-calendar-days"></i> Suscripciones</button>
       <button class="nav-item-btn" data-tab="savings"><i class="fa-solid fa-piggy-bank"></i> Ahorros</button>
@@ -69,6 +70,7 @@
     import { savingsView } from "./js/views/SavingsView.js";
     import { analyticsView } from "./js/views/analyticsView.js";
     import { tutorialTour } from "./js/components/tutorialTour.js";
+    import { budgetsView } from "./js/views/budgetsView.js";
 
     const navTabs = document.getElementById("nav-tabs");
     const userMenu = document.getElementById("user-menu");
@@ -91,6 +93,7 @@
       else if (tab === "subs") subscriptionsView.render("app");
       else if (tab === "savings") savingsView.render("app");
       else if (tab === "analytics") analyticsView.render("app");
+      else if (tab === "budgets") budgetsView.render("app");
 
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
