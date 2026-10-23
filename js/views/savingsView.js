@@ -1,8 +1,9 @@
-// js/views/SavingsView.js
+// js/views/savingsView.js
 import { goalService } from "../services/goalService.js";
 import { walletService } from "../services/walletService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 
+import { escapeHtml } from "../utils.js";
 const SAVING_ICONS = [
   "fa-piggy-bank", "fa-vault", "fa-box-archive", "fa-building-columns",
   "fa-wallet", "fa-money-bill-wave", "fa-car", "fa-house", "fa-plane",
@@ -68,7 +69,7 @@ export const savingsView = {
                           <i class="fa-solid ${fund.icon || "fa-piggy-bank"}"></i>
                         </div>
                         <div class="fund-title-wrap">
-                          <span class="fund-name">${fund.title}</span>
+                          <span class="fund-name">${escapeHtml(fund.title)}</span>
                           ${yieldRate > 0 ? `
                             <span class="badge-yield" style="background: rgba(16, 185, 129, 0.15); color: #10B981; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; display: inline-flex; align-items: center; gap: 3px;">
                               <i class="fa-solid fa-arrow-trend-up"></i> +${yieldRate}% E.A.
@@ -97,10 +98,10 @@ export const savingsView = {
 
                       <!-- BOTONES: AÑADIR Y RETIRAR DINERO -->
                       <div class="fund-actions-bar" style="display: flex; gap: 0.5rem; margin-top: 0.35rem;">
-                        <button class="btn btn-primary btn-sm btn-add-savings" data-id="${fund.id}" data-title="${fund.title}" style="flex: 1;">
+                        <button class="btn btn-primary btn-sm btn-add-savings" data-id="${fund.id}" data-title="${escapeHtml(fund.title)}" style="flex: 1;">
                           <i class="fa-solid fa-circle-plus"></i> Añadir
                         </button>
-                        <button class="btn btn-secondary btn-sm btn-withdraw-savings" data-id="${fund.id}" data-title="${fund.title}" data-current="${currentNum}" style="flex: 1;" ${!canWithdraw ? "disabled title='Este fondo no tiene dinero para retirar'" : ""}>
+                        <button class="btn btn-secondary btn-sm btn-withdraw-savings" data-id="${fund.id}" data-title="${escapeHtml(fund.title)}" data-current="${currentNum}" style="flex: 1;" ${!canWithdraw ? "disabled title='Este fondo no tiene dinero para retirar'" : ""}>
                           <i class="fa-solid fa-arrow-up-from-bracket"></i> Retirar
                         </button>
                       </div>
@@ -211,7 +212,7 @@ function showNewFundModal({ wallets = [], onSave }) {
           <select id="fund-initial-wallet">
             ${wallets.map((w, index) => `
               <option value="${w.id}" ${index === 0 ? "selected" : ""}>
-                ${w.name} ($ ${Number(w.balance).toLocaleString("es-CO")})
+                ${escapeHtml(w.name)} ($ ${Number(w.balance).toLocaleString("es-CO")})
               </option>
             `).join("")}
           </select>
@@ -328,7 +329,7 @@ function showAddSavingsModal({ fundId, fundTitle, wallets, onSave }) {
           <select id="add-wallet-id" required>
             ${wallets.map((w, index) => `
               <option value="${w.id}" ${index === 0 ? "selected" : ""}>
-                ${w.name} (Saldo:$ ${Number(w.balance).toLocaleString("es-CO")})
+                ${escapeHtml(w.name)} (Saldo:$ ${Number(w.balance).toLocaleString("es-CO")})
               </option>
             `).join("")}
           </select>
@@ -392,7 +393,7 @@ function showWithdrawSavingsModal({ fundId, fundTitle, currentAmount, wallets, o
       </div>
 
       <form id="withdraw-savings-form">
-        <div style="background: #F8FAFC; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.75rem; margin-bottom: 1rem;">
+        <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.75rem; margin-bottom: 1rem;">
           <small style="color: var(--text-muted); display: block;">Retirando de:</small>
           <strong style="font-size: 0.95rem;">${fundTitle}</strong>
           <div style="margin-top: 4px; font-size: 0.85rem; color: var(--success); font-weight: 700;">
@@ -415,7 +416,7 @@ function showWithdrawSavingsModal({ fundId, fundTitle, currentAmount, wallets, o
           <select id="withdraw-wallet-id" required>
             ${wallets.map((w, index) => `
               <option value="${w.id}" ${index === 0 ? "selected" : ""}>
-                ${w.name} (Saldo actual:$ ${Number(w.balance).toLocaleString("es-CO")})
+                ${escapeHtml(w.name)} (Saldo actual:$ ${Number(w.balance).toLocaleString("es-CO")})
               </option>
             `).join("")}
           </select>

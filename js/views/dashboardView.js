@@ -5,6 +5,7 @@ import { transactionService } from "../services/transactionService.js";
 import { creditCardService } from "../services/creditCardService.js";
 import { quickExpenseBar } from "../components/quickExpenseBar.js";
 
+import { escapeHtml } from "../utils.js";
 export const dashboardView = {
   showAllTransactions: false,
 
@@ -162,7 +163,7 @@ export const dashboardView = {
                     <i class="fa-solid ${catIcon}"></i>
                   </div>
                   <div class="trans-info">
-                    <span class="trans-title">${t.title}</span>
+                    <span class="trans-title">${escapeHtml(t.title)}</span>
                     <div class="trans-meta">
                       <span class="trans-wallet"><i class="fa-solid fa-wallet"></i> ${walletName}</span>
                       <span class="trans-date">${t.transaction_date}</span>

@@ -1,6 +1,7 @@
 // js/views/analyticsView.js
 import { transactionService } from "../services/transactionService.js";
 
+import { escapeHtml } from "../utils.js";
 const MONTH_NAMES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
@@ -182,7 +183,7 @@ export const analyticsView = {
 
         <!-- Banner Comparativo Inteligente -->
         ${paceComparison.hasData ? `
-          <div class="pace-insight-banner" style="background: ${paceComparison.isLower ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; border: 1px solid ${paceComparison.isLower ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}; border-radius: 10px; padding: 0.8rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 0.88rem; color: ${paceComparison.isLower ? '#065F46' : '#991B1B'};">
+          <div class="pace-insight-banner" style="background: ${paceComparison.isLower ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; border: 1px solid ${paceComparison.isLower ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}; border-radius: 10px; padding: 0.8rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 0.88rem; color: ${paceComparison.isLower ? 'var(--success-text)' : 'var(--danger-text)'};">
             <i class="fa-solid ${paceComparison.isLower ? 'fa-circle-check text-success' : 'fa-triangle-exclamation text-danger'}" style="font-size: 1.15rem;"></i>
             <span>
               ${paceComparison.isLower 
@@ -192,7 +193,7 @@ export const analyticsView = {
             </span>
           </div>
         ` : `
-          <div class="pace-insight-banner" style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 10px; padding: 0.8rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 0.88rem; color: #1E40AF;">
+          <div class="pace-insight-banner" style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 10px; padding: 0.8rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 0.88rem; color: var(--primary-text);">
             <i class="fa-solid fa-circle-info" style="font-size: 1.15rem; color: #3B82F6;"></i>
             <span>
               <strong>Primer periodo registrado:</strong> No hay gastos registrados en el mes anterior. La comparativa de ritmo de gasto se activará automáticamente a partir del próximo mes.
@@ -222,7 +223,7 @@ export const analyticsView = {
               <div class="${isExpenseActive ? "top-expense-alert" : "top-income-alert"}">
                 <i class="fa-solid ${isExpenseActive ? "fa-fire text-danger" : "fa-trophy text-success"}"></i>
                 <span>
-                  Mayor ${isExpenseActive ? "gasto" : "ingreso"}: <strong>${topItem.name}</strong> con
+                  Mayor ${isExpenseActive ? "gasto" : "ingreso"}: <strong>${escapeHtml(topItem.name)}</strong> con
                   <strong>$ ${topItem.amount.toLocaleString("es-CO")}</strong>
                   (${topItem.percentage}% del total de ${isExpenseActive ? "gastos" : "ingresos"}).
                 </span>
@@ -232,7 +233,7 @@ export const analyticsView = {
             <!-- Barra Segmentada -->
             <div class="segmented-bar-container">
               ${activeList.map(item => `
-                <div class="bar-segment" style="width: ${item.exactPercentage}%; background-color: ${item.color};" title="${item.name}: ${item.percentage}%"></div>
+                <div class="bar-segment" style="width: ${item.exactPercentage}%; background-color: ${item.color};" title="${escapeHtml(item.name)}: ${item.percentage}%"></div>
               `).join("")}
             </div>
 
@@ -245,7 +246,7 @@ export const analyticsView = {
                   </div>
                   <div class="cat-breakdown-info">
                     <div class="cat-breakdown-header">
-                      <span class="cat-breakdown-name">${item.name}</span>
+                      <span class="cat-breakdown-name">${escapeHtml(item.name)}</span>
                       <span class="cat-breakdown-amount">$ ${item.amount.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
                     </div>
                     <div class="cat-progress-track">

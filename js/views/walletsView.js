@@ -3,6 +3,7 @@ import { walletService } from "../services/walletService.js";
 import { categoryService } from "../services/categoryService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 
+import { escapeHtml } from "../utils.js";
 const AVAILABLE_ICONS = [
   "fa-utensils", "fa-burger", "fa-pizza-slice", "fa-mug-hot", "fa-apple-whole",
   "fa-bus", "fa-car", "fa-gas-pump", "fa-train", "fa-plane",
@@ -61,7 +62,7 @@ export const walletsView = {
                       <i class="fa-solid ${w.icon}"></i>
                     </div>
                     <div class="wallet-item-info">
-                      <span class="wallet-name">${w.name}</span>
+                      <span class="wallet-name">${escapeHtml(w.name)}</span>
                       <span class="wallet-balance">$ ${Number(w.balance).toLocaleString("es-CO", { minimumFractionDigits: 2 })}</span>
                     </div>
                     <div class="wallet-actions">
@@ -119,7 +120,7 @@ export const walletsView = {
                       <div class="cat-icon-box" style="background-color: ${cat.color}25; color: ${cat.color};">
                         <i class="fa-solid ${cat.icon}"></i>
                       </div>
-                      <span class="cat-name">${cat.name}</span>
+                      <span class="cat-name">${escapeHtml(cat.name)}</span>
 
                       <div class="cat-card-actions">
                         <button type="button" class="btn-edit-cat" data-id="${cat.id}" title="Editar">
@@ -308,7 +309,7 @@ function showTransferModal({ wallets, onSave }) {
           <select id="transfer-from-wallet" required>
             ${wallets.map(w => `
               <option value="${w.id}" ${w.id === defaultFrom ? "selected" : ""}>
-                ${w.name} ($ ${Number(w.balance).toLocaleString("es-CO")})
+                ${escapeHtml(w.name)} ($ ${Number(w.balance).toLocaleString("es-CO")})
               </option>
             `).join("")}
           </select>
@@ -319,7 +320,7 @@ function showTransferModal({ wallets, onSave }) {
           <select id="transfer-to-wallet" required>
             ${wallets.map(w => `
               <option value="${w.id}" ${w.id === defaultTo ? "selected" : ""}>
-                ${w.name} ($ ${Number(w.balance).toLocaleString("es-CO")})
+                ${escapeHtml(w.name)} ($ ${Number(w.balance).toLocaleString("es-CO")})
               </option>
             `).join("")}
           </select>
@@ -392,7 +393,7 @@ function showWalletModal({ wallet = null, onSave }) {
       <form id="wallet-modal-form">
         <div class="form-group">
           <label>Nombre de la Cuenta</label>
-          <input type="text" id="modal-wallet-name" value="${isEditing ? wallet.name : ""}" placeholder="Ej. Bancolombia, Nequi, Efectivo" required />
+          <input type="text" id="modal-wallet-name" value="${escapeHtml(isEditing ? wallet.name : "")}" placeholder="Ej. Bancolombia, Nequi, Efectivo" required />
         </div>
 
         <div class="form-group">
@@ -479,7 +480,7 @@ function showCategoryModal({ category = null, type = "expense", onSave }) {
       <form id="category-modal-form">
         <div class="form-group">
           <label>Nombre</label>
-          <input type="text" id="cat-form-name" value="${isEditing ? category.name : ""}" placeholder="Ej. Cine, Ropa, Gimnasio" required />
+          <input type="text" id="cat-form-name" value="${escapeHtml(isEditing ? category.name : "")}" placeholder="Ej. Cine, Ropa, Gimnasio" required />
         </div>
 
         <div class="form-grid" style="grid-template-columns: 1fr 1fr;">

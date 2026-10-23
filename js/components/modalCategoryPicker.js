@@ -1,4 +1,5 @@
-// js/components/modalCategoryPicker.js
+
+import { escapeHtml } from "../utils.js";// js/components/modalCategoryPicker.js
 export const modalCategoryPicker = {
   render({ categories, onSelect }) {
     // Eliminar modal previo si existe
@@ -21,7 +22,7 @@ export const modalCategoryPicker = {
               <div class="cat-icon-circle" style="background-color: ${cat.color}20; color: ${cat.color};">
                 <i class="fa-solid ${cat.icon}"></i>
               </div>
-              <span class="cat-modal-label">${cat.name}</span>
+              <span class="cat-modal-label">${escapeHtml(cat.name)}</span>
             </button>
           `).join("")}
         </div>

@@ -30,6 +30,7 @@ Además, los usuarios suelen enfrentar cuatro problemas estructurales:
 * **Aislamiento multi-usuario:** se usa Row Level Security (RLS) de Supabase; cada fila pertenece a un `user_id` y las políticas limitan el acceso a `auth.uid() = user_id`.
 * **Cero dependencias pesadas en el frontend:** sin React, Vue ni Angular, y sin bundlers. Se usan ES Modules nativos para lograr una carga inicial rápida y máxima portabilidad.
 * **Pensada para móvil:** navegación por pestañas deslizables con el pulgar, entradas numéricas con separador de miles automático (formato `es-CO`) y un tutorial interactivo en el primer ingreso.
+* **Tema claro y oscuro:** todos los colores salen de variables CSS (tokens) definidas en `css/main.css`; el tema oscuro solo redefine esas variables, por lo que cualquier componente nuevo lo hereda sin código extra.
 
 ---
 
@@ -81,6 +82,13 @@ Además, los usuarios suelen enfrentar cuatro problemas estructurales:
 ### 3.8. Tutorial interactivo
 * Guía paso a paso por cada pestaña, disponible desde un botón flotante.
 
+### 3.9. Modo oscuro
+* Botón de luna/sol en el header (visible también en la pantalla de acceso).
+* Orden de prioridad: preferencia guardada por el usuario (`localStorage`, clave `luka_theme`) > preferencia del sistema (`prefers-color-scheme`).
+* Un pequeño script en `<head>` aplica el tema antes de pintar, evitando el parpadeo blanco al cargar.
+* Si el usuario nunca eligió manualmente, la app sigue los cambios del sistema en tiempo real.
+* Actualiza el `theme-color` del navegador móvil y usa `color-scheme` para que los controles nativos (fechas, selects, scrollbars) también se vean oscuros.
+
 ---
 
 ## 4. Arquitectura de Software y Stack Tecnológico
@@ -105,18 +113,21 @@ Además, los usuarios suelen enfrentar cuatro problemas estructurales:
 ## 5. Estructura del Directorio
 
 ```text
-├── index.html                      # Punto de entrada, navegación y arranque de la SPA
+├── index.html                      # Estructura HTML, script anti-parpadeo del tema y carga de js/main.js
 ├── vercel.json                     # cleanUrls + reescritura de rutas para SPA
 ├── favicon.svg                     # Icono de la app
 ├── .gitignore
 ├── README.md
 ├── css/
-│   ├── main.css                    # Variables de diseño, reset y tipografía
+│   ├── main.css                    # Tokens de diseño (tema claro y oscuro), reset y tipografía
 │   ├── components.css              # Botones, tarjetas, modales y formularios
 │   └── views.css                   # Estilos específicos de cada vista
 └── js/
+    ├── main.js                     # Punto de entrada: sesión, navegación entre vistas y tema
     ├── config.js                   # URL y clave pública (anon) de Supabase
-    ├── supabaseClient.js           # Inicialización del cliente Supabase
+    ├── supabaseClient.js           # Cliente Supabase y requireUserId() (id desde la sesión local)
+    ├── themeManager.js             # Tema claro/oscuro: preferencia, persistencia y botón
+    ├── utils.js                    # escapeHtml() para texto del usuario en plantillas
     ├── currencyFormatter.js        # Entrada de moneda con separador de miles (es-CO)
     ├── services/
     │   ├── authService.js          # Registro, login, logout y sesión
@@ -138,12 +149,11 @@ Además, los usuarios suelen enfrentar cuatro problemas estructurales:
         ├── budgetsView.js          # Presupuestos
         ├── creditCardsView.js      # Tarjetas de crédito
         ├── subscriptionsView.js    # Suscripciones
-        ├── SavingsView.js          # Ahorros (vista activa)
-        ├── goalsView.js            # Vista de metas (no referenciada actualmente)
+        ├── savingsView.js          # Ahorros
         └── analyticsView.js        # Análisis mensual y anual
 ```
 
-> **Nota:** los nombres de archivo distinguen mayúsculas y minúsculas en Linux/Vercel. `index.html` importa `./js/views/SavingsView.js` con esa capitalización exacta.
+> **Nota:** los nombres de archivo distinguen mayúsculas y minúsculas en Linux/Vercel. Todos los módulos usan `camelCase` y los imports deben coincidir exactamente.
 
 ---
 
@@ -195,7 +205,9 @@ Importa el repositorio en Vercel como proyecto estático, sin comando de build. 
 * **Clave pública:** la `anon key` incluida en `config.js` es pública por diseño; la protección de los datos depende por completo de las políticas RLS de cada tabla, incluidas `budgets`, `credit_cards` y `credit_card_purchases`.
 * **Saldos desde el cliente:** transferencias, pagos y compras de tarjeta, y el ajuste de cupo se calculan en JavaScript con varias llamadas consecutivas (leer, calcular, actualizar). Si una llamada falla a mitad del proceso, o se usa la app desde dos dispositivos a la vez, el saldo puede quedar inconsistente. Se recomienda migrar estas operaciones a funciones RPC en PostgreSQL que se ejecuten en una sola transacción.
 * **Esquema no versionado:** las tablas, triggers y políticas RLS viven solo en Supabase. Conviene agregar una carpeta `supabase/` con las migraciones SQL para poder reproducir el entorno.
-* **Escape de HTML:** varias vistas construyen el DOM con `innerHTML` interpolando textos del usuario (nombres de metas, suscripciones, categorías, billeteras, títulos). Se recomienda escapar estos valores antes de renderizarlos.
+* **Escape de HTML:** las vistas construyen el DOM con `innerHTML`; todo texto escrito por el usuario (nombres de cuentas, categorías, metas, suscripciones, tarjetas y títulos de movimientos) pasa por `escapeHtml()` de `js/utils.js`. Al agregar nuevas plantillas, escapa cualquier texto libre del usuario.
+* **Posible doble conteo en saldos (verificar):** `payCard()` y el avance en efectivo de `addPurchase()` actualizan el saldo de una billetera manualmente *y además* registran una transacción. Si en Supabase existe un trigger que ajusta el saldo al insertar transacciones, esas dos operaciones descontarían o sumarían dos veces. Conviene revisar los triggers de `transactions` y unificar el criterio.
+* **Identidad del usuario:** los servicios obtienen el `user_id` con `requireUserId()` (sesión local) en lugar de `auth.getUser()`, evitando una petición de red por cada operación; la autorización real la imponen las políticas RLS.
 * **Detección de pago de tarjeta:** el banner de Inicio considera una tarjeta como pagada si existe un gasto del mes cuyo título contiene «pago tarjeta» y el nombre de la tarjeta.
 * **Accesibilidad:** el `viewport` actual bloquea el zoom (`user-scalable=no`).
 
@@ -205,8 +217,9 @@ Importa el repositorio en Vercel como proyecto estático, sin comando de build. 
 
 - [ ] Versionar el esquema SQL, los triggers y las políticas RLS.
 - [ ] Mover transferencias, pagos y compras de tarjeta a funciones RPC atómicas.
-- [ ] Escapar el contenido dinámico antes de insertarlo con `innerHTML`.
-- [ ] Eliminar o integrar `goalsView.js`.
+- [x] Escapar el contenido dinámico antes de insertarlo con `innerHTML`.
+- [x] Modo oscuro con alternador y persistencia.
+- [ ] Revisar y unificar el criterio de saldos entre triggers y servicios (ver sección 8).
 - [ ] Convertir la app en PWA instalable (manifest y service worker).
 - [ ] Exportar movimientos a CSV.
 

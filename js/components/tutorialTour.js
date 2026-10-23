@@ -10,7 +10,6 @@ export const tutorialTour = {
       tab: "dashboard",
       icon: "fa-bolt",
       color: "#2563EB",
-      bg: "#EFF6FF",
       badge: "Bienvenida",
       title: "¡Te damos la bienvenida a LUKA! ⚡",
       description: "Tu asistente financiero inteligente. Diseñado para registrar movimientos en 1 clic, proyectar extractos de tarjetas y organizar todo tu dinero sin complicaciones."
@@ -19,7 +18,6 @@ export const tutorialTour = {
       tab: "dashboard",
       icon: "fa-house",
       color: "#2563EB",
-      bg: "#EFF6FF",
       badge: "Pestaña 1",
       title: "Inicio • Tu Centro de Control",
       description: "• <strong>Métricas del Mes:</strong> Tus Ingresos, Gastos y Balance neto en tiempo real.<br>• <strong>Registro Rápido:</strong> Elige con qué cuenta pagas, escribe el valor (con puntos de miles automáticos) y toca una categoría para guardarlo en 1 clic con animación.<br>• <strong>Movimientos Recientes:</strong> Consulta tus últimos 5 registros o despliégalos todos."
@@ -28,7 +26,6 @@ export const tutorialTour = {
       tab: "wallets",
       icon: "fa-wallet",
       color: "#D97706",
-      bg: "#FEF3C7",
       badge: "Pestaña 2",
       title: "Billeteras • Tus Cuentas",
       description: "• <strong>Cuentas Bancarias y Efectivo:</strong> Crea y gestiona tus cuentas (<em>Nequi, Bancolombia, Nu, Efectivo</em>) con su icono y color.<br>• <strong>Transferencias:</strong> Traspasa saldo entre tus cuentas sin alterar tus gastos ni ingresos del mes.<br>• <strong>Categorías:</strong> Crea categorías y fija tus 4 favoritas para el registro en 1 clic."
@@ -37,7 +34,6 @@ export const tutorialTour = {
       tab: "cards",
       icon: "fa-credit-card",
       color: "#8B5CF6",
-      bg: "#F3E8FF",
       badge: "Pestaña 3",
       title: "Tarjetas • Líneas de Crédito",
       description: "• <strong>Cupo Total y Disponible:</strong> Monitorea cuánto cupo te queda y tus deudas activas.<br>• <strong>Compras a Cuotas:</strong> Simulación de intereses mensuales con tu tasa % E.A.<br>• <strong>Avances en Efectivo:</strong> Retira cupo hacia tus cuentas de débito.<br>• <strong>Pagar Tarjeta:</strong> Abona a tu extracto y libera cupo automáticamente."
@@ -46,7 +42,6 @@ export const tutorialTour = {
       tab: "subs",
       icon: "fa-calendar-days",
       color: "#DB2777",
-      bg: "#FCE7F3",
       badge: "Pestaña 4",
       title: "Suscripciones • Pagos Fijos",
       description: "• <strong>Control de Gastos Fijos:</strong> Agenda tus pagos recurrentes (telefonía, arriendo, streaming, servicios).<br>• <strong>Marcar como Pagada:</strong> Al pagarlas, se descuentan de tu cuenta y se suman a tus gastos del mes."
@@ -55,7 +50,6 @@ export const tutorialTour = {
       tab: "savings",
       icon: "fa-piggy-bank",
       color: "#059669",
-      bg: "#D1FAE5",
       badge: "Pestaña 5",
       title: "Ahorros • Metas y Cajitas",
       description: "• <strong>Fondos y Alcancías:</strong> Organiza tu ahorro por objetivos con barras de progreso.<br>• <strong>Aporte Automático:</strong> Al sumar dinero a una cajita, se descuenta de tu cuenta bancaria y se registra como ahorro en tus gastos del mes."
@@ -64,7 +58,6 @@ export const tutorialTour = {
       tab: "analytics",
       icon: "fa-chart-pie",
       color: "#0D9488",
-      bg: "#CCFBF1",
       badge: "Pestaña 6",
       title: "Análisis • Estadísticas",
       description: "• <strong>Desglose Mensual:</strong> Alterna entre tus gastos e ingresos del mes con barras proporcionales y alertas de tus mayores movimientos.<br>• <strong>Modo Anual:</strong> Visualiza en un gráfico comparativo tus ingresos versus gastos mes a mes."
@@ -73,7 +66,6 @@ export const tutorialTour = {
       tab: "dashboard",
       icon: "fa-rocket",
       color: "#2563EB",
-      bg: "#EFF6FF",
       badge: "¡Todo Listo!",
       title: "¡Empieza a usar LUKA!",
       description: "Ya conoces todas las herramientas. Empieza registrando tus movimientos diarios.<br><br>Si alguna vez quieres volver a repasar esta guía, solo presiona el botón <strong>💡 Tutorial</strong> en la esquina inferior derecha."
@@ -128,7 +120,7 @@ export const tutorialTour = {
 
       <!-- Icono grande representativo de la pestaña -->
       <div class="tour-icon-wrap">
-        <div class="tour-icon-box" style="background-color: ${step.bg}; color: ${step.color};">
+        <div class="tour-icon-box" style="background-color: ${step.color}26; color: ${step.color};">
           <i class="fa-solid ${step.icon}"></i>
         </div>
       </div>
