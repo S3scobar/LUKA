@@ -1,30 +1,7 @@
 // js/services/goalService.js
-import { supabase } from "../supabaseClient.js";
+import { supabase, requireUserId } from "../supabaseClient.js";
 import { transactionService } from "./transactionService.js";
-
-// Función auxiliar para buscar categoría de ahorro (o fallback)
-async function resolveCategoryId(userId, type) {
-  const { data: ahorroCat } = await supabase
-    .from("categories")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("type", type)
-    .ilike("name", "%ahorro%")
-    .limit(1)
-    .maybeSingle();
-
-  if (ahorroCat) return ahorroCat.id;
-
-  const { data: fallbackCat } = await supabase
-    .from("categories")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("type", type)
-    .limit(1)
-    .maybeSingle();
-
-  return fallbackCat ? fallbackCat.id : null;
-}
+import { categoryService } from "./categoryService.js";
 
 // Función matemática para liquidar rendimientos diarios (Tasa Efectiva Anual -> Diaria)
 function calculatePendingYield(goal) {
@@ -71,23 +48,28 @@ export const goalService = {
 
     const goals = data || [];
 
-    // Liquidar rendimientos pendientes en segundo plano para cada meta con rendimiento
+    // Liquidar rendimientos pendientes: las actualizaciones son independientes, se envían en paralelo.
+    // Si alguna falla no se interrumpe la carga: el rendimiento se recalcula en la siguiente consulta
+    // porque last_yield_date no avanzó.
+    const pendingUpdates = [];
     for (const goal of goals) {
       const yieldResult = calculatePendingYield(goal);
-      if (yieldResult) {
-        goal.current_amount = yieldResult.newAmount;
-        goal.last_yield_date = yieldResult.updatedDate;
+      if (!yieldResult) continue;
 
-        // Actualizar en Supabase de forma asíncrona
-        await supabase
+      goal.current_amount = yieldResult.newAmount;
+      goal.last_yield_date = yieldResult.updatedDate;
+
+      pendingUpdates.push(
+        supabase
           .from("saving_goals")
           .update({
             current_amount: yieldResult.newAmount,
             last_yield_date: yieldResult.updatedDate
           })
-          .eq("id", goal.id);
-      }
+          .eq("id", goal.id)
+      );
     }
+    if (pendingUpdates.length > 0) await Promise.all(pendingUpdates);
 
     return goals.map(goal => ({
       ...goal,
@@ -109,8 +91,7 @@ export const goalService = {
     wallet_id = null,
     yield_rate = 0 // Tasa anual en porcentaje (ej: 13 para 13% E.A.)
   }) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuario no autenticado");
+    const userId = await requireUserId();
 
     const initialAmount = parseFloat(current_amount) || 0;
     const rate = parseFloat(yield_rate) || 0;
@@ -121,7 +102,7 @@ export const goalService = {
       .from("saving_goals")
       .insert([
         {
-          user_id: user.id,
+          user_id: userId,
           title: title.trim(),
           target_amount: parseFloat(target_amount),
           current_amount: initialAmount,
@@ -138,7 +119,7 @@ export const goalService = {
 
     // 2. Si hay dinero inicial y se eligió cuenta, registrar el gasto
     if (initialAmount > 0 && wallet_id) {
-      const categoryId = await resolveCategoryId(user.id, "expense");
+      const categoryId = await categoryService.resolveCategoryId(userId, "expense", "%ahorro%");
 
       await transactionService.addTransaction({
         wallet_id,
@@ -154,8 +135,7 @@ export const goalService = {
 
   // Aportar dinero a la meta
   async contributeToGoal(goal_id, amount, wallet_id) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuario no autenticado");
+    const userId = await requireUserId();
 
     const contribution = parseFloat(amount);
     if (isNaN(contribution) || contribution <= 0) {
@@ -199,7 +179,7 @@ export const goalService = {
     if (updateErr) throw updateErr;
 
     // 3. Registrar como gasto de ahorro en la billetera
-    const categoryId = await resolveCategoryId(user.id, "expense");
+    const categoryId = await categoryService.resolveCategoryId(userId, "expense", "%ahorro%");
 
     await transactionService.addTransaction({
       wallet_id,
@@ -214,8 +194,7 @@ export const goalService = {
 
   // Retirar dinero de la cajita hacia una billetera
   async withdrawFromGoal(goal_id, amount, wallet_id) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuario no autenticado");
+    const userId = await requireUserId();
 
     const withdrawal = parseFloat(amount);
     if (isNaN(withdrawal) || withdrawal <= 0) {
@@ -262,7 +241,7 @@ export const goalService = {
     if (updateErr) throw updateErr;
 
     // Registrar como ingreso en la billetera seleccionada
-    const categoryId = await resolveCategoryId(user.id, "income");
+    const categoryId = await categoryService.resolveCategoryId(userId, "income", "%ahorro%");
 
     await transactionService.addTransaction({
       wallet_id,

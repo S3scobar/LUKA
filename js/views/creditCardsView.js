@@ -5,6 +5,7 @@ import { walletService } from "../services/walletService.js";
 import { categoryService } from "../services/categoryService.js";
 import { transactionService } from "../services/transactionService.js";
 
+import { escapeHtml } from "../utils.js";
 export const creditCardsView = {
   selectedCardId: null,
 
@@ -49,7 +50,7 @@ export const creditCardsView = {
           <div class="cards-tabs-row">
             ${cards.map(c => `
               <button class="card-tab-btn ${c.id === this.selectedCardId ? "active" : ""}" data-id="${c.id}">
-                <i class="fa-solid fa-credit-card"></i> ${c.name}
+                <i class="fa-solid fa-credit-card"></i> ${escapeHtml(c.name)}
               </button>
             `).join("")}
             <button id="btn-add-card" class="btn btn-secondary btn-sm" title="Agregar otra tarjeta">
@@ -62,7 +63,7 @@ export const creditCardsView = {
             <div class="card-visual-header">
               <div style="display: flex; align-items: center; gap: 0.6rem;">
                 <span class="card-chip"><i class="fa-solid fa-microchip"></i></span>
-                <span class="card-brand-name">${currentCard.name}</span>
+                <span class="card-brand-name">${escapeHtml(currentCard.name)}</span>
               </div>
               <button id="btn-edit-current-card" class="btn-card-edit" title="Modificar datos, tasa E.A., fechas y cupo">
                 <i class="fa-solid fa-pencil"></i>
@@ -109,7 +110,7 @@ export const creditCardsView = {
                 <span class="statement-title"><i class="fa-solid fa-file-invoice-dollar"></i> Extracto a Pagar este Mes</span>
                 <p>${isPaidThisMonth ? "¡Ya pagaste tu cuota de este periodo!" : "Cuota vigente, intereses y cuota de manejo"}</p>
               </div>
-              <h2 class="statement-total" style="color: ${isPaidThisMonth ? "#10B981" : "#DC2626"};">
+              <h2 class="statement-total" style="color: ${isPaidThisMonth ? "#10B981" : "var(--danger-text)"};">
                 $ ${amountDueThisMonth.toLocaleString("es-CO")}
               </h2>
             </div>
@@ -185,13 +186,13 @@ export const creditCardsView = {
 
                   return `
                     <div class="purchase-item ${isCompleted ? "purchase-completed" : ""}">
-                      <div class="purchase-icon" style="background-color: ${p.is_advance ? "#FEF3C7" : "#EFF6FF"}; color: ${p.is_advance ? "#D97706" : "#2563EB"};">
+                      <div class="purchase-icon" style="background-color: ${p.is_advance ? "var(--warning-soft)" : "var(--primary-soft)"}; color: ${p.is_advance ? "var(--warning-text)" : "var(--primary)"};">
                         <i class="fa-solid ${p.is_advance ? "fa-hand-holding-dollar" : (p.category?.icon || "fa-bag-shopping")}"></i>
                       </div>
 
                       <div class="purchase-info">
                         <div class="purchase-title-wrap">
-                          <span class="purchase-title">${p.title}</span>
+                          <span class="purchase-title">${escapeHtml(p.title)}</span>
                           ${p.is_advance ? `<span class="badge-advance">Avance</span>` : ""}
                           ${isCompleted ? `<span class="badge-paid"><i class="fa-solid fa-check"></i> Pagada</span>` : ""}
                         </div>
@@ -318,7 +319,7 @@ function showCardModal({ card = null, onSave }) {
       <form id="card-form">
         <div class="form-group">
           <label>Nombre de la Tarjeta</label>
-          <input type="text" id="card-name" value="${isEditing ? card.name : ""}" placeholder="Ej. Nu Mastercard, Bancolombia Visa" required />
+          <input type="text" id="card-name" value="${escapeHtml(isEditing ? card.name : "")}" placeholder="Ej. Nu Mastercard, Bancolombia Visa" required />
         </div>
 
         <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
@@ -495,7 +496,7 @@ function showPurchaseModal({ card, categories = [], debitWallets = [], isAdvance
         <div class="form-group">
           <label>Categoría (¿En qué se usará el dinero?)</label>
           <select id="pur-category" required>
-            ${categories.map(c => `<option value="${c.id}">${c.name}</option>`).join("")}
+            ${categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("")}
           </select>
         </div>
 
@@ -503,7 +504,7 @@ function showPurchaseModal({ card, categories = [], debitWallets = [], isAdvance
           <label>¿A qué cuenta entra el dinero del avance?</label>
           <select id="pur-target-wallet" required>
             ${debitWallets.map(w => `
-              <option value="${w.id}">${w.name} (Saldo: $ ${Number(w.balance).toLocaleString("es-CO")})</option>
+              <option value="${w.id}">${escapeHtml(w.name)} (Saldo: $ ${Number(w.balance).toLocaleString("es-CO")})</option>
             `).join("")}
           </select>
         </div>
@@ -609,7 +610,7 @@ function showPayCardModal({ card, statement, suggestedAmount, debitWallets, onSa
   modal.innerHTML = `
     <div class="modal-content" style="max-width: 420px;">
       <div class="modal-header">
-        <h4><i class="fa-solid fa-money-bill-check text-success"></i> Pagar Tarjeta: ${card.name}</h4>
+        <h4><i class="fa-solid fa-money-bill-check text-success"></i> Pagar Tarjeta: ${escapeHtml(card.name)}</h4>
         <button id="btn-close-paycard-modal" class="modal-close-btn">&times;</button>
       </div>
 
@@ -631,7 +632,7 @@ function showPayCardModal({ card, statement, suggestedAmount, debitWallets, onSa
           <select id="pay-card-from" required>
             ${debitWallets.map(w => `
               <option value="${w.id}">
-                ${w.name} (Saldo: $ ${Number(w.balance).toLocaleString("es-CO")})
+                ${escapeHtml(w.name)} (Saldo: $ ${Number(w.balance).toLocaleString("es-CO")})
               </option>
             `).join("")}
           </select>

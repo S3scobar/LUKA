@@ -5,6 +5,7 @@ import { categoryService } from "../services/categoryService.js";
 import { transactionService } from "../services/transactionService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 
+import { escapeHtml } from "../utils.js";
 export const subscriptionsView = {
   async render(containerId) {
     const container = document.getElementById(containerId);
@@ -72,7 +73,7 @@ export const subscriptionsView = {
 
                       <div class="sub-details">
                         <div class="sub-title-row">
-                          <span class="sub-name">${sub.name}</span>
+                          <span class="sub-name">${escapeHtml(sub.name)}</span>
                           ${!sub.is_active ? `
                             <span class="badge-sub-status badge-paused">Pausada</span>
                           ` : isPaid ? `
@@ -85,8 +86,8 @@ export const subscriptionsView = {
                         <span class="sub-amount">$ ${Number(sub.amount).toLocaleString("es-CO", { minimumFractionDigits: 0 })} / mes</span>
                         
                         <div class="sub-meta">
-                          ${sub.wallet ? `<span><i class="fa-solid fa-wallet"></i> ${sub.wallet.name}</span>` : ""}
-                          ${sub.category ? `<span><i class="fa-solid ${sub.category.icon}"></i> ${sub.category.name}</span>` : ""}
+                          ${sub.wallet ? `<span><i class="fa-solid fa-wallet"></i> ${escapeHtml(sub.wallet.name)}</span>` : ""}
+                          ${sub.category ? `<span><i class="fa-solid ${sub.category.icon}"></i> ${escapeHtml(sub.category.name)}</span>` : ""}
                         </div>
                       </div>
 
@@ -177,7 +178,7 @@ function showPaySubscriptionModal({ sub, wallets, categories, onSave }) {
   modal.innerHTML = `
     <div class="modal-content" style="max-width: 420px;">
       <div class="modal-header">
-        <h4><i class="fa-solid fa-receipt text-primary"></i> Confirmar Pago de ${sub.name}</h4>
+        <h4><i class="fa-solid fa-receipt text-primary"></i> Confirmar Pago de ${escapeHtml(sub.name)}</h4>
         <button id="btn-close-pay-modal" class="modal-close-btn">&times;</button>
       </div>
 
@@ -195,7 +196,7 @@ function showPaySubscriptionModal({ sub, wallets, categories, onSave }) {
           <select id="pay-wallet-id" required>
             ${wallets.map(w => `
               <option value="${w.id}" ${w.id === defaultWalletId ? "selected" : ""}>
-                ${w.name} ($ ${Number(w.balance).toLocaleString("es-CO")})
+                ${escapeHtml(w.name)} ($ ${Number(w.balance).toLocaleString("es-CO")})
               </option>
             `).join("")}
           </select>
@@ -291,7 +292,7 @@ function showSubscriptionModal({ wallets, categories, onSave }) {
           <label>Billetera habitual de cobro</label>
           <select id="sub-wallet">
             <option value="">-- Sin cuenta fija --</option>
-            ${wallets.map(w => `<option value="${w.id}">${w.name}</option>`).join("")}
+            ${wallets.map(w => `<option value="${w.id}">${escapeHtml(w.name)}</option>`).join("")}
           </select>
         </div>
 
@@ -299,7 +300,7 @@ function showSubscriptionModal({ wallets, categories, onSave }) {
           <label>Categoría</label>
           <select id="sub-category">
             <option value="">-- Sin categoría --</option>
-            ${categories.map(c => `<option value="${c.id}">${c.name}</option>`).join("")}
+            ${categories.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("")}
           </select>
         </div>
 

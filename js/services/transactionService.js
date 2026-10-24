@@ -1,12 +1,11 @@
 // js/services/transactionService.js
-import { supabase } from "../supabaseClient.js";
+import { supabase, requireUserId } from "../supabaseClient.js";
 import { walletService } from "./walletService.js";
 
 export const transactionService = {
   // Registrar un gasto o ingreso
   async addTransaction({ wallet_id, category_id, type, title, amount, date = null }) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuario no autenticado");
+    const userId = await requireUserId();
 
     const transactionDate = date || new Date().toISOString().split("T")[0];
 
@@ -14,7 +13,7 @@ export const transactionService = {
       .from("transactions")
       .insert([
         {
-          user_id: user.id,
+          user_id: userId,
           wallet_id,
           category_id,
           type,

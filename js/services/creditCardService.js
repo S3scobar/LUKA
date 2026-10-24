@@ -1,7 +1,8 @@
 // js/services/creditCardService.js
-import { supabase } from "../supabaseClient.js";
+import { supabase, requireUserId } from "../supabaseClient.js";
 import { walletService } from "./walletService.js";
 import { transactionService } from "./transactionService.js";
+import { categoryService } from "./categoryService.js";
 
 export const creditCardService = {
   // Obtener todas las tarjetas
@@ -20,8 +21,7 @@ export const creditCardService = {
 
   // Crear tarjeta
   async createCreditCard({ name, credit_limit, interest_rate_ea, cutoff_day, payment_due_day, management_fee = 0, color = "#8B5CF6" }) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuario no autenticado");
+    const userId = await requireUserId();
 
     const linkedWallet = await walletService.createWallet({
       name: `${name.trim()} (Crédito)`,
@@ -34,7 +34,7 @@ export const creditCardService = {
       .from("credit_cards")
       .insert([
         {
-          user_id: user.id,
+          user_id: userId,
           wallet_id: linkedWallet.id,
           name: name.trim(),
           credit_limit: parseFloat(credit_limit),
@@ -129,10 +129,27 @@ export const creditCardService = {
     return data || [];
   },
 
+  // Obtiene las compras de varias tarjetas en UNA sola consulta, agrupadas por tarjeta
+  async getPurchasesForCards(cardIds) {
+    const grouped = new Map(cardIds.map(id => [id, []]));
+    if (cardIds.length === 0) return grouped;
+
+    const { data, error } = await supabase
+      .from("credit_card_purchases")
+      .select("*")
+      .in("card_id", cardIds)
+      .order("purchase_date", { ascending: false });
+
+    if (error) throw error;
+    for (const purchase of data || []) {
+      grouped.get(purchase.card_id)?.push(purchase);
+    }
+    return grouped;
+  },
+
   // Registrar compra o avance (DESCUENTA CUPO SIN DUPLICAR GASTO EN TRANSACTIONS)
   async addPurchase({ card_id, category_id, title, total_amount, installments = 1, is_advance = false, advance_fee = 0, target_wallet_id = null, is_zero_interest = false }) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuario no autenticado");
+    const userId = await requireUserId();
 
     const amount = parseFloat(total_amount);
     const fee = parseFloat(advance_fee) || 0;
@@ -145,25 +162,15 @@ export const creditCardService = {
       .single();
     if (cardErr) throw cardErr;
 
-    // Buscar categoría de respaldo si viene vacía
-    let finalCategoryId = category_id;
-    if (!finalCategoryId) {
-      const { data: fallbackCat } = await supabase
-        .from("categories")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("type", "expense")
-        .limit(1)
-        .maybeSingle();
-      if (fallbackCat) finalCategoryId = fallbackCat.id;
-    }
+    // Si no viene categoría, usar la primera categoría de gasto del usuario
+    const finalCategoryId = category_id || await categoryService.resolveCategoryId(userId, "expense");
 
     // 1. Registrar la compra diferida en credit_card_purchases
     const { data: purchase, error: purErr } = await supabase
       .from("credit_card_purchases")
       .insert([
         {
-          user_id: user.id,
+          user_id: userId,
           card_id,
           category_id: finalCategoryId,
           title: title.trim(),
@@ -259,65 +266,53 @@ export const creditCardService = {
 
   // Pagar tarjeta (ACTUALIZA CUOTAS PAGADAS Y REGISTRA EL GASTO EN LA CUENTA DÉBITO)
   async payCard({ card_id, payment_amount, from_wallet_id }) {
-    const { data: { user } } = await supabase.auth.getUser();
+    const userId = await requireUserId();
     const payVal = parseFloat(payment_amount);
     if (isNaN(payVal) || payVal <= 0) throw new Error("Monto inválido");
 
-    const { data: card } = await supabase
-      .from("credit_cards")
-      .select("*, wallet:wallets(id, balance)")
-      .eq("id", card_id)
-      .single();
+    // Lecturas independientes: se piden al mismo tiempo
+    const [cardRes, fromWalletRes, purchasesRes, fallbackCategoryId] = await Promise.all([
+      supabase.from("credit_cards").select("*, wallet:wallets(id, balance)").eq("id", card_id).single(),
+      supabase.from("wallets").select("balance").eq("id", from_wallet_id).single(),
+      supabase.from("credit_card_purchases").select("id, installments, installments_paid").eq("card_id", card_id),
+      categoryService.resolveCategoryId(userId, "expense")
+    ]);
+
+    if (cardRes.error) throw cardRes.error;
+    const card = cardRes.data;
+    const fromWallet = fromWalletRes.data;
+    const activePurchases = purchasesRes.data || [];
+
+    const updates = [];
 
     // 1. Descontar dinero de la cuenta de ahorros/débito (ej. Bancolombia)
-    const { data: fromWallet } = await supabase
-      .from("wallets")
-      .select("balance")
-      .eq("id", from_wallet_id)
-      .single();
-
     if (fromWallet) {
-      await walletService.updateWallet(from_wallet_id, {
+      updates.push(walletService.updateWallet(from_wallet_id, {
         balance: Number(fromWallet.balance) - payVal
-      });
+      }));
     }
 
     // 2. Liberar cupo disponible en la tarjeta
     if (card.wallet_id) {
       const restored = Math.min(Number(card.credit_limit), Number(card.wallet?.balance || 0) + payVal);
-      await walletService.updateWallet(card.wallet_id, { balance: restored });
+      updates.push(walletService.updateWallet(card.wallet_id, { balance: restored }));
     }
 
-    // 3. ACTUALIZAR CUOTAS: Avanzar las compras pendientes
-    const { data: activePurchases } = await supabase
-      .from("credit_card_purchases")
-      .select("*")
-      .eq("card_id", card_id)
-      .order("purchase_date", { ascending: true });
-
-    if (activePurchases) {
-      for (const p of activePurchases) {
-        if (p.installments_paid < p.installments) {
-          const newPaid = p.installments_paid + 1;
-          await supabase
+    // 3. Avanzar una cuota en cada compra con cuotas pendientes
+    for (const p of activePurchases) {
+      if (p.installments_paid < p.installments) {
+        updates.push(
+          supabase
             .from("credit_card_purchases")
-            .update({ installments_paid: newPaid })
-            .eq("id", p.id);
-        }
+            .update({ installments_paid: p.installments_paid + 1 })
+            .eq("id", p.id)
+        );
       }
     }
 
-    // 4. Registrar el pago en transacciones de la cuenta de débito
-    let fallbackCategoryId = null;
-    const { data: fallbackCat } = await supabase
-      .from("categories")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("type", "expense")
-      .limit(1)
-      .maybeSingle();
-    if (fallbackCat) fallbackCategoryId = fallbackCat.id;
+    await Promise.all(updates);
 
+    // 4. Registrar el pago en transacciones de la cuenta de débito
     await transactionService.addTransaction({
       wallet_id: from_wallet_id,
       category_id: fallbackCategoryId,
@@ -418,42 +413,35 @@ export const creditCardService = {
 
   // Resumen sincronizado para el banner de Inicio (Dashboard)
   async getTotalStatementSummary() {
+    const empty = { totalDue: 0, earliestDueDay: null, dueDateLabel: null, hasCards: false };
+
     try {
       const cards = await this.getCreditCards();
-      if (!cards || cards.length === 0) {
-        return { totalDue: 0, earliestDueDay: null, dueDateLabel: null, hasCards: false };
-      }
+      if (!cards || cards.length === 0) return empty;
 
-      // Obtener transacciones del mes actual para verificar si ya se pagó la tarjeta este mes
+      // Compras de todas las tarjetas y transacciones del mes, en paralelo
       const now = new Date();
-      const currentMonthTransactions = await transactionService.getTransactions(
-        now.getFullYear(),
-        now.getMonth() + 1
-      );
+      const [purchasesByCard, monthTransactions] = await Promise.all([
+        this.getPurchasesForCards(cards.map(c => c.id)),
+        transactionService.getTransactions(now.getFullYear(), now.getMonth() + 1)
+      ]);
+
+      // Títulos de pagos de tarjeta ya registrados este mes (en minúsculas, calculado una sola vez)
+      const paidTitles = (monthTransactions || [])
+        .filter(t => t.type === "expense" && t.title)
+        .map(t => t.title.toLowerCase())
+        .filter(title => title.includes("pago tarjeta"));
 
       let totalDue = 0;
       let earliestDueDay = null;
       let dueDateLabel = null;
 
       for (const card of cards) {
-        const purchases = await this.getPurchases(card.id);
-        const statement = this.calculateStatement(card, purchases);
+        const statement = this.calculateStatement(card, purchasesByCard.get(card.id) || []);
+        if (statement.estimatedStatement <= 0) continue;
 
-        if (statement.estimatedStatement <= 0) {
-          continue;
-        }
-
-        // Si ya se registró un pago de esta tarjeta en este mes
-        const isPaidThisMonth = (currentMonthTransactions || []).some(t =>
-          t.type === "expense" &&
-          t.title &&
-          t.title.toLowerCase().includes("pago tarjeta") &&
-          t.title.toLowerCase().includes(card.name.toLowerCase())
-        );
-
-        if (isPaidThisMonth) {
-          continue;
-        }
+        const cardName = card.name.toLowerCase();
+        if (paidTitles.some(title => title.includes(cardName))) continue;
 
         totalDue += statement.estimatedStatement;
         const dueDay = parseInt(card.payment_due_day);
@@ -469,8 +457,8 @@ export const creditCardService = {
         dueDateLabel,
         hasCards: true
       };
-    } catch (e) {
-      return { totalDue: 0, earliestDueDay: null, dueDateLabel: null, hasCards: false };
+    } catch {
+      return empty;
     }
   }
 };

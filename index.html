@@ -3,14 +3,31 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#F8FAFC" />
   <title>LUKA</title>
-  
+
+  <!-- Aplica el tema guardado antes de pintar para evitar el parpadeo blanco -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("luka_theme");
+        if (t !== "dark" && t !== "light") {
+          t = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        }
+        document.documentElement.setAttribute("data-theme", t);
+        if (t === "dark") {
+          document.querySelector('meta[name="theme-color"]').setAttribute("content", "#0B1220");
+        }
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- Favicon Oficial LUKA -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  
+
   <!-- Hojas de estilo -->
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/components.css" />
@@ -35,12 +52,17 @@
       <button class="nav-item-btn" data-tab="analytics"><i class="fa-solid fa-chart-pie"></i> Análisis</button>
     </div>
 
-    <!-- 3. Botón de salir a la derecha -->
-    <div id="user-menu" class="user-menu-box" style="display: none;">
-      <span id="user-name" style="display: none;"></span>
-      <button id="btn-logout" class="btn-logout-icon" title="Cerrar sesión">
-        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+    <!-- 3. Acciones a la derecha: tema y salir -->
+    <div class="nav-actions">
+      <button id="btn-theme" class="btn-theme-icon" type="button" title="Cambiar a modo oscuro" aria-label="Cambiar a modo oscuro" aria-pressed="false">
+        <i class="fa-solid fa-moon"></i>
       </button>
+      <div id="user-menu" class="user-menu-box" style="display: none;">
+        <span id="user-name" style="display: none;"></span>
+        <button id="btn-logout" class="btn-logout-icon" title="Cerrar sesión" aria-label="Cerrar sesión">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -60,99 +82,6 @@
     <span>Tutorial</span>
   </button>
 
-  <script type="module">
-    import { authService } from "./js/services/authService.js";
-    import { authView } from "./js/views/authView.js";
-    import { walletsView } from "./js/views/walletsView.js";
-    import { dashboardView } from "./js/views/dashboardView.js";
-    import { creditCardsView } from "./js/views/creditCardsView.js";
-    import { subscriptionsView } from "./js/views/subscriptionsView.js";
-    import { savingsView } from "./js/views/SavingsView.js";
-    import { analyticsView } from "./js/views/analyticsView.js";
-    import { tutorialTour } from "./js/components/tutorialTour.js";
-    import { budgetsView } from "./js/views/budgetsView.js";
-
-    const navTabs = document.getElementById("nav-tabs");
-    const userMenu = document.getElementById("user-menu");
-    const userName = document.getElementById("user-name");
-    const logoutBtn = document.getElementById("btn-logout");
-    const tutorialBtn = document.getElementById("btn-start-tutorial");
-
-    let currentTab = "dashboard";
-
-    function switchView(tab) {
-      currentTab = tab;
-
-      document.querySelectorAll("[data-tab]").forEach(btn => {
-        btn.classList.toggle("active", btn.dataset.tab === tab);
-      });
-
-      if (tab === "dashboard") dashboardView.render("app");
-      else if (tab === "wallets") walletsView.render("app");
-      else if (tab === "cards") creditCardsView.render("app");
-      else if (tab === "subs") subscriptionsView.render("app");
-      else if (tab === "savings") savingsView.render("app");
-      else if (tab === "analytics") analyticsView.render("app");
-      else if (tab === "budgets") budgetsView.render("app");
-
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    document.addEventListener("click", (e) => {
-      const navBtn = e.target.closest("[data-tab]");
-      if (navBtn) {
-        switchView(navBtn.dataset.tab);
-      }
-    });
-
-    async function initApp() {
-      try {
-        const user = await authService.getCurrentUser();
-        if (user) {
-          userMenu.style.display = "flex";
-          navTabs.style.display = "flex";
-          tutorialBtn.style.display = "flex";
-          if (userName) userName.textContent = user.user_metadata?.full_name || user.email;
-          
-          switchView(currentTab);
-
-          tutorialTour.init({
-            userId: user.id,
-            onSwitchTab: (tab) => switchView(tab)
-          });
-        } else {
-          userMenu.style.display = "none";
-          navTabs.style.display = "none";
-          tutorialBtn.style.display = "none";
-          authView.render("app", () => initApp());
-        }
-      } catch (err) {
-        userMenu.style.display = "none";
-        navTabs.style.display = "none";
-        tutorialBtn.style.display = "none";
-        authView.render("app", () => initApp());
-      }
-    }
-
-    initApp();
-
-    authService.onAuthStateChanged((user) => {
-      if (!user) {
-        userMenu.style.display = "none";
-        navTabs.style.display = "none";
-        tutorialBtn.style.display = "none";
-        authView.render("app", () => initApp());
-      }
-    });
-
-    logoutBtn.addEventListener("click", async () => {
-      await authService.signOut();
-      initApp();
-    });
-
-    tutorialBtn.addEventListener("click", () => {
-      tutorialTour.start();
-    });
-  </script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>
