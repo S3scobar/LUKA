@@ -1,5 +1,5 @@
 // js/services/subscriptionService.js
-import { supabase } from "../supabaseClient.js";
+import { supabase, requireUserId } from "../supabaseClient.js";
 
 export const subscriptionService = {
   // Obtener todas las suscripciones ordenadas por el día de cobro
@@ -19,14 +19,13 @@ export const subscriptionService = {
 
   // Crear suscripción
   async createSubscription({ name, amount, billing_day, wallet_id = null, category_id = null }) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuario no autenticado");
+    const userId = await requireUserId();
 
     const { data, error } = await supabase
       .from("subscriptions")
       .insert([
         {
-          user_id: user.id,
+          user_id: userId,
           name: name.trim(),
           amount: parseFloat(amount),
           billing_day: parseInt(billing_day),

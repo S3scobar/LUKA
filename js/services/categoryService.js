@@ -1,5 +1,5 @@
 // js/services/categoryService.js
-import { supabase } from "../supabaseClient.js";
+import { supabase, requireUserId } from "../supabaseClient.js";
 
 export const categoryService = {
   // Obtener categorías
@@ -22,14 +22,13 @@ export const categoryService = {
 
   // Crear categoría
   async createCategory({ name, type = "expense", icon = "fa-tag", color = "#64748B" }) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuario no autenticado");
+    const userId = await requireUserId();
 
     const { data, error } = await supabase
       .from("categories")
       .insert([
         {
-          user_id: user.id,
+          user_id: userId,
           name: name.trim(),
           type,
           icon,
@@ -68,31 +67,58 @@ export const categoryService = {
       throw new Error("Debes seleccionar un máximo de 4 categorías favoritas");
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuario no autenticado");
+    const userId = await requireUserId();
 
     const { error: resetError } = await supabase
       .from("categories")
       .update({ is_favorite: false, favorite_order: 0 })
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .eq("type", "expense");
 
     if (resetError) throw resetError;
 
-    for (let index = 0; index < favoriteIds.length; index++) {
-      const categoryId = favoriteIds[index];
-      const { error: updateError } = await supabase
-        .from("categories")
-        .update({
-          is_favorite: true,
-          favorite_order: index + 1
-        })
-        .eq("id", categoryId);
+    // Las actualizaciones son independientes entre sí: se envían en paralelo
+    const results = await Promise.all(
+      favoriteIds.map((categoryId, index) =>
+        supabase
+          .from("categories")
+          .update({ is_favorite: true, favorite_order: index + 1 })
+          .eq("id", categoryId)
+      )
+    );
 
-      if (updateError) throw updateError;
-    }
+    const failed = results.find(r => r.error);
+    if (failed) throw failed.error;
 
     return true;
+  },
+
+  // Busca el id de una categoría del usuario según su tipo.
+  // Si se indica namePattern (ej. "%ahorro%") se prefiere esa coincidencia;
+  // si no existe, se usa la primera categoría de ese tipo.
+  async resolveCategoryId(userId, type, namePattern = null) {
+    if (namePattern) {
+      const { data: match } = await supabase
+        .from("categories")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("type", type)
+        .ilike("name", namePattern)
+        .limit(1)
+        .maybeSingle();
+
+      if (match) return match.id;
+    }
+
+    const { data: fallback } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("type", type)
+      .limit(1)
+      .maybeSingle();
+
+    return fallback ? fallback.id : null;
   },
 
   // Eliminar categoría

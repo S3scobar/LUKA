@@ -1,38 +1,45 @@
 // js/services/budgetService.js
-import { supabase } from "../supabaseClient.js";
+import { supabase, requireUserId } from "../supabaseClient.js";
 import { transactionService } from "./transactionService.js";
 
 export const budgetService = {
   // Obtener todos los presupuestos con su gasto acumulado del mes y transacciones asociadas
   async getBudgets(year, month) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuario no autenticado");
+    const userId = await requireUserId();
 
     const now = new Date();
     const curYear = year || now.getFullYear();
     const curMonth = month || now.getMonth() + 1;
 
-    // 1. Consultar presupuestos con su categoría vinculada
-    const { data: budgets, error: bErr } = await supabase
-      .from("budgets")
-      .select(`
-        *,
-        category:categories(id, name, icon, color, type)
-      `)
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: true });
+    // 1 y 2. Presupuestos (con su categoría) y transacciones del mes, en paralelo
+    const [budgetsRes, transactions] = await Promise.all([
+      supabase
+        .from("budgets")
+        .select(`
+          *,
+          category:categories(id, name, icon, color, type)
+        `)
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true }),
+      transactionService.getTransactions(curYear, curMonth)
+    ]);
 
-    if (bErr) throw bErr;
+    if (budgetsRes.error) throw budgetsRes.error;
+    const budgets = budgetsRes.data;
 
-    // 2. Consultar las transacciones del mes
-    const transactions = await transactionService.getTransactions(curYear, curMonth);
+    // 3. Agrupar los gastos del mes por categoría una sola vez
+    const expensesByCategory = new Map();
+    for (const t of transactions || []) {
+      if (t.type !== "expense") continue;
+      const catId = t.category_id || t.category?.id;
+      if (!catId) continue;
+      if (!expensesByCategory.has(catId)) expensesByCategory.set(catId, []);
+      expensesByCategory.get(catId).push(t);
+    }
 
-    // 3. Cruzar cada presupuesto con sus gastos reales de este mes
+    // 4. Cruzar cada presupuesto con sus gastos reales de este mes
     const processed = (budgets || []).map(b => {
-      const catId = b.category_id;
-      const catTransactions = (transactions || []).filter(t => 
-        t.type === "expense" && (t.category_id === catId || t.category?.id === catId)
-      );
+      const catTransactions = expensesByCategory.get(b.category_id) || [];
 
       const spent = catTransactions.reduce((sum, t) => sum + Number(t.amount || 0), 0);
       const limit = Number(b.monthly_limit || 0);
@@ -66,8 +73,7 @@ export const budgetService = {
 
   // Crear o actualizar límite de presupuesto por categoría
   async setBudget({ category_id, monthly_limit }) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuario no autenticado");
+    const userId = await requireUserId();
 
     const limit = parseFloat(monthly_limit);
     if (isNaN(limit) || limit <= 0) throw new Error("Ingresa un monto válido mayor a 0");
@@ -76,7 +82,7 @@ export const budgetService = {
       .from("budgets")
       .upsert(
         {
-          user_id: user.id,
+          user_id: userId,
           category_id,
           monthly_limit: limit
         },

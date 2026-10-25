@@ -3,6 +3,7 @@ import { budgetService } from "../services/budgetService.js";
 import { categoryService } from "../services/categoryService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 
+import { escapeHtml } from "../utils.js";
 const MONTH_NAMES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
@@ -104,7 +105,7 @@ export const budgetsView = {
                             <i class="fa-solid ${cat.icon}"></i>
                           </div>
                           <div class="budget-meta">
-                            <span class="budget-title">${cat.name}</span>
+                            <span class="budget-title">${escapeHtml(cat.name)}</span>
                             <span class="budget-subtitle ${b.isExceeded ? 'text-danger font-bold' : ''}">
                               ${b.isExceeded 
                                 ? `¡Excedido por $ ${Math.abs(b.remaining).toLocaleString("es-CO")}!` 
@@ -198,7 +199,7 @@ function showBudgetDetailModal({ budget, categories, onRefresh }) {
             <i class="fa-solid ${cat.icon}"></i>
           </div>
           <div>
-            <h4 style="margin: 0;">${cat.name}</h4>
+            <h4 style="margin: 0;">${escapeHtml(cat.name)}</h4>
             <small style="color: var(--text-muted);">${budget.percentage}% del presupuesto consumido</small>
           </div>
         </div>
@@ -206,7 +207,7 @@ function showBudgetDetailModal({ budget, categories, onRefresh }) {
       </div>
 
       <!-- Resumen del Presupuesto en el Modal -->
-      <div style="background: #F8FAFC; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.9rem; margin-bottom: 1.25rem;">
+      <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.9rem; margin-bottom: 1.25rem;">
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; text-align: center;">
           <div>
             <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Presupuesto</span>
@@ -251,7 +252,7 @@ function showBudgetDetailModal({ budget, categories, onRefresh }) {
                     <i class="fa-solid ${cat.icon}"></i>
                   </div>
                   <div class="trans-info">
-                    <span class="trans-title" style="font-size: 0.85rem;">${t.title}</span>
+                    <span class="trans-title" style="font-size: 0.85rem;">${escapeHtml(t.title)}</span>
                     <div class="trans-meta">
                       <span class="trans-wallet"><i class="fa-solid fa-wallet"></i> ${walletName}</span>
                       <span class="trans-date">${t.transaction_date}</span>
@@ -328,7 +329,7 @@ function showBudgetModal({ categories, initialBudget = null, onSave }) {
           <select id="budget-cat-id" ${isEditing ? "disabled" : ""} required>
             ${categories.map(c => `
               <option value="${c.id}" ${initialBudget && initialBudget.category_id === c.id ? "selected" : ""}>
-                ${c.name}
+                ${escapeHtml(c.name)}
               </option>
             `).join("")}
           </select>

@@ -16,8 +16,8 @@
 
 .btn-primary { background: var(--primary); color: #fff; }
 .btn-primary:hover { background: var(--primary-hover); }
-.btn-secondary { background: #EEF2F6; color: var(--text-main); }
-.btn-secondary:hover { background: #E2E8F0; }
+.btn-secondary { background: var(--bg-muted); color: var(--text-main); }
+.btn-secondary:hover { background: var(--border); }
 .btn-ghost { background: transparent; color: var(--text-muted); }
 .btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
 .btn-block { width: 100%; }
@@ -59,8 +59,8 @@
 
 /* Alertas */
 .alert-error {
-  background: #FEE2E2;
-  color: #B91C1C;
+  background: var(--danger-soft);
+  color: var(--danger-text);
   padding: 0.75rem;
   border-radius: var(--radius-md);
   font-size: 0.85rem;
@@ -68,8 +68,8 @@
 }
 
 .alert-info {
-  background: #EFF6FF;
-  color: #1D4ED8;
+  background: var(--primary-soft);
+  color: var(--primary-text);
   padding: 0.75rem;
   border-radius: var(--radius-md);
   font-size: 0.85rem;
@@ -132,7 +132,7 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: #F8FAFC;
+  background: var(--bg-subtle);
   padding: 1rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
@@ -169,7 +169,7 @@
 
 /* Formulario inline de billetera */
 .form-inline-card {
-  background: #F1F5F9;
+  background: var(--bg-hover);
   padding: 1rem;
   border-radius: var(--radius-md);
   margin-bottom: 1.25rem;
@@ -195,7 +195,7 @@
 }
 
 .category-select-card {
-  background: #F8FAFC;
+  background: var(--bg-subtle);
   border: 2px solid var(--border);
   border-radius: var(--radius-md);
   padding: 1rem 0.75rem;
@@ -211,12 +211,12 @@
 
 .category-select-card:hover {
   transform: translateY(-2px);
-  border-color: #CBD5E1;
+  border-color: var(--border-strong);
 }
 
 .category-select-card.is-selected {
   border-color: var(--warning);
-  background: #FFFBEB;
+  background: var(--warning-soft);
 }
 
 .cat-icon-box {
@@ -239,7 +239,7 @@
   position: absolute;
   top: 6px;
   right: 6px;
-  background: #E2E8F0;
+  background: var(--border);
   color: var(--text-muted);
   font-size: 0.75rem;
   font-weight: 700;
@@ -267,7 +267,7 @@
   padding: 0.45rem 1rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
-  background: #F8FAFC;
+  background: var(--bg-subtle);
   font-weight: 600;
   font-size: 0.85rem;
   color: var(--text-muted);
@@ -288,7 +288,7 @@
 
 /* Tarjeta de categoría con gestión */
 .category-manage-card {
-  background: #F8FAFC;
+  background: var(--bg-subtle);
   border: 2px solid var(--border);
   border-radius: var(--radius-md);
   padding: 1rem 0.65rem 0.65rem 0.65rem;
@@ -303,12 +303,12 @@
 
 .category-manage-card:hover {
   transform: translateY(-2px);
-  border-color: #CBD5E1;
+  border-color: var(--border-strong);
 }
 
 .category-manage-card.is-selected {
   border-color: var(--warning);
-  background: #FFFBEB;
+  background: var(--warning-soft);
 }
 
 /* Botones de acción dentro de la tarjeta (Editar / Borrar) */
@@ -328,8 +328,8 @@
   border-radius: 4px;
 }
 
-.btn-edit-cat:hover { color: var(--primary); background: #E2E8F0; }
-.btn-delete-cat:hover { color: var(--danger); background: #FEE2E2; }
+.btn-edit-cat:hover { color: var(--primary); background: var(--border); }
+.btn-delete-cat:hover { color: var(--danger); background: var(--danger-soft); }
 
 /* Selector de Iconos en el Modal */
 .icon-picker-grid {
@@ -341,7 +341,7 @@
   padding: 0.5rem;
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: #F8FAFC;
+  background: var(--bg-subtle);
 }
 
 .icon-choice {
@@ -352,19 +352,19 @@
   justify-content: center;
   border: 1px solid transparent;
   border-radius: 6px;
-  background: #fff;
+  background: var(--bg-card);
   cursor: pointer;
   color: var(--text-main);
   transition: all 0.15s;
 }
 
 .icon-choice:hover {
-  background: #E2E8F0;
+  background: var(--border);
 }
 
 .icon-choice.selected {
   border-color: var(--primary);
-  background: #EFF6FF;
+  background: var(--primary-soft);
   color: var(--primary);
 }
 
@@ -387,7 +387,7 @@
 
 .btn-edit-wallet:hover {
   color: var(--primary);
-  background-color: #E2E8F0;
+  background-color: var(--border);
 }
 
 /* ==========================================
@@ -409,7 +409,7 @@ html, body {
   justify-content: space-between !important;
   gap: 0.6rem !important;
   padding: 0.65rem 0.85rem !important;
-  background: #FFFFFF !important;
+  background: var(--bg-card) !important;
   border-bottom: 1px solid var(--border) !important;
   position: sticky !important;
   top: 0 !important;
@@ -437,8 +437,17 @@ html, body {
   flex-shrink: 0;
 }
 
+/* Acciones del header (tema + salir) */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.btn-theme-icon,
 .btn-logout-icon {
-  background: #F1F5F9;
+  background: var(--bg-hover);
   border: 1px solid var(--border);
   color: var(--text-muted);
   width: 32px;
@@ -450,8 +459,13 @@ html, body {
   cursor: pointer;
 }
 
+.btn-theme-icon:hover {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
 .btn-logout-icon:hover {
-  background: #FEE2E2;
+  background: var(--danger-soft);
   color: var(--danger);
 }
 
@@ -470,7 +484,7 @@ html, body {
   padding-bottom: 5px;
   padding-top: 2px;
   scrollbar-width: thin;
-  scrollbar-color: #94A3B8 #E2E8F0;
+  scrollbar-color: var(--text-faint) var(--border);
 }
 
 /* Botones de pestaña */
@@ -483,7 +497,7 @@ html, body {
   padding: 0.42rem 0.85rem !important;
   border-radius: 20px !important;
   border: 1px solid var(--border) !important;
-  background: #FFFFFF !important;
+  background: var(--bg-card) !important;
   color: var(--text-muted) !important;
   font-size: 0.82rem !important;
   font-weight: 700 !important;
@@ -553,7 +567,7 @@ html, body {
 
 /* Ventanita modal centrada */
 .tour-card {
-  background: #FFFFFF;
+  background: var(--bg-card);
   border-radius: 24px;
   padding: 1.6rem 1.6rem;
   max-width: 440px;
@@ -574,7 +588,7 @@ html, body {
 }
 
 .tour-badge {
-  background: #EFF6FF;
+  background: var(--primary-soft);
   color: var(--primary);
   font-size: 0.75rem;
   font-weight: 800;
@@ -618,7 +632,7 @@ html, body {
 
 .tour-desc {
   font-size: 0.88rem;
-  color: #334155;
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
@@ -637,7 +651,7 @@ html, body {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #E2E8F0;
+  background: var(--border);
   transition: all 0.2s;
 }
 
@@ -709,11 +723,11 @@ html, body {
 
 .banner-due .banner-statement-icon {
   background: rgba(239, 68, 68, 0.15);
-  color: #EF4444;
+  color: var(--danger);
 }
 
 .banner-due .banner-statement-amount {
-  color: #EF4444;
+  color: var(--danger);
 }
 
 /* Estado al día (pagado) */
@@ -724,11 +738,11 @@ html, body {
 
 .banner-paid .banner-statement-icon {
   background: rgba(16, 185, 129, 0.15);
-  color: #10B981;
+  color: var(--success);
 }
 
 .banner-paid .banner-statement-amount {
-  color: #10B981;
+  color: var(--success);
 }
 /* =========================================================
    CATEGORÍAS DESLIZABLES EN LA BARRA DE GASTO RÁPIDO
@@ -764,11 +778,11 @@ html, body {
 }
 
 .quick-icons-row::-webkit-scrollbar-track {
-  background: rgba(226, 232, 240, 0.4);
+  background: var(--scroll-track);
   border-radius: 4px;
 }
 
 .quick-icons-row::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.6);
+  background: var(--scroll-thumb);
   border-radius: 4px;
 }

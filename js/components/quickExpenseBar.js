@@ -3,6 +3,7 @@ import { transactionService } from "../services/transactionService.js";
 import { creditCardService } from "../services/creditCardService.js";
 import { modalCategoryPicker } from "./modalCategoryPicker.js";
 
+import { escapeHtml } from "../utils.js";
 // Función ligera de animación (salida de dinero para gastos, entrada para ingresos)
 function showExpenseAnimation(amount, type = "expense") {
   const overlay = document.createElement("div");
@@ -87,7 +88,7 @@ export const quickExpenseBar = {
                 return `
                   <button type="button" class="wallet-chip-btn ${isSelected ? "selected" : ""}" data-id="${w.id}" style="${isSelected ? `border-color: ${w.color}; background-color: ${w.color}15; color: ${w.color};` : ""}">
                     <i class="fa-solid ${w.icon}"></i>
-                    <span class="chip-name">${w.name}</span>
+                    <span class="chip-name">${escapeHtml(w.name)}</span>
                   </button>
                 `;
               }).join("")}
@@ -146,11 +147,11 @@ export const quickExpenseBar = {
             <div class="quick-icons-row">
               ${activeType === "expense" ? `
                 ${expenseFavorites.map(cat => `
-                  <button type="button" class="btn-fav-category" data-id="${cat.id}" title="${cat.name}">
+                  <button type="button" class="btn-fav-category" data-id="${cat.id}" title="${escapeHtml(cat.name)}">
                     <div class="fav-icon-box" style="background-color: ${cat.color}20; color: ${cat.color};">
                       <i class="fa-solid ${catIcon(cat)}"></i>
                     </div>
-                    <span class="fav-label">${cat.name}</span>
+                    <span class="fav-label">${escapeHtml(cat.name)}</span>
                   </button>
                 `).join("")}
 
@@ -166,7 +167,7 @@ export const quickExpenseBar = {
                     <div class="fav-icon-box" style="background-color: ${cat.color}20; color: ${cat.color};">
                       <i class="fa-solid ${catIcon(cat)}"></i>
                     </div>
-                    <span class="fav-label">${cat.name}</span>
+                    <span class="fav-label">${escapeHtml(cat.name)}</span>
                   </button>
                 `).join("")}
               `}

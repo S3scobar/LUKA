@@ -1,5 +1,5 @@
 // js/services/walletService.js
-import { supabase } from "../supabaseClient.js";
+import { supabase, requireUserId } from "../supabaseClient.js";
 
 export const walletService = {
   // Obtener todas las billeteras
@@ -15,14 +15,13 @@ export const walletService = {
 
   // Crear una nueva billetera
   async createWallet({ name, balance = 0, color = "#3B82F6", icon = "fa-wallet" }) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Usuario no autenticado");
+    const userId = await requireUserId();
 
     const { data, error } = await supabase
       .from("wallets")
       .insert([
         {
-          user_id: user.id,
+          user_id: userId,
           name: name.trim(),
           balance: parseFloat(balance) || 0,
           color,
@@ -60,20 +59,16 @@ export const walletService = {
       throw new Error("El monto a transferir debe ser mayor a 0.");
     }
 
-    // 1. Obtener los saldos actuales de ambas cuentas
-    const { data: fromWallet, error: errFrom } = await supabase
-      .from("wallets")
-      .select("balance, name")
-      .eq("id", from_wallet_id)
-      .single();
-    if (errFrom) throw errFrom;
+    // 1. Obtener los saldos actuales de ambas cuentas (en paralelo)
+    const [fromRes, toRes] = await Promise.all([
+      supabase.from("wallets").select("balance, name").eq("id", from_wallet_id).single(),
+      supabase.from("wallets").select("balance, name").eq("id", to_wallet_id).single()
+    ]);
+    if (fromRes.error) throw fromRes.error;
+    if (toRes.error) throw toRes.error;
 
-    const { data: toWallet, error: errTo } = await supabase
-      .from("wallets")
-      .select("balance, name")
-      .eq("id", to_wallet_id)
-      .single();
-    if (errTo) throw errTo;
+    const fromWallet = fromRes.data;
+    const toWallet = toRes.data;
 
     // 2. Calcular nuevos saldos
     const newFromBalance = Number(fromWallet.balance) - transferAmount;
@@ -86,12 +81,19 @@ export const walletService = {
       .eq("id", from_wallet_id);
     if (updateFromErr) throw updateFromErr;
 
-    // 4. Actualizar la cuenta de destino
+    // 4. Actualizar la cuenta de destino; si falla, revertir el origen para no perder dinero
     const { error: updateToErr } = await supabase
       .from("wallets")
       .update({ balance: newToBalance })
       .eq("id", to_wallet_id);
-    if (updateToErr) throw updateToErr;
+
+    if (updateToErr) {
+      await supabase
+        .from("wallets")
+        .update({ balance: Number(fromWallet.balance) })
+        .eq("id", from_wallet_id);
+      throw updateToErr;
+    }
 
     return { fromWallet, toWallet, amount: transferAmount };
   },

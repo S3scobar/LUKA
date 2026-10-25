@@ -44,14 +44,14 @@
   padding: 1.5rem;
   border-radius: var(--radius-lg);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
-  border: 2px solid #E2E8F0;
+  border: 2px solid var(--border);
   margin-bottom: 1.5rem;
 }
 
 /* Toggle Gasto / Ingreso */
 .type-toggle-pill {
   display: flex;
-  background: #F1F5F9;
+  background: var(--bg-hover);
   padding: 4px;
   border-radius: 30px;
   max-width: 260px;
@@ -76,13 +76,13 @@
 }
 
 .toggle-btn.active.expense {
-  background: #FEE2E2;
-  color: #DC2626;
+  background: var(--danger-soft);
+  color: var(--danger-text);
 }
 
 .toggle-btn.active.income {
-  background: #DCFCE7;
-  color: #16A34A;
+  background: var(--success-soft);
+  color: var(--success-text);
 }
 
 /* Selector de Billetera */
@@ -91,7 +91,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #F8FAFC;
+  background: var(--bg-subtle);
   padding: 0.6rem 0.85rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
@@ -178,7 +178,7 @@
 }
 
 .btn-fav-category {
-  background: #F8FAFC;
+  background: var(--bg-subtle);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
   padding: 0.75rem 0.25rem;
@@ -212,8 +212,8 @@
 }
 
 .btn-more .fav-icon-box {
-  background: #EEF2F6;
-  color: #475569;
+  background: var(--bg-muted);
+  color: var(--text-secondary);
 }
 
 .fav-label {
@@ -229,7 +229,7 @@
 
 /* Historial de Transacciones */
 .badge-count {
-  background: #F1F5F9;
+  background: var(--bg-hover);
   color: var(--text-muted);
   font-size: 0.75rem;
   font-weight: 700;
@@ -248,13 +248,13 @@
   align-items: center;
   gap: 0.85rem;
   padding: 0.85rem;
-  background: #F8FAFC;
+  background: var(--bg-subtle);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   transition: background 0.2s;
 }
 
-.transaction-item:hover { background: #F1F5F9; }
+.transaction-item:hover { background: var(--bg-hover); }
 
 .trans-cat-icon {
   width: 42px;
@@ -296,7 +296,7 @@
 .btn-delete-trans {
   background: none;
   border: none;
-  color: #94A3B8;
+  color: var(--text-faint);
   cursor: pointer;
   padding: 0.4rem;
   transition: color 0.2s;
@@ -313,7 +313,7 @@
 .empty-icon {
   font-size: 2.5rem;
   margin-bottom: 0.75rem;
-  color: #CBD5E1;
+  color: var(--border-strong);
 }
 
 /* Modal Selector de Categorías (+) */
@@ -364,7 +364,7 @@
 }
 
 .cat-modal-btn {
-  background: #F8FAFC;
+  background: var(--bg-subtle);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 0.75rem 0.25rem;
@@ -377,7 +377,7 @@
 }
 
 .cat-modal-btn:hover {
-  background: #E2E8F0;
+  background: var(--border);
 }
 
 .cat-modal-label {
@@ -406,7 +406,7 @@
 
 .nav-item-btn:hover { color: var(--text-main); }
 .nav-item-btn.active {
-  background: #EEF2F6;
+  background: var(--bg-muted);
   color: var(--primary);
 }
 
@@ -422,7 +422,7 @@
 }
 
 .sub-card {
-  background: #F8FAFC;
+  background: var(--bg-subtle);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-md);
   padding: 1rem;
@@ -434,11 +434,11 @@
 
 .sub-card.sub-paused {
   opacity: 0.6;
-  background: #F1F5F9;
+  background: var(--bg-hover);
 }
 
 .sub-date-badge {
-  background: #EEF2F6;
+  background: var(--bg-muted);
   padding: 0.5rem 0.65rem;
   border-radius: var(--radius-md);
   text-align: center;
@@ -507,7 +507,7 @@
 .btn-delete-sub {
   background: none;
   border: none;
-  color: #94A3B8;
+  color: var(--text-faint);
   cursor: pointer;
   padding: 0.25rem;
 }
@@ -521,7 +521,7 @@
 }
 
 .goal-card {
-  background: #F8FAFC;
+  background: var(--bg-subtle);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.25rem;
@@ -540,7 +540,7 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: #EFF6FF;
+  background: var(--primary-soft);
   color: var(--primary);
   display: flex;
   align-items: center;
@@ -560,8 +560,8 @@
 }
 
 .badge-success {
-  background: #DCFCE7;
-  color: #15803D;
+  background: var(--success-soft);
+  color: var(--success-text);
   font-size: 0.7rem;
   font-weight: 700;
   padding: 2px 6px;
@@ -572,7 +572,7 @@
 .btn-delete-goal {
   background: none;
   border: none;
-  color: #94A3B8;
+  color: var(--text-faint);
   cursor: pointer;
   padding: 0.35rem;
 }
@@ -599,7 +599,7 @@
 .progress-bar-container {
   width: 100%;
   height: 10px;
-  background: #E2E8F0;
+  background: var(--border);
   border-radius: 6px;
   overflow: hidden;
 }
@@ -639,33 +639,33 @@
 }
 
 .badge-paid {
-  background: #DCFCE7;
-  color: #15803D;
-  border: 1px solid #BBF7D0;
+  background: var(--success-soft);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
 }
 
 .badge-pending {
-  background: #FEF3C7;
-  color: #B45309;
-  border: 1px solid #FDE68A;
+  background: var(--warning-soft);
+  color: var(--warning-text);
+  border: 1px solid var(--warning-border);
 }
 
 .badge-paused {
-  background: #F1F5F9;
-  color: #64748B;
-  border: 1px solid #CBD5E1;
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  border: 1px solid var(--border-strong);
 }
 
 .sub-card-paid {
-  border-color: #86EFAC;
+  border-color: var(--success-border);
 }
 
 /* Indicador de suscripción al día */
 .paid-indicator {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #15803D;
-  background: #F0FDF4;
+  color: var(--success-text);
+  background: var(--success-soft);
   padding: 0.35rem 0.65rem;
   border-radius: var(--radius-sm);
   display: flex;
@@ -683,7 +683,7 @@
 /* Alternador de Modo Mes / Año */
 .analytics-mode-pills {
   display: flex;
-  background: #E2E8F0;
+  background: var(--border);
   padding: 4px;
   border-radius: 30px;
   max-width: 320px;
@@ -704,7 +704,7 @@
 }
 
 .mode-pill.active {
-  background: #fff;
+  background: var(--bg-card);
   color: var(--primary);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
@@ -730,7 +730,7 @@
 }
 
 .nav-arrow-btn {
-  background: #F1F5F9;
+  background: var(--bg-hover);
   border: 1px solid var(--border);
   width: 38px;
   height: 38px;
@@ -750,9 +750,9 @@
 
 /* Alerta de Mayor Gasto */
 .top-expense-alert {
-  background: #FFFBEB;
-  border: 1px solid #FDE68A;
-  color: #92400E;
+  background: var(--warning-soft);
+  border: 1px solid var(--warning-border);
+  color: var(--warning-text);
   padding: 0.75rem 1rem;
   border-radius: var(--radius-md);
   font-size: 0.85rem;
@@ -770,7 +770,7 @@
   border-radius: 7px;
   overflow: hidden;
   margin-bottom: 1.5rem;
-  background: #E2E8F0;
+  background: var(--border);
 }
 
 .bar-segment {
@@ -819,7 +819,7 @@
 
 .cat-progress-track {
   height: 6px;
-  background: #E2E8F0;
+  background: var(--border);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -980,7 +980,7 @@
 }
 
 .fund-card {
-  background: #F8FAFC;
+  background: var(--bg-subtle);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.25rem;
@@ -999,7 +999,7 @@
   width: 42px;
   height: 42px;
   border-radius: 10px;
-  background: #EFF6FF;
+  background: var(--primary-soft);
   color: var(--primary);
   display: flex;
   align-items: center;
@@ -1021,7 +1021,7 @@
 .btn-delete-fund {
   background: none;
   border: none;
-  color: #94A3B8;
+  color: var(--text-faint);
   cursor: pointer;
   padding: 0.35rem;
 }
@@ -1031,7 +1031,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
-  background: #fff;
+  background: var(--bg-card);
   padding: 0.75rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
@@ -1078,7 +1078,7 @@
   padding: 0.5rem 1rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
-  background: #fff;
+  background: var(--bg-card);
   font-weight: 700;
   font-size: 0.85rem;
   color: var(--text-muted);
@@ -1156,8 +1156,8 @@
 
 /* Extracto Card */
 .statement-card {
-  background: #F8FAFC;
-  border: 2px solid #E2E8F0;
+  background: var(--bg-subtle);
+  border: 2px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.25rem;
   margin-top: 1.25rem;
@@ -1189,7 +1189,7 @@
 .statement-total {
   font-size: 1.6rem;
   font-weight: 800;
-  color: #DC2626;
+  color: var(--danger-text);
 }
 
 .statement-breakdown {
@@ -1240,7 +1240,7 @@
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  background: #fff;
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 0.85rem;
@@ -1274,8 +1274,8 @@
 }
 
 .badge-advance {
-  background: #FEF3C7;
-  color: #D97706;
+  background: var(--warning-soft);
+  color: var(--warning-text);
   font-size: 0.65rem;
   font-weight: 800;
   padding: 2px 6px;
@@ -1300,7 +1300,7 @@
 .btn-delete-purchase {
   background: none;
   border: none;
-  color: #94A3B8;
+  color: var(--text-faint);
   cursor: pointer;
   padding: 0.45rem;
   border-radius: 4px;
@@ -1311,7 +1311,7 @@
 
 .btn-delete-purchase:hover {
   color: var(--danger);
-  background: #FEE2E2;
+  background: var(--danger-soft);
 }
 /* Botón de editar tarjeta sobre la tarjeta gráfica */
 .btn-card-edit {
@@ -1335,8 +1335,8 @@
 }
 /* Banner de tarjeta al día */
 .statement-paid-banner {
-  background: #F0FDF4;
-  border: 1px solid #BBF7D0;
+  background: var(--success-soft);
+  border: 1px solid var(--success-border);
   border-radius: var(--radius-md);
   padding: 0.75rem 1rem;
   display: flex;
@@ -1370,7 +1370,7 @@
 }
 
 .wallet-chip-btn {
-  background: #F8FAFC;
+  background: var(--bg-subtle);
   border: 2px solid var(--border);
   border-radius: var(--radius-md);
   padding: 0.55rem 0.85rem;
@@ -1386,7 +1386,7 @@
 }
 
 .wallet-chip-btn:hover {
-  border-color: #CBD5E1;
+  border-color: var(--border-strong);
   transform: translateY(-1px);
 }
 
@@ -1402,14 +1402,14 @@
 .chip-balance {
   font-size: 0.75rem;
   opacity: 0.85;
-  background: rgba(0, 0, 0, 0.06);
+  background: var(--chip-bg);
   padding: 2px 6px;
   border-radius: 8px;
 }
 /* Interruptor de Desglose en Análisis (Gastos vs Ingresos) */
 .breakdown-toggle-pills {
   display: flex;
-  background: #F1F5F9;
+  background: var(--bg-hover);
   padding: 3px;
   border-radius: 30px;
   max-width: 360px;
@@ -1435,22 +1435,22 @@
 }
 
 .breakdown-toggle-btn.active.expense {
-  background: #FEE2E2;
-  color: #DC2626;
+  background: var(--danger-soft);
+  color: var(--danger-text);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
 }
 
 .breakdown-toggle-btn.active.income {
-  background: #DCFCE7;
-  color: #15803D;
+  background: var(--success-soft);
+  color: var(--success-text);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
 }
 
 /* Alerta de mayor ingreso del mes */
 .top-income-alert {
-  background: #F0FDF4;
-  border: 1px solid #BBF7D0;
-  color: #166534;
+  background: var(--success-soft);
+  border: 1px solid var(--success-border);
+  color: var(--success-text);
   padding: 0.65rem 0.85rem;
   border-radius: var(--radius-md);
   font-size: 0.8rem;
@@ -1491,7 +1491,7 @@
 }
 
 .expense-anim-card {
-  background: #FFFFFF;
+  background: var(--bg-card);
   padding: 1.6rem 2rem;
   border-radius: 24px;
   display: flex;
@@ -1532,8 +1532,8 @@
 .expense-anim-card.is-expense .wallet-anim-box {
   width: 64px;
   height: 64px;
-  background: #FEE2E2;
-  color: #DC2626;
+  background: var(--danger-soft);
+  color: var(--danger-text);
   border-radius: 18px;
   display: flex;
   align-items: center;
@@ -1552,8 +1552,8 @@
 .expense-anim-card.is-income .wallet-anim-box {
   width: 64px;
   height: 64px;
-  background: #DCFCE7;
-  color: #15803D;
+  background: var(--success-soft);
+  color: var(--success-text);
   border-radius: 18px;
   display: flex;
   align-items: center;
@@ -1578,11 +1578,11 @@
 }
 
 .expense-anim-card.is-expense .flying-particle {
-  color: #EF4444;
+  color: var(--danger);
 }
 
 .expense-anim-card.is-income .flying-particle {
-  color: #10B981;
+  color: var(--success);
 }
 
 /* ==========================================
@@ -1689,19 +1689,19 @@
 .budget-hero-pct-badge {
   font-size: 0.82rem;
   font-weight: 700;
-  color: #2563EB;
+  color: var(--primary);
   background: rgba(37, 99, 235, 0.1);
   padding: 3px 9px;
   border-radius: 8px;
 }
 
 .budget-hero-pct-badge.is-warn {
-  color: #D97706;
+  color: var(--warning-text);
   background: rgba(245, 158, 11, 0.15);
 }
 
 .budget-hero-pct-badge.is-danger {
-  color: #DC2626;
+  color: var(--danger-text);
   background: rgba(239, 68, 68, 0.15);
 }
 
@@ -1730,7 +1730,7 @@
 .budget-hero-progress-track {
   height: 10px;
   width: 100%;
-  background: #E2E8F0;
+  background: var(--border);
   border-radius: 999px;
   overflow: hidden;
   margin-bottom: 0.85rem;
@@ -1758,7 +1758,7 @@
 }
 
 .budget-hero-avail strong {
-  color: #10B981;
+  color: var(--success);
 }
 
 /* 2. Lista de Tarjetas de Categorías */
@@ -1781,7 +1781,7 @@
 .budget-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
-  border-color: #CBD5E1;
+  border-color: var(--border-strong);
 }
 
 .budget-card-header {
@@ -1851,7 +1851,7 @@
 .budget-progress-track {
   height: 9px;
   width: 100%;
-  background: #E2E8F0;
+  background: var(--border);
   border-radius: 999px;
   margin-top: 0.85rem;
   overflow: hidden;
