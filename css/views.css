@@ -324,8 +324,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 2000; /* por encima del botón flotante de Tutorial (1500) y del header */
   padding: 1rem;
+  overflow: hidden;
 }
 
 .modal-content {
@@ -333,11 +334,38 @@
   width: 100%;
   max-width: 480px;
   max-height: 80vh;
+  max-height: calc(100dvh - 2rem); /* nunca más alto que la pantalla visible (barra del navegador incluida) */
   border-radius: var(--radius-lg);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  overflow-y: auto; /* si el formulario es largo, el modal hace scroll en vez de desbordarse */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-content > form,
+.modal-content .form-grid > * {
+  min-width: 0; /* permite que los campos se encojan dentro del modal */
+}
+
+.modal-content .modal-header { flex-shrink: 0; }
+.modal-content form { flex-shrink: 0; }
+.modal-content .form-group input,
+.modal-content .form-group select { width: 100%; max-width: 100%; min-width: 0; }
+.modal-content .form-group label { overflow-wrap: anywhere; }
+
+/* Celulares: una sola columna, menos relleno y la grilla de iconos sin scroll propio */
+@media (max-width: 480px) {
+  .modal-backdrop { padding: 0.5rem; align-items: flex-end; }
+  .modal-content {
+    padding: 1.1rem 1rem 1.25rem;
+    max-height: calc(100dvh - 1rem);
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+  .modal-content .form-grid { grid-template-columns: 1fr !important; gap: 0; }
+  .modal-content .icon-picker-grid { max-height: none; overflow-y: visible; }
 }
 
 .modal-header {
