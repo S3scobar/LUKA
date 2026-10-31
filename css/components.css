@@ -1,0 +1,788 @@
+/* css/components.css */
+
+/* Botones */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.2rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-secondary { background: var(--bg-muted); color: var(--text-main); }
+.btn-secondary:hover { background: var(--border); }
+.btn-ghost { background: transparent; color: var(--text-muted); }
+.btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+.btn-block { width: 100%; }
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Formularios */
+.form-group {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.form-group input, .form-group select {
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--primary);
+}
+
+/* Alertas */
+.alert-error {
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.alert-info {
+  background: var(--primary-soft);
+  color: var(--primary-text);
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+/* Card de Autenticación */
+.auth-card {
+  max-width: 400px;
+  margin: 3rem auto;
+  background: var(--bg-card);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.auth-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.auth-icon {
+  font-size: 2.5rem;
+  color: var(--primary);
+  margin-bottom: 0.5rem;
+}
+
+.auth-toggle {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+}
+
+/* Sección Billeteras */
+.section-card {
+  background: var(--bg-card);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.section-header h3 { font-size: 1.15rem; }
+.section-header p { font-size: 0.85rem; color: var(--text-muted); }
+
+.wallets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.wallet-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--bg-subtle);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  position: relative;
+}
+
+.wallet-item-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.wallet-item-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.wallet-name { font-size: 0.9rem; font-weight: 600; }
+.wallet-balance { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
+
+.btn-delete-wallet {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.35rem;
+}
+.btn-delete-wallet:hover { color: var(--danger); }
+
+/* Formulario inline de billetera */
+.form-inline-card {
+  background: var(--bg-hover);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+/* Grilla de selección de 4 favoritas */
+.categories-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.75rem;
+}
+
+.category-select-card {
+  background: var(--bg-subtle);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.category-select-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+
+.category-select-card.is-selected {
+  border-color: var(--warning);
+  background: var(--warning-soft);
+}
+
+.cat-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.cat-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.fav-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--border);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.category-select-card.is-selected .fav-badge {
+  background: var(--warning);
+  color: #fff;
+}
+
+/* Pestañas de categorías */
+.cat-tabs-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.cat-tab-btn {
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.cat-tab-btn.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.section-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* Tarjeta de categoría con gestión */
+.category-manage-card {
+  background: var(--bg-subtle);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem 0.65rem 0.65rem 0.65rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.category-manage-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+
+.category-manage-card.is-selected {
+  border-color: var(--warning);
+  background: var(--warning-soft);
+}
+
+/* Botones de acción dentro de la tarjeta (Editar / Borrar) */
+.cat-card-actions {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.btn-edit-cat, .btn-delete-cat {
+  background: transparent;
+  border: none;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+}
+
+.btn-edit-cat:hover { color: var(--primary); background: var(--border); }
+.btn-delete-cat:hover { color: var(--danger); background: var(--danger-soft); }
+
+/* Selector de Iconos en el Modal */
+.icon-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 0.35rem;
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+}
+
+.icon-choice {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--bg-card);
+  cursor: pointer;
+  color: var(--text-main);
+  transition: all 0.15s;
+}
+
+.icon-choice:hover {
+  background: var(--border);
+}
+
+.icon-choice.selected {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+/* Botones de acción en tarjetas de billetera */
+.wallet-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.btn-edit-wallet {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.35rem;
+  border-radius: 4px;
+  transition: color 0.15s, background-color 0.15s;
+}
+
+.btn-edit-wallet:hover {
+  color: var(--primary);
+  background-color: var(--border);
+}
+
+/* ==========================================
+   BARRA DE NAVEGACIÓN DESLIZABLE (GARANTIZADA)
+   ========================================== */
+
+/* Bloquear que la página se mueva horizontalmente */
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100vw;
+  width: 100%;
+}
+
+/* 1. Barra principal en una sola fila */
+.navbar {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.6rem !important;
+  padding: 0.65rem 0.85rem !important;
+  background: var(--bg-card) !important;
+  border-bottom: 1px solid var(--border) !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* 2. Logo fijo a la izquierda */
+.brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.4rem !important;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  color: var(--primary) !important;
+  flex-shrink: 0 !important;
+  user-select: none !important;
+}
+
+/* 3. Menú de usuario fijo a la derecha (SIN !important para poder ocultarse en login) */
+.user-menu-box {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* Acciones del header (tema + salir) */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.btn-theme-icon,
+.btn-logout-icon {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.btn-theme-icon:hover {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.btn-logout-icon:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* 4. Pestañas en el centro (SIN !important para poder ocultarse en login) */
+.nav-links {
+  display: flex;
+  flex-direction: row;
+  flex: 1 1 auto;
+  min-width: 0;              /* Destraba el scroll horizontal en flexbox */
+  gap: 0.45rem;
+  overflow-x: auto;          /* Deslizable con el dedo */
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  padding-bottom: 5px;
+  padding-top: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-faint) var(--border);
+}
+
+/* Botones de pestaña */
+.nav-item-btn {
+  flex-shrink: 0 !important;            /* Impide que los botones se aplasten */
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.35rem !important;
+  padding: 0.42rem 0.85rem !important;
+  border-radius: 20px !important;
+  border: 1px solid var(--border) !important;
+  background: var(--bg-card) !important;
+  color: var(--text-muted) !important;
+  font-size: 0.82rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  user-select: none !important;
+}
+
+.nav-item-btn.active {
+  background: var(--primary) !important;
+  color: #FFFFFF !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+}
+
+/* ==========================================
+   BOTÓN FLOTANTE DE TUTORIAL (ESQUINA INFERIOR)
+   ========================================== */
+
+.tutorial-fab {
+  position: fixed;
+  bottom: 22px;
+  right: 18px;
+  background: linear-gradient(135deg, #2563EB, #1D4ED8);
+  color: #FFFFFF;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  padding: 0.65rem 1.1rem;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+  cursor: pointer;
+  z-index: 1500;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.tutorial-fab i {
+  color: #FACC15; /* Bombillo amarillo encendido */
+  font-size: 1rem;
+  filter: drop-shadow(0 0 4px rgba(250, 204, 21, 0.6));
+}
+
+.tutorial-fab:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.5);
+}
+
+/* ==========================================
+   TUTORIAL MODAL (LIMPIO, SUAVE, SIN OSCURIDAD)
+   ========================================== */
+
+/* Fondo muy sutil (sin blur ni opacidad pesada) */
+.tour-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Ventanita modal centrada */
+.tour-card {
+  background: var(--bg-card);
+  border-radius: 24px;
+  padding: 1.6rem 1.6rem;
+  max-width: 440px;
+  width: 100%;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 9999;
+  border: 1px solid var(--border);
+  animation: popInCard 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.tour-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tour-badge {
+  background: var(--primary-soft);
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.tour-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Icono grande de la pestaña */
+.tour-icon-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 0.2rem 0;
+}
+
+.tour-icon-box {
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7rem;
+  box-shadow: 0 6px 14px -3px rgba(0, 0, 0, 0.08);
+}
+
+.tour-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-main);
+  text-align: center;
+}
+
+.tour-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.tour-desc strong {
+  color: var(--text-main);
+}
+
+.tour-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0.4rem 0;
+}
+
+.tour-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: all 0.2s;
+}
+
+.tour-dot.active {
+  width: 20px;
+  border-radius: 10px;
+  background: var(--primary);
+}
+
+.tour-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+/* ==========================================
+   BANNER DE EXTRACTO DE TARJETA EN INICIO
+   ========================================== */
+.card-statement-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.15rem;
+  border-radius: var(--radius-md, 12px);
+  margin-bottom: 1.25rem;
+  transition: transform 0.2s ease;
+}
+
+.banner-statement-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.banner-statement-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.banner-statement-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748B);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.banner-statement-amount {
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.banner-statement-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted, #64748B);
+}
+
+/* Estado pendiente de pago */
+.banner-due {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(245, 158, 11, 0.08));
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.banner-due .banner-statement-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+
+.banner-due .banner-statement-amount {
+  color: var(--danger);
+}
+
+/* Estado al día (pagado) */
+.banner-paid {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.banner-paid .banner-statement-icon {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success);
+}
+
+.banner-paid .banner-statement-amount {
+  color: var(--success);
+}
+/* =========================================================
+   CATEGORÍAS DESLIZABLES EN LA BARRA DE GASTO RÁPIDO
+   ========================================================= */
+
+/* 1. Contenedor padre con protección de desbordamiento */
+.categories-action-section {
+  width: 100%;
+  min-width: 0; /* Previene el bug de flexbox en móviles */
+}
+
+/* 2. Fila deslizable horizontal con el pulgar */
+.quick-icons-row {
+  display: flex !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  gap: 0.65rem !important;
+  padding: 4px 2px 8px 2px !important;
+  -webkit-overflow-scrolling: touch; /* Desplazamiento inercial suave en iPhone y Android */
+  scroll-behavior: smooth;
+  scrollbar-width: thin; /* Barra sutil en Firefox */
+}
+
+/* 3. Evitar que los botones se aplasten o deformen */
+.btn-fav-category {
+  flex: 0 0 auto !important; /* Clave: mantiene su tamaño perfecto sin comprimirse */
+  width: 72px !important;   /* Ancho consistente para cada botón */
+}
+
+/* 4. Estilo de la barrita de desplazamiento (idéntica a la del menú superior) */
+.quick-icons-row::-webkit-scrollbar {
+  height: 4px;
+}
+
+.quick-icons-row::-webkit-scrollbar-track {
+  background: var(--scroll-track);
+  border-radius: 4px;
+}
+
+.quick-icons-row::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 4px;
+}

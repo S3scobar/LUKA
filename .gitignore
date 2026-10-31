@@ -1,0 +1,15 @@
+# Archivos de entorno y secretos
+.env
+.env.local
+.env.*.local
+
+# Vercel
+.vercel
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# Configuración de editor
+.vscode/
+*.log

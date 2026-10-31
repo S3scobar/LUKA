@@ -1,0 +1,1893 @@
+/* css/views.css */
+
+/* Resumen Métricas */
+.summary-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.metric-card {
+  background: var(--bg-card);
+  padding: 1.25rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  border: 1px solid var(--border);
+}
+
+.metric-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metric-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+
+.card-income .metric-label i { color: var(--success); }
+.card-expense .metric-label i { color: var(--danger); }
+.text-success { color: var(--success); }
+.text-danger { color: var(--danger); }
+
+/* BARRA RÁPIDA DE GASTOS */
+.quick-expense-card {
+  background: var(--bg-card);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+  border: 2px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
+/* Toggle Gasto / Ingreso */
+.type-toggle-pill {
+  display: flex;
+  background: var(--bg-hover);
+  padding: 4px;
+  border-radius: 30px;
+  max-width: 260px;
+  margin: 0 auto 1.25rem auto;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.toggle-btn.active.expense {
+  background: var(--danger-soft);
+  color: var(--danger-text);
+}
+
+.toggle-btn.active.income {
+  background: var(--success-soft);
+  color: var(--success-text);
+}
+
+/* Selector de Billetera */
+.wallet-select-wrapper {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-subtle);
+  padding: 0.6rem 0.85rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.wallet-select-wrapper label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.wallet-dropdown {
+  background: transparent;
+  border: none;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  outline: none;
+  cursor: pointer;
+}
+
+/* Fila de Inputs: Nombre + Monto */
+.quick-inputs-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.input-title { flex: 2; }
+.input-amount {
+  flex: 1.2;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.currency-symbol {
+  position: absolute;
+  left: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.input-amount input {
+  padding-left: 26px !important;
+  font-weight: 700;
+  font-size: 1.15rem !important;
+}
+
+.quick-inputs-row input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.quick-inputs-row input:focus {
+  border-color: var(--primary);
+}
+
+/* Fila de Iconos de 1 Clic */
+.categories-action-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.action-hint {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.quick-icons-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.65rem;
+}
+
+.btn-fav-category {
+  background: var(--bg-subtle);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.btn-fav-category:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.btn-fav-category:active {
+  transform: scale(0.95);
+}
+
+.fav-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+}
+
+.btn-more .fav-icon-box {
+  background: var(--bg-muted);
+  color: var(--text-secondary);
+}
+
+.fav-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-main);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Historial de Transacciones */
+.badge-count {
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 12px;
+}
+
+.transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.transaction-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: background 0.2s;
+}
+
+.transaction-item:hover { background: var(--bg-hover); }
+
+.trans-cat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+}
+
+.trans-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.trans-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.trans-meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.trans-amount {
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.amount-expense { color: var(--danger); }
+.amount-income { color: var(--success); }
+
+.btn-delete-trans {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0.4rem;
+  transition: color 0.2s;
+}
+
+.btn-delete-trans:hover { color: var(--danger); }
+
+.empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--text-muted);
+}
+
+.empty-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  color: var(--border-strong);
+}
+
+/* Modal Selector de Categorías (+) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000; /* por encima del botón flotante de Tutorial (1500) y del header */
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.modal-content {
+  background: var(--bg-card);
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  max-height: calc(100dvh - 2rem); /* nunca más alto que la pantalla visible (barra del navegador incluida) */
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  overflow-y: auto; /* si el formulario es largo, el modal hace scroll en vez de desbordarse */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modal-content > form,
+.modal-content .form-grid > * {
+  min-width: 0; /* permite que los campos se encojan dentro del modal */
+}
+
+.modal-content .modal-header { flex-shrink: 0; }
+.modal-content form { flex-shrink: 0; }
+.modal-content .form-group input,
+.modal-content .form-group select { width: 100%; max-width: 100%; min-width: 0; }
+.modal-content .form-group label { overflow-wrap: anywhere; }
+
+/* Celulares: una sola columna, menos relleno y la grilla de iconos sin scroll propio */
+@media (max-width: 480px) {
+  .modal-backdrop { padding: 0.5rem; align-items: flex-end; }
+  .modal-content {
+    padding: 1.1rem 1rem 1.25rem;
+    max-height: calc(100dvh - 1rem);
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+  }
+  .modal-content .form-grid { grid-template-columns: 1fr !important; gap: 0; }
+  .modal-content .icon-picker-grid { max-height: none; overflow-y: visible; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.modal-categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.75rem;
+  overflow-y: auto;
+  padding-bottom: 0.5rem;
+}
+
+.cat-modal-btn {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cat-modal-btn:hover {
+  background: var(--border);
+}
+
+.cat-modal-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Pestañas de Navegación en Header */
+.nav-links {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-item-btn {
+  background: transparent;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.nav-item-btn:hover { color: var(--text-main); }
+.nav-item-btn.active {
+  background: var(--bg-muted);
+  color: var(--primary);
+}
+
+/* ==========================================
+   ESTILOS DE SUSCRIPCIONES Y METAS (SPRINT 3)
+   ========================================== */
+
+/* Tarjetas de Suscripción */
+.subs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.sub-card {
+  background: var(--bg-subtle);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  transition: all 0.2s;
+}
+
+.sub-card.sub-paused {
+  opacity: 0.6;
+  background: var(--bg-hover);
+}
+
+.sub-date-badge {
+  background: var(--bg-muted);
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius-md);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  min-width: 68px;
+}
+
+.sub-day {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--primary);
+}
+
+.sub-date-badge small {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.sub-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.sub-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.sub-amount {
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--text-main);
+}
+
+.sub-meta {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.sub-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+.btn-toggle-sub {
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.btn-toggle-sub.active { color: var(--success); }
+.btn-toggle-sub.paused { color: var(--text-muted); }
+
+.btn-delete-sub {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0.25rem;
+}
+.btn-delete-sub:hover { color: var(--danger); }
+
+/* Tarjetas de Metas de Ahorro */
+.goals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.goal-card {
+  background: var(--bg-subtle);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.goal-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.goal-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+}
+
+.goal-title-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.goal-title {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.badge-success {
+  background: var(--success-soft);
+  color: var(--success-text);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  width: fit-content;
+}
+
+.btn-delete-goal {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0.35rem;
+}
+.btn-delete-goal:hover { color: var(--danger); }
+
+.goal-amounts {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.goal-amounts .current {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.goal-amounts .target {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Barra de progreso */
+.progress-bar-container {
+  width: 100%;
+  height: 10px;
+  background: var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3B82F6, #10B981);
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+
+.goal-completed .progress-bar-fill {
+  background: #10B981;
+}
+
+.progress-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+/* Badges de estado de suscripción (Pagada / Pendiente / Pausada) */
+.sub-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.badge-sub-status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.badge-paid {
+  background: var(--success-soft);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+}
+
+.badge-pending {
+  background: var(--warning-soft);
+  color: var(--warning-text);
+  border: 1px solid var(--warning-border);
+}
+
+.badge-paused {
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  border: 1px solid var(--border-strong);
+}
+
+.sub-card-paid {
+  border-color: var(--success-border);
+}
+
+/* Indicador de suscripción al día */
+.paid-indicator {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--success-text);
+  background: var(--success-soft);
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.sub-secondary-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+/* ESTILOS DE ANÁLISIS MENSUAL Y ANUAL */
+
+/* Alternador de Modo Mes / Año */
+.analytics-mode-pills {
+  display: flex;
+  background: var(--border);
+  padding: 4px;
+  border-radius: 30px;
+  max-width: 320px;
+  margin: 0 auto 1.5rem auto;
+}
+
+.mode-pill {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.5rem 1rem;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-pill.active {
+  background: var(--bg-card);
+  color: var(--primary);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Selector Temporal */
+.period-navigator-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-card);
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
+.period-current-label h3 {
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-arrow-btn {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: all 0.15s;
+}
+
+.nav-arrow-btn:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* Alerta de Mayor Gasto */
+.top-expense-alert {
+  background: var(--warning-soft);
+  border: 1px solid var(--warning-border);
+  color: var(--warning-text);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Barra Segmentada Multicolor */
+.segmented-bar-container {
+  display: flex;
+  height: 14px;
+  width: 100%;
+  border-radius: 7px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  background: var(--border);
+}
+
+.bar-segment {
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+/* Lista de Desglose por Categoría */
+.category-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.cat-breakdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.cat-breakdown-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+}
+
+.cat-breakdown-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cat-breakdown-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.cat-breakdown-name { font-weight: 700; }
+.cat-breakdown-amount { font-weight: 800; }
+
+.cat-progress-track {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.cat-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.cat-percentage-badge {
+  font-weight: 800;
+  font-size: 0.9rem;
+  min-width: 44px;
+  text-align: right;
+  color: var(--text-muted);
+}
+
+/* Gráfico Anual (12 Meses) */
+.chart-legend {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.legend-item { display: flex; align-items: center; gap: 0.35rem; }
+.legend-box { width: 12px; height: 12px; border-radius: 3px; }
+.income-box { background: var(--success); }
+.expense-box { background: var(--danger); }
+
+.annual-chart-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: 180px;
+  padding-top: 1rem;
+  border-bottom: 2px solid var(--border);
+  gap: 0.25rem;
+}
+
+.chart-month-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.bars-pair {
+  display: flex;
+  gap: 3px;
+  align-items: flex-end;
+  height: 150px;
+  width: 100%;
+  justify-content: center;
+}
+
+.bar-income {
+  width: 10px;
+  background: var(--success);
+  border-radius: 3px 3px 0 0;
+  min-height: 2px;
+  transition: height 0.4s ease;
+}
+
+.bar-expense {
+  width: 10px;
+  background: var(--danger);
+  border-radius: 3px 3px 0 0;
+  min-height: 2px;
+  transition: height 0.4s ease;
+}
+
+.month-col-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+/* Tabla Anual */
+.annual-table-wrapper {
+  overflow-x: auto;
+}
+
+.annual-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.annual-table th, .annual-table td {
+  padding: 0.65rem 0.85rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.annual-table th {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+/*ESTILOS DE AHORROS Y FONDOS*/
+
+.total-savings-hero {
+  background: linear-gradient(135deg, #1E40AF, #3B82F6);
+  color: #fff;
+  padding: 1.75rem;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.hero-icon-box {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.hero-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.hero-label {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.9;
+}
+
+.hero-amount {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0.2rem 0;
+}
+
+.hero-subtext {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+/* Grilla de fondos de ahorro */
+.savings-funds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.fund-card {
+  background: var(--bg-subtle);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.fund-card-top {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.fund-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: var(--primary-soft);
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.fund-title-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.fund-name {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.btn-delete-fund {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0.35rem;
+}
+.btn-delete-fund:hover { color: var(--danger); }
+
+.fund-balance-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  background: var(--bg-card);
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.fund-balance-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.fund-balance-val {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--success);
+}
+
+.fund-progress-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.fund-target-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+/* ==========================================
+   ESTILOS DE TARJETA DE CRÉDITO
+   ========================================== */
+
+.cards-tabs-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.card-tab-btn {
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.card-tab-btn.active {
+  background: #8B5CF6;
+  color: #fff;
+  border-color: #8B5CF6;
+}
+
+/* Tarjeta Visual Premium */
+.credit-card-visual {
+  color: #fff;
+  padding: 1.5rem;
+  border-radius: 20px;
+  box-shadow: 0 15px 30px -5px rgba(139, 92, 246, 0.3);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 190px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card-visual-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-chip {
+  font-size: 1.8rem;
+  color: #FCD34D;
+}
+
+.card-brand-name {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.card-visual-numbers {
+  font-family: monospace;
+  font-size: 1.1rem;
+  letter-spacing: 3px;
+  opacity: 0.85;
+  margin: 1rem 0;
+}
+
+.card-visual-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.card-visual-footer small {
+  font-size: 0.65rem;
+  opacity: 0.75;
+  display: block;
+  letter-spacing: 0.5px;
+}
+
+.card-visual-footer strong {
+  font-size: 1.15rem;
+}
+
+.text-avail {
+  color: #34D399;
+}
+
+/* Extracto Card */
+.statement-card {
+  background: var(--bg-subtle);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.statement-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+.statement-title {
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.statement-header p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.statement-total {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--danger-text);
+}
+
+.statement-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-muted);
+}
+
+.breakdown-item strong {
+  color: var(--text-main);
+}
+
+.total-debt-row {
+  border-top: 1px dashed var(--border);
+  padding-top: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+.statement-actions {
+  margin-top: 1rem;
+}
+
+.card-action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.card-action-buttons .btn {
+  flex: 1;
+}
+
+/* Lista de compras diferidas */
+.purchases-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.purchase-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.85rem;
+}
+
+.purchase-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.purchase-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.purchase-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.purchase-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.badge-advance {
+  background: var(--warning-soft);
+  color: var(--warning-text);
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.purchase-meta {
+  display: flex;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.purchase-installment-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+/* Botón para eliminar compras diferidas o avances */
+.btn-delete-purchase {
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 0.45rem;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-delete-purchase:hover {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+/* Botón de editar tarjeta sobre la tarjeta gráfica */
+.btn-card-edit {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.btn-card-edit:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.08);
+}
+/* Banner de tarjeta al día */
+.statement-paid-banner {
+  background: var(--success-soft);
+  border: 1px solid var(--success-border);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.statement-paid-banner p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+/* Selector visual táctil de cuentas (Chips) */
+.wallet-chips-section {
+  margin-bottom: 1.15rem;
+}
+
+.wallet-chips-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 4px 2px 8px 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.wallet-chips-row::-webkit-scrollbar {
+  display: none;
+}
+
+.wallet-chip-btn {
+  background: var(--bg-subtle);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0.55rem 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  user-select: none;
+}
+
+.wallet-chip-btn:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.wallet-chip-btn.selected {
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+.chip-name {
+  font-weight: 700;
+}
+
+.chip-balance {
+  font-size: 0.75rem;
+  opacity: 0.85;
+  background: var(--chip-bg);
+  padding: 2px 6px;
+  border-radius: 8px;
+}
+/* Interruptor de Desglose en Análisis (Gastos vs Ingresos) */
+.breakdown-toggle-pills {
+  display: flex;
+  background: var(--bg-hover);
+  padding: 3px;
+  border-radius: 30px;
+  max-width: 360px;
+  margin: 0 auto 1.25rem auto;
+}
+
+.breakdown-toggle-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.9rem;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  white-space: nowrap; /* Evita que el texto se rompa en 2 renglones */
+}
+
+.breakdown-toggle-btn.active.expense {
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+}
+
+.breakdown-toggle-btn.active.income {
+  background: var(--success-soft);
+  color: var(--success-text);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+}
+
+/* Alerta de mayor ingreso del mes */
+.top-income-alert {
+  background: var(--success-soft);
+  border: 1px solid var(--success-border);
+  color: var(--success-text);
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+/* ==========================================
+   ANIMACIÓN SUAVE: GASTOS (ROJO) E INGRESOS (VERDE)
+   ========================================== */
+
+.expense-anim-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  animation: fadeInOverlay 0.2s ease-out forwards;
+}
+
+.expense-anim-overlay.fade-out {
+  animation: fadeOutOverlay 0.25s ease-in forwards;
+}
+
+@keyframes fadeInOverlay {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOutOverlay {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.expense-anim-card {
+  background: var(--bg-card);
+  padding: 1.6rem 2rem;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 220px;
+  animation: popInCard 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Tarjeta de Gasto (Rojo) */
+.expense-anim-card.is-expense {
+  border: 1.5px solid rgba(239, 68, 68, 0.25);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25), 0 0 25px rgba(239, 68, 68, 0.2);
+}
+
+/* Tarjeta de Ingreso (Verde) */
+.expense-anim-card.is-income {
+  border: 1.5px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25), 0 0 25px rgba(16, 185, 129, 0.25);
+}
+
+@keyframes popInCard {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.anim-illustration {
+  position: relative;
+  width: 90px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Billetera Roja (Gasto) */
+.expense-anim-card.is-expense .wallet-anim-box {
+  width: 64px;
+  height: 64px;
+  background: var(--danger-soft);
+  color: var(--danger-text);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  box-shadow: 0 8px 16px -4px rgba(220, 38, 38, 0.3);
+  animation: walletShake 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes walletShake {
+  0% { transform: scale(1) translateY(0); }
+  100% { transform: scale(1.05) translateY(-3px); }
+}
+
+/* Billetera Verde (Ingreso) */
+.expense-anim-card.is-income .wallet-anim-box {
+  width: 64px;
+  height: 64px;
+  background: var(--success-soft);
+  color: var(--success-text);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  box-shadow: 0 8px 16px -4px rgba(21, 128, 61, 0.35);
+  animation: walletCatch 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes walletCatch {
+  0% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.08) translateY(-4px); }
+  100% { transform: scale(0.98) translateY(2px); }
+}
+
+/* Partículas */
+.flying-particle {
+  position: absolute;
+  font-size: 1.15rem;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.expense-anim-card.is-expense .flying-particle {
+  color: var(--danger);
+}
+
+.expense-anim-card.is-income .flying-particle {
+  color: var(--success);
+}
+
+/* ==========================================
+   TRAYECTORIAS DE SALIDA (GASTO - HACIA AFUERA)
+   ========================================== */
+.expense-anim-card.is-expense .particle-1 { animation: flyOutLeft 0.75s ease-out infinite; }
+.expense-anim-card.is-expense .particle-2 { animation: flyOutCenter 0.75s ease-out 0.2s infinite; }
+.expense-anim-card.is-expense .particle-3 { animation: flyOutRight 0.75s ease-out 0.4s infinite; }
+
+@keyframes flyOutLeft {
+  0% { transform: translate(0, 0) scale(0.9) rotate(0deg); opacity: 0.95; }
+  100% { transform: translate(-32px, -45px) scale(0.4) rotate(-35deg); opacity: 0; }
+}
+
+@keyframes flyOutCenter {
+  0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 0.95; }
+  100% { transform: translate(2px, -52px) scale(0.4) rotate(15deg); opacity: 0; }
+}
+
+@keyframes flyOutRight {
+  0% { transform: translate(0, 0) scale(0.9) rotate(0deg); opacity: 0.95; }
+  100% { transform: translate(32px, -45px) scale(0.4) rotate(35deg); opacity: 0; }
+}
+
+/* ==========================================
+   TRAYECTORIAS DE ENTRADA (INGRESO - HACIA LA BILLETERA)
+   ========================================== */
+.expense-anim-card.is-income .particle-1 { animation: flyInLeft 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite; }
+.expense-anim-card.is-income .particle-2 { animation: flyInCenter 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s infinite; }
+.expense-anim-card.is-income .particle-3 { animation: flyInRight 0.75s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.4s infinite; }
+
+@keyframes flyInLeft {
+  0% { transform: translate(-36px, -50px) scale(1.15) rotate(-35deg); opacity: 0; }
+  25% { opacity: 0.95; }
+  100% { transform: translate(0, 0) scale(0.3) rotate(0deg); opacity: 0; }
+}
+
+@keyframes flyInCenter {
+  0% { transform: translate(0, -56px) scale(1.15) rotate(20deg); opacity: 0; }
+  25% { opacity: 0.95; }
+  100% { transform: translate(0, 0) scale(0.3) rotate(0deg); opacity: 0; }
+}
+
+@keyframes flyInRight {
+  0% { transform: translate(36px, -50px) scale(1.15) rotate(35deg); opacity: 0; }
+  25% { opacity: 0.95; }
+  100% { transform: translate(0, 0) scale(0.3) rotate(0deg); opacity: 0; }
+}
+
+/* Textos */
+.anim-text-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.anim-amount {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.anim-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+/* =========================================================
+   MÓDULO DE PRESUPUESTOS (DISEÑO LIMPIO Y DE ALTO CONTRASTE)
+   ========================================================= */
+
+/* 1. Tarjeta Resumen Principal (Hero Card) */
+.budget-hero-card {
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border, #E2E8F0);
+  border-radius: var(--radius-lg, 16px);
+  padding: 1.25rem 1.4rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.budget-hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.6rem;
+}
+
+.budget-hero-badge {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--primary, #2563EB);
+  background: rgba(37, 99, 235, 0.08);
+  padding: 4px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.budget-hero-pct-badge {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--primary);
+  background: rgba(37, 99, 235, 0.1);
+  padding: 3px 9px;
+  border-radius: 8px;
+}
+
+.budget-hero-pct-badge.is-warn {
+  color: var(--warning-text);
+  background: rgba(245, 158, 11, 0.15);
+}
+
+.budget-hero-pct-badge.is-danger {
+  color: var(--danger-text);
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.budget-hero-amount-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.budget-hero-spent {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--text-main, #0F172A);
+  letter-spacing: -0.5px;
+  line-height: 1.1;
+}
+
+.budget-hero-limit {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text-muted, #64748B);
+}
+
+/* Barra del resumen: 10px de grosor, pista definida y color vivo */
+.budget-hero-progress-track {
+  height: 10px;
+  width: 100%;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 0.85rem;
+}
+
+.budget-hero-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.budget-hero-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--text-muted, #64748B);
+}
+
+.budget-hero-avail {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-main, #0F172A);
+}
+
+.budget-hero-avail strong {
+  color: var(--success);
+}
+
+/* 2. Lista de Tarjetas de Categorías */
+.budgets-list-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.budget-card {
+  background: var(--bg-card, #FFFFFF);
+  border: 1px solid var(--border, #E2E8F0);
+  border-radius: var(--radius-lg, 16px);
+  padding: 1.1rem 1.25rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  user-select: none;
+}
+
+.budget-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  border-color: var(--border-strong);
+}
+
+.budget-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.budget-cat-info {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.budget-cat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.budget-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.budget-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-main, #0F172A);
+  margin-bottom: 2px;
+}
+
+.budget-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted, #64748B);
+  font-weight: 500;
+}
+
+.budget-numbers {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main, #0F172A);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.budget-limit-divider {
+  color: var(--text-muted, #94A3B8);
+  font-weight: 400;
+  margin: 0 2px;
+}
+
+.budget-limit-val {
+  color: var(--text-muted, #64748B);
+  font-weight: 500;
+}
+
+/* Barra de progreso de la categoría: visible y con esquinas redondeadas */
+.budget-progress-track {
+  height: 9px;
+  width: 100%;
+  background: var(--border);
+  border-radius: 999px;
+  margin-top: 0.85rem;
+  overflow: hidden;
+}
+
+.budget-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 4px;
+}
