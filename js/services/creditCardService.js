@@ -191,10 +191,9 @@ export const creditCardService = {
       await walletService.adjustBalance(card.wallet_id, -totalImpact);
     }
 
-    // En un avance el dinero entra a la cuenta destino y queda registrado como ingreso
+    // En un avance el dinero entra a la cuenta destino. El saldo sube solo: el trigger
+    // tr_transaction_balance suma el ingreso, así que aquí no se ajusta a mano.
     if (is_advance && target_wallet_id) {
-      await walletService.adjustBalance(target_wallet_id, amount);
-
       await transactionService.addTransaction({
         wallet_id: target_wallet_id,
         category_id: null,
@@ -239,8 +238,8 @@ export const creditCardService = {
     return true;
   },
 
-  // Pago de tarjeta: descuenta de la cuenta de débito, libera cupo, avanza una cuota
-  // en cada compra pendiente y registra el gasto
+  // Pago de tarjeta: registra el gasto en la cuenta de débito (el trigger tr_transaction_balance
+  // descuenta el saldo), libera cupo y avanza una cuota en cada compra pendiente
   async payCard({ card_id, payment_amount, from_wallet_id }) {
     const userId = await requireUserId();
     const payVal = parseFloat(payment_amount);
@@ -257,7 +256,16 @@ export const creditCardService = {
     const card = cardRes.data;
     const activePurchases = purchasesRes.data || [];
 
-    const updates = [walletService.adjustBalance(from_wallet_id, -payVal)];
+    // Primero el gasto: si falla (cuenta inexistente, por ejemplo) todavía no se ha tocado nada más
+    await transactionService.addTransaction({
+      wallet_id: from_wallet_id,
+      category_id: fallbackCategoryId,
+      type: "expense",
+      title: `Pago Tarjeta: ${card.name}`,
+      amount: payVal
+    });
+
+    const updates = [];
 
     if (card.wallet_id) {
       updates.push(walletService.adjustBalance(card.wallet_id, payVal, { max: Number(card.credit_limit) }));
@@ -275,14 +283,6 @@ export const creditCardService = {
     }
 
     await Promise.all(updates);
-
-    await transactionService.addTransaction({
-      wallet_id: from_wallet_id,
-      category_id: fallbackCategoryId,
-      type: "expense",
-      title: `Pago Tarjeta: ${card.name}`,
-      amount: payVal
-    });
 
     return true;
   },

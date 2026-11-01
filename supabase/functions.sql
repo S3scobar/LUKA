@@ -3,8 +3,9 @@
 -- (js/services/walletService.js), que puede perder una actualización cuando la misma
 -- cuenta se modifica desde dos pestañas o dispositivos a la vez.
 --
--- Los ids se declaran uuid: si tus tablas usan otro tipo, cambia el tipo de los parámetros.
--- Las funciones son security invoker: se aplican las políticas RLS del usuario que llama.
+-- Son security invoker: se aplican las políticas RLS del usuario que llama.
+-- Ajustan el saldo directamente; no crean transacciones, así que no activan tr_transaction_balance.
+-- Se usan para el cupo de las tarjetas y para las transferencias.
 
 create or replace function public.adjust_wallet_balance(
   p_wallet_id uuid,

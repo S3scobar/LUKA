@@ -79,11 +79,15 @@ export const authView = {
             const fullName = document.getElementById("auth-name").value.trim();
             const { session } = await authService.signUp(email, password, fullName);
             if (!session) {
-              // El proyecto pide confirmar el correo antes de iniciar sesión
-              isLoginMode = true;
-              notice = "Te enviamos un correo para confirmar tu cuenta. Cuando lo confirmes, inicia sesión.";
-              renderForm();
-              return;
+              // Cuentas auto-confirmadas: la sesión no viene en el registro, pero el login funciona
+              try {
+                await authService.signIn(email, password);
+              } catch {
+                isLoginMode = true;
+                notice = "Tu cuenta se creó. Si tu proyecto exige confirmar el correo, revisa tu bandeja y luego inicia sesión.";
+                renderForm();
+                return;
+              }
             }
           }
           if (onAuthSuccess) onAuthSuccess();
