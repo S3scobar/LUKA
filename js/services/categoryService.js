@@ -44,7 +44,7 @@ export const categoryService = {
     return data;
   },
 
-  // Actualizar categoría (NUEVO)
+  // Actualizar nombre, icono y color (el tipo no cambia)
   async updateCategory(id, { name, icon, color }) {
     const { data, error } = await supabase
       .from("categories")

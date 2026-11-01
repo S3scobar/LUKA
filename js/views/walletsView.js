@@ -2,8 +2,8 @@
 import { walletService } from "../services/walletService.js";
 import { categoryService } from "../services/categoryService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
+import { escapeHtml, resolveContainer, notifyError } from "../utils.js";
 
-import { escapeHtml } from "../utils.js";
 const AVAILABLE_ICONS = [
   "fa-utensils", "fa-burger", "fa-pizza-slice", "fa-mug-hot", "fa-apple-whole",
   "fa-bus", "fa-car", "fa-gas-pump", "fa-train", "fa-plane",
@@ -16,8 +16,8 @@ const AVAILABLE_ICONS = [
 ];
 
 export const walletsView = {
-  async render(containerId) {
-    const container = document.getElementById(containerId);
+  async render(target) {
+    const container = resolveContainer(target);
     container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando billeteras y categorías...</div>`;
 
     try {
@@ -143,7 +143,7 @@ export const walletsView = {
           btnTransfer.addEventListener("click", () => {
             showTransferModal({
               wallets,
-              onSave: () => walletsView.render(containerId)
+              onSave: () => walletsView.render(target)
             });
           });
         }
@@ -151,7 +151,7 @@ export const walletsView = {
         container.querySelector("#btn-show-wallet-form").addEventListener("click", () => {
           showWalletModal({
             wallet: null,
-            onSave: () => walletsView.render(containerId)
+            onSave: () => walletsView.render(target)
           });
         });
 
@@ -161,7 +161,7 @@ export const walletsView = {
             const wallet = wallets.find(w => w.id === walletId);
             showWalletModal({
               wallet,
-              onSave: () => walletsView.render(containerId)
+              onSave: () => walletsView.render(target)
             });
           });
         });
@@ -171,8 +171,12 @@ export const walletsView = {
             const walletId = btn.dataset.id;
             const wallet = wallets.find(w => w.id === walletId);
             if (confirm(`¿Eliminar la cuenta "${wallet.name}"?`)) {
-              await walletService.deleteWallet(walletId);
-              walletsView.render(containerId);
+              try {
+                await walletService.deleteWallet(walletId);
+                walletsView.render(target);
+              } catch (err) {
+                notifyError(err);
+              }
             }
           });
         });
@@ -189,7 +193,7 @@ export const walletsView = {
         container.querySelector("#btn-new-category").addEventListener("click", () => {
           showCategoryModal({
             type: activeCategoryTab,
-            onSave: () => walletsView.render(containerId)
+            onSave: () => walletsView.render(target)
           });
         });
 
@@ -200,7 +204,7 @@ export const walletsView = {
             const category = allCategories.find(c => c.id === catId);
             showCategoryModal({
               category,
-              onSave: () => walletsView.render(containerId)
+              onSave: () => walletsView.render(target)
             });
           });
         });
@@ -213,9 +217,9 @@ export const walletsView = {
             if (confirm(`¿Eliminar la categoría "${category.name}"?`)) {
               try {
                 await categoryService.deleteCategory(catId);
-                walletsView.render(containerId);
+                walletsView.render(target);
               } catch (err) {
-                alert(err.message);
+                notifyError(err);
               }
             }
           });
@@ -270,7 +274,7 @@ export const walletsView = {
                 feedback.style.display = "block";
                 setTimeout(() => { feedback.style.display = "none"; }, 3000);
               } catch (err) {
-                alert("Error: " + err.message);
+                notifyError(err);
               } finally {
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = `<i class="fa-solid fa-check"></i> Guardar Favoritas (<span id="fav-count">${selectedFavoriteIds.length}</span>/4)`;
@@ -283,18 +287,18 @@ export const walletsView = {
       renderContent();
 
     } catch (error) {
-      container.innerHTML = `<div class="alert-error">Error al cargar datos: ${error.message}</div>`;
+      container.innerHTML = `<div class="alert-error">Error al cargar datos: ${escapeHtml(error.message)}</div>`;
     }
   }
 };
 
-// Modal Transferencia
 function showTransferModal({ wallets, onSave }) {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
 
+  // Por defecto el destino es una cuenta distinta del origen
   const defaultFrom = wallets[0]?.id;
-  const defaultTo = wallets?.id || wallets[0]?.id;
+  const defaultTo = wallets[1]?.id || wallets[0]?.id;
 
   modal.innerHTML = `
     <div class="modal-content" style="max-width: 420px;">
@@ -377,7 +381,6 @@ function showTransferModal({ wallets, onSave }) {
   });
 }
 
-// Modal Crear o Editar Billetera
 function showWalletModal({ wallet = null, onSave }) {
   const isEditing = !!wallet;
 
@@ -462,7 +465,6 @@ function showWalletModal({ wallet = null, onSave }) {
   });
 }
 
-// Modal Categoría
 function showCategoryModal({ category = null, type = "expense", onSave }) {
   const isEditing = !!category;
   let selectedIcon = isEditing ? category.icon : "fa-tag";

@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#F8FAFC" />
   <title>LUKA</title>
 
-  <!-- Aplica el tema guardado antes de pintar para evitar el parpadeo blanco -->
+  <!-- Aplica el tema guardado antes de pintar para evitar el parpadeo -->
   <script>
     (function () {
       try {
@@ -22,26 +22,21 @@
     })();
   </script>
 
-  <!-- Favicon Oficial LUKA -->
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-  <!-- Hojas de estilo -->
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/components.css" />
   <link rel="stylesheet" href="css/views.css" />
 </head>
 <body>
-  <!-- HEADER LIMPIO DE 1 FILA (DESLIZABLE) -->
   <header class="navbar">
-    <!-- 1. Logo a la izquierda -->
     <div class="brand">
       <img src="favicon.svg" alt="LUKA" style="width: 22px; height: 22px; border-radius: 6px; vertical-align: middle;" /> LUKA
     </div>
 
-    <!-- 2. Pestañas en el centro (Deslizables con el pulgar) -->
+    <!-- Las pestañas se deslizan en horizontal en pantallas pequeñas -->
     <div id="nav-tabs" class="nav-links" style="display: none;">
       <button class="nav-item-btn active" data-tab="dashboard"><i class="fa-solid fa-house"></i> Inicio</button>
       <button class="nav-item-btn" data-tab="wallets"><i class="fa-solid fa-wallet"></i> Billeteras</button>
@@ -52,7 +47,6 @@
       <button class="nav-item-btn" data-tab="analytics"><i class="fa-solid fa-chart-pie"></i> Análisis</button>
     </div>
 
-    <!-- 3. Acciones a la derecha: tema y salir -->
     <div class="nav-actions">
       <button id="btn-theme" class="btn-theme-icon" type="button" title="Cambiar a modo oscuro" aria-label="Cambiar a modo oscuro" aria-pressed="false">
         <i class="fa-solid fa-moon"></i>
@@ -66,17 +60,14 @@
     </div>
   </header>
 
-  <!-- CONTENIDO PRINCIPAL -->
   <main class="container">
     <div id="app"></div>
   </main>
 
-  <!-- Marca de agua original -->
   <div class="watermark-author">
     by: <span>Santiago Escobar</span>
   </div>
 
-  <!-- BOTÓN FLOTANTE DE TUTORIAL -->
   <button id="btn-start-tutorial" class="tutorial-fab" title="Ver Guía de LUKA" style="display: none;">
     <i class="fa-solid fa-lightbulb"></i>
     <span>Tutorial</span>

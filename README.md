@@ -1,36 +1,24 @@
-# LUKA — Sistema de Gestión Financiera Personal
+# LUKA
 
-![Frontend](https://img.shields.io/badge/Frontend-HTML5_%7C_CSS3_%7C_JS-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
-![Backend](https://img.shields.io/badge/Backend-Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
-![Deploy](https://img.shields.io/badge/Deploy-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
-![Theme](https://img.shields.io/badge/Theme-Fintech_Slate_Blue-2563EB?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-Beta-00C853?style=for-the-badge)
-
-LUKA es una aplicación web orientada a la administración de finanzas personales: registro de gastos cotidianos en un toque, control de cuentas y billeteras, presupuestos por categoría, seguimiento de tarjetas de crédito, suscripciones recurrentes y fondos de ahorro con rendimiento. Está construida con una arquitectura cliente liviana basada en estándares web nativos (HTML5, CSS3, JavaScript ES Modules) y respaldada por Supabase (PostgreSQL, Row Level Security y Auth).
+Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, presupuestos por categoría, tarjetas de crédito, suscripciones y fondos de ahorro. Es un sitio estático (HTML, CSS y JavaScript con módulos ES) que usa Supabase para la base de datos y la autenticación, y se despliega en Vercel.
 
 ---
 
-## 1. Contexto y Planteamiento del Problema
+## 1. Qué resuelve
 
-La mayoría de las aplicaciones de finanzas personales fracasan por una razón recurrente: **la fricción en el registro**. Los flujos convencionales requieren navegar entre múltiples pantallas, abrir listas desplegables anidadas, seleccionar fechas y confirmar formularios extensos. Esta sobrecarga provoca que el usuario abandone el registro a los pocos días, perdiendo la trazabilidad de sus gastos hormiga.
+* Registrar un gasto con un solo toque, sin pantallas intermedias.
+* Ver el saldo de cada cuenta (efectivo, bancos, billeteras digitales) en un solo lugar.
+* Saber qué pagos fijos del mes ya se hicieron.
+* Separar el dinero de uso diario del dinero ahorrado.
+* Entender cuánto se debe en tarjetas, con cuotas, intereses y fecha de pago.
 
-Además, los usuarios suelen enfrentar cuatro problemas estructurales:
+## 2. Decisiones de diseño
 
-1. **Descentralización de cuentas:** el dinero está repartido entre efectivo, cuentas bancarias y billeteras digitales (Nequi, Nu, etc.), lo que dificulta conocer el saldo real de cada una.
-2. **Fuga por suscripciones fijas:** es difícil auditar qué pagos periódicos (telefonía, servicios, membresías) ya se debitaron y cuáles siguen pendientes en el mes.
-3. **Falta de visibilidad del ahorro:** no hay distinción clara entre el dinero operativo y los fondos de ahorro acumulados.
-4. **Opacidad del crédito:** las compras a cuotas y los avances en tarjeta hacen difícil saber cuánto se debe, cuánto cuesta en intereses y cuándo vence el pago.
-
----
-
-## 2. Propuesta de Solución y Filosofía de Diseño
-
-* **Registro en un solo toque:** el formulario principal pide solo un concepto, un monto y ofrece acceso directo a las cuatro categorías favoritas del usuario. Al tocar la categoría, el movimiento se guarda sin pantallas intermedias.
-* **Saldos coherentes con los movimientos:** el saldo de cada billetera debe reflejar siempre sus transacciones. La lógica de saldos se apoya en la base de datos para los movimientos simples; las operaciones compuestas (transferencias, tarjetas) se coordinan desde los servicios del cliente (ver sección 8).
-* **Aislamiento multi-usuario:** se usa Row Level Security (RLS) de Supabase; cada fila pertenece a un `user_id` y las políticas limitan el acceso a `auth.uid() = user_id`.
-* **Cero dependencias pesadas en el frontend:** sin React, Vue ni Angular, y sin bundlers. Se usan ES Modules nativos para lograr una carga inicial rápida y máxima portabilidad.
-* **Pensada para móvil:** navegación por pestañas deslizables con el pulgar, entradas numéricas con separador de miles automático (formato `es-CO`) y un tutorial interactivo en el primer ingreso.
-* **Tema claro y oscuro:** todos los colores salen de variables CSS (tokens) definidas en `css/main.css`; el tema oscuro solo redefine esas variables, por lo que cualquier componente nuevo lo hereda sin código extra.
+* **Sin framework ni bundler:** ES Modules nativos y dos dependencias por CDN (Font Awesome y `supabase-js`).
+* **Aislamiento entre usuarios con RLS:** cada fila tiene `user_id` y las políticas limitan el acceso a `auth.uid() = user_id` (ver `supabase/policies.sql`).
+* **Saldos ajustados en la base de datos:** `walletService.adjustBalance()` usa funciones RPC atómicas (`supabase/functions.sql`); si no están desplegadas, usa leer y escribir.
+* **Móvil primero:** pestañas deslizables, montos con separador de miles (`es-CO`) y tutorial en el primer ingreso.
+* **Tema claro y oscuro:** los colores salen de variables CSS en `css/main.css`; el tema oscuro solo las redefine.
 
 ---
 
@@ -80,7 +68,7 @@ Además, los usuarios suelen enfrentar cuatro problemas estructurales:
 * Navegación entre meses y años.
 
 ### 3.8. Tutorial interactivo
-* Guía paso a paso por cada pestaña, disponible desde un botón flotante.
+* Guía paso a paso por cada pestaña (Inicio, Billeteras, Presupuesto, Tarjetas, Suscripciones, Ahorros y Análisis), disponible desde un botón flotante.
 
 ### 3.9. Modo oscuro
 * Botón de luna/sol en el header (visible también en la pantalla de acceso).
@@ -118,6 +106,9 @@ Además, los usuarios suelen enfrentar cuatro problemas estructurales:
 ├── favicon.svg                     # Icono de la app
 ├── .gitignore
 ├── README.md
+├── supabase/
+│   ├── policies.sql                # RLS por usuario e índices
+│   └── functions.sql               # Ajustes de saldo y transferencias atómicas
 ├── css/
 │   ├── main.css                    # Tokens de diseño (tema claro y oscuro), reset y tipografía
 │   ├── components.css              # Botones, tarjetas, modales y formularios
@@ -125,9 +116,9 @@ Además, los usuarios suelen enfrentar cuatro problemas estructurales:
 └── js/
     ├── main.js                     # Punto de entrada: sesión, navegación entre vistas y tema
     ├── config.js                   # URL y clave pública (anon) de Supabase
-    ├── supabaseClient.js           # Cliente Supabase y requireUserId() (id desde la sesión local)
+    ├── supabaseClient.js           # Cliente Supabase, requireUserId() e isMissingRpc()
     ├── themeManager.js             # Tema claro/oscuro: preferencia, persistencia y botón
-    ├── utils.js                    # escapeHtml() para texto del usuario en plantillas
+    ├── utils.js                    # escapeHtml(), resolveContainer() y notifyError()
     ├── currencyFormatter.js        # Entrada de moneda con separador de miles (es-CO)
     ├── services/
     │   ├── authService.js          # Registro, login, logout y sesión
@@ -159,7 +150,7 @@ Además, los usuarios suelen enfrentar cuatro problemas estructurales:
 
 ## 6. Modelo de Datos
 
-El código consume las siguientes tablas de Supabase (el esquema SQL no está versionado en este repositorio):
+El código consume las siguientes tablas de Supabase. Las políticas RLS, los índices y las funciones están en `supabase/`; las tablas en sí no están versionadas:
 
 | Tabla | Propósito |
 |---|---|
@@ -200,27 +191,35 @@ Importa el repositorio en Vercel como proyecto estático, sin comando de build. 
 
 ---
 
-## 8. Seguridad y Limitaciones Conocidas
+## 8. Varios usuarios a la vez
 
-* **Clave pública:** la `anon key` incluida en `config.js` es pública por diseño; la protección de los datos depende por completo de las políticas RLS de cada tabla, incluidas `budgets`, `credit_cards` y `credit_card_purchases`.
-* **Saldos desde el cliente:** transferencias, pagos y compras de tarjeta, y el ajuste de cupo se calculan en JavaScript con varias llamadas consecutivas (leer, calcular, actualizar). Si una llamada falla a mitad del proceso, o se usa la app desde dos dispositivos a la vez, el saldo puede quedar inconsistente. Se recomienda migrar estas operaciones a funciones RPC en PostgreSQL que se ejecuten en una sola transacción.
-* **Esquema no versionado:** las tablas, triggers y políticas RLS viven solo en Supabase. Conviene agregar una carpeta `supabase/` con las migraciones SQL para poder reproducir el entorno.
-* **Escape de HTML:** las vistas construyen el DOM con `innerHTML`; todo texto escrito por el usuario (nombres de cuentas, categorías, metas, suscripciones, tarjetas y títulos de movimientos) pasa por `escapeHtml()` de `js/utils.js`. Al agregar nuevas plantillas, escapa cualquier texto libre del usuario.
-* **Posible doble conteo en saldos (verificar):** `payCard()` y el avance en efectivo de `addPurchase()` actualizan el saldo de una billetera manualmente *y además* registran una transacción. Si en Supabase existe un trigger que ajusta el saldo al insertar transacciones, esas dos operaciones descontarían o sumarían dos veces. Conviene revisar los triggers de `transactions` y unificar el criterio.
-* **Identidad del usuario:** los servicios obtienen el `user_id` con `requireUserId()` (sesión local) en lugar de `auth.getUser()`, evitando una petición de red por cada operación; la autorización real la imponen las políticas RLS.
-* **Detección de pago de tarjeta:** el banner de Inicio considera una tarjeta como pagada si existe un gasto del mes cuyo título contiene «pago tarjeta» y el nombre de la tarjeta.
-* **Accesibilidad:** el `viewport` actual bloquea el zoom (`user-scalable=no`).
+* **Datos:** cada usuario solo ve sus filas gracias a RLS. Ejecuta `supabase/policies.sql` y confirma en el panel de Supabase que las ocho tablas tienen RLS activo.
+* **Saldos:** dos pestañas o dispositivos del mismo usuario pueden modificar una cuenta a la vez. Con `supabase/functions.sql` desplegado, el ajuste es una sola sentencia SQL y no se pierde ninguna actualización.
+* **Sesión compartida entre pestañas:** `supabase-js` guarda la sesión en `localStorage`. Si en otra pestaña se cierra sesión o entra otro usuario, esta pestaña vuelve al login o recarga los datos del usuario nuevo; no sigue mostrando los del anterior.
+* **Estado en pantalla:** al cambiar de usuario se reinician los filtros de mes, la tarjeta seleccionada y la pestaña activa.
+* **Respuestas tardías:** cada pestaña se pinta en su propio contenedor, así una consulta lenta no sobrescribe la pestaña que el usuario abrió después.
+* **Volumen:** las consultas de movimientos se piden por páginas de 1000 filas (el máximo de Supabase por petición).
+
+## 9. Seguridad y limitaciones
+
+* **Clave pública:** la `anon key` de `config.js` es pública por diseño; la protección depende de las políticas RLS.
+* **Fondos de ahorro:** aportes y retiros siguen leyendo y escribiendo `saving_goals.current_amount` en pasos separados; falta una función RPC como la de las billeteras.
+* **Compras con tarjeta:** registrar una compra implica varias llamadas (compra, cupo, transacción). Si una falla a mitad, los datos pueden quedar a medias. Lo ideal es una función SQL que haga todo en una transacción.
+* **Posible doble conteo (verificar):** `payCard()` y el avance de `addPurchase()` ajustan un saldo y además registran una transacción. Si en Supabase hay un trigger que ajusta el saldo al insertar transacciones, se contaría dos veces.
+* **Pago de suscripciones y tarjetas:** se detecta por el texto del título del movimiento («Pago: nombre», «Pago Tarjeta: nombre»). Si el usuario edita ese texto, el estado cambia.
+* **Escape de HTML:** el texto escrito por el usuario pasa por `escapeHtml()` antes de entrar a una plantilla. Al agregar vistas nuevas, haz lo mismo.
+* **Accesibilidad:** el `viewport` bloquea el zoom (`user-scalable=no`).
+* **Versión de `supabase-js`:** se carga `@2` sin fijar versión; conviene fijar una versión exacta.
 
 ---
 
-## 9. Hoja de Ruta Sugerida
+## 10. Pendiente
 
-- [ ] Versionar el esquema SQL, los triggers y las políticas RLS.
-- [ ] Mover transferencias, pagos y compras de tarjeta a funciones RPC atómicas.
-- [x] Escapar el contenido dinámico antes de insertarlo con `innerHTML`.
-- [x] Modo oscuro con alternador y persistencia.
-- [ ] Revisar y unificar el criterio de saldos entre triggers y servicios (ver sección 8).
-- [ ] Convertir la app en PWA instalable (manifest y service worker).
+- [ ] Versionar el esquema completo de las tablas y los triggers.
+- [ ] Mover aportes de ahorro y compras con tarjeta a funciones RPC.
+- [ ] Revisar el criterio de saldos entre triggers y servicios.
+- [ ] Fijar la versión de `supabase-js`.
+- [ ] PWA instalable.
 - [ ] Exportar movimientos a CSV.
 
 ---

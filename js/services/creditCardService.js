@@ -147,7 +147,7 @@ export const creditCardService = {
     return grouped;
   },
 
-  // Registrar compra o avance (DESCUENTA CUPO SIN DUPLICAR GASTO EN TRANSACTIONS)
+  // Registra una compra o un avance: descuenta cupo sin crear un gasto duplicado en transactions
   async addPurchase({ card_id, category_id, title, total_amount, installments = 1, is_advance = false, advance_fee = 0, target_wallet_id = null, is_zero_interest = false }) {
     const userId = await requireUserId();
 
@@ -157,7 +157,7 @@ export const creditCardService = {
 
     const { data: card, error: cardErr } = await supabase
       .from("credit_cards")
-      .select("*, wallet:wallets(id, balance)")
+      .select("id, wallet_id")
       .eq("id", card_id)
       .single();
     if (cardErr) throw cardErr;
@@ -165,7 +165,6 @@ export const creditCardService = {
     // Si no viene categoría, usar la primera categoría de gasto del usuario
     const finalCategoryId = category_id || await categoryService.resolveCategoryId(userId, "expense");
 
-    // 1. Registrar la compra diferida en credit_card_purchases
     const { data: purchase, error: purErr } = await supabase
       .from("credit_card_purchases")
       .insert([
@@ -188,25 +187,13 @@ export const creditCardService = {
       .single();
     if (purErr) throw purErr;
 
-    // 2. Descontar cupo disponible de la tarjeta
     if (card.wallet_id) {
-      const newAvailable = Number(card.wallet?.balance || card.credit_limit) - totalImpact;
-      await walletService.updateWallet(card.wallet_id, { balance: newAvailable });
+      await walletService.adjustBalance(card.wallet_id, -totalImpact);
     }
 
-    // 3. Si fue avance en efectivo, sumar a la cuenta destino y registrar ingreso
+    // En un avance el dinero entra a la cuenta destino y queda registrado como ingreso
     if (is_advance && target_wallet_id) {
-      const { data: targetWallet } = await supabase
-        .from("wallets")
-        .select("balance")
-        .eq("id", target_wallet_id)
-        .single();
-
-      if (targetWallet) {
-        await walletService.updateWallet(target_wallet_id, {
-          balance: Number(targetWallet.balance) + amount
-        });
-      }
+      await walletService.adjustBalance(target_wallet_id, amount);
 
       await transactionService.addTransaction({
         wallet_id: target_wallet_id,
@@ -232,73 +219,50 @@ export const creditCardService = {
 
     const totalImpact = Number(purchase.total_amount) + Number(purchase.advance_fee || 0);
 
-    // 1. Borrar la transacción vinculada si existía
     if (purchase.transaction_id) {
       await supabase.from("transactions").delete().eq("id", purchase.transaction_id);
     }
 
-    // 2. Eliminar el registro de compra diferida
     const { error: delErr } = await supabase
       .from("credit_card_purchases")
       .delete()
       .eq("id", purchase_id);
     if (delErr) throw delErr;
 
-    // 3. Restaurar cupo disponible en la tarjeta
+    // Devolver el cupo sin pasarse del límite de la tarjeta
     if (purchase.card?.wallet_id) {
-      const { data: wallet } = await supabase
-        .from("wallets")
-        .select("balance")
-        .eq("id", purchase.card.wallet_id)
-        .single();
-
-      if (wallet) {
-        const restoredBalance = Math.min(
-          Number(purchase.card.credit_limit),
-          Number(wallet.balance) + totalImpact
-        );
-        await walletService.updateWallet(purchase.card.wallet_id, { balance: restoredBalance });
-      }
+      await walletService.adjustBalance(purchase.card.wallet_id, totalImpact, {
+        max: Number(purchase.card.credit_limit)
+      });
     }
 
     return true;
   },
 
-  // Pagar tarjeta (ACTUALIZA CUOTAS PAGADAS Y REGISTRA EL GASTO EN LA CUENTA DÉBITO)
+  // Pago de tarjeta: descuenta de la cuenta de débito, libera cupo, avanza una cuota
+  // en cada compra pendiente y registra el gasto
   async payCard({ card_id, payment_amount, from_wallet_id }) {
     const userId = await requireUserId();
     const payVal = parseFloat(payment_amount);
     if (isNaN(payVal) || payVal <= 0) throw new Error("Monto inválido");
 
-    // Lecturas independientes: se piden al mismo tiempo
-    const [cardRes, fromWalletRes, purchasesRes, fallbackCategoryId] = await Promise.all([
-      supabase.from("credit_cards").select("*, wallet:wallets(id, balance)").eq("id", card_id).single(),
-      supabase.from("wallets").select("balance").eq("id", from_wallet_id).single(),
+    const [cardRes, purchasesRes, fallbackCategoryId] = await Promise.all([
+      supabase.from("credit_cards").select("id, name, wallet_id, credit_limit").eq("id", card_id).single(),
       supabase.from("credit_card_purchases").select("id, installments, installments_paid").eq("card_id", card_id),
       categoryService.resolveCategoryId(userId, "expense")
     ]);
 
     if (cardRes.error) throw cardRes.error;
+    if (purchasesRes.error) throw purchasesRes.error;
     const card = cardRes.data;
-    const fromWallet = fromWalletRes.data;
     const activePurchases = purchasesRes.data || [];
 
-    const updates = [];
+    const updates = [walletService.adjustBalance(from_wallet_id, -payVal)];
 
-    // 1. Descontar dinero de la cuenta de ahorros/débito (ej. Bancolombia)
-    if (fromWallet) {
-      updates.push(walletService.updateWallet(from_wallet_id, {
-        balance: Number(fromWallet.balance) - payVal
-      }));
-    }
-
-    // 2. Liberar cupo disponible en la tarjeta
     if (card.wallet_id) {
-      const restored = Math.min(Number(card.credit_limit), Number(card.wallet?.balance || 0) + payVal);
-      updates.push(walletService.updateWallet(card.wallet_id, { balance: restored }));
+      updates.push(walletService.adjustBalance(card.wallet_id, payVal, { max: Number(card.credit_limit) }));
     }
 
-    // 3. Avanzar una cuota en cada compra con cuotas pendientes
     for (const p of activePurchases) {
       if (p.installments_paid < p.installments) {
         updates.push(
@@ -312,7 +276,6 @@ export const creditCardService = {
 
     await Promise.all(updates);
 
-    // 4. Registrar el pago en transacciones de la cuenta de débito
     await transactionService.addTransaction({
       wallet_id: from_wallet_id,
       category_id: fallbackCategoryId,
@@ -324,7 +287,7 @@ export const creditCardService = {
     return true;
   },
 
-  // Cálculo del extracto mensual en tiempo real (Opción A: Proyección del próximo corte)
+  // Proyección del extracto del próximo corte, calculada al momento con las compras pendientes
   calculateStatement(card, purchases = []) {
     const list = Array.isArray(purchases) ? purchases : [];
     const creditLimit = Number(card?.credit_limit || 0);
@@ -337,12 +300,12 @@ export const creditCardService = {
     const rateEA = Number(card?.interest_rate_ea || 0) / 100;
     const monthlyRate = Math.pow(1 + rateEA, 1 / 12) - 1;
 
-    // 1. Determinar el corte que se está acumulando / por liquidar (targetCutoff)
+    // Corte que se está acumulando
     const now = new Date();
     let targetCutoffYear = now.getFullYear();
     let targetCutoffMonth = now.getMonth();
     if (now.getDate() > cutoffDay) {
-      // Si el día de hoy ya superó el corte, acumulamos hacia el corte del mes siguiente
+      // Si hoy ya pasó el corte, las compras entran al corte del mes siguiente
       targetCutoffMonth += 1;
       if (targetCutoffMonth > 11) {
         targetCutoffMonth = 0;
@@ -351,7 +314,7 @@ export const creditCardService = {
     }
     const targetCutoff = new Date(targetCutoffYear, targetCutoffMonth, cutoffDay, 23, 59, 59);
 
-    // 2. Determinar la fecha límite de pago para ese corte
+    // Fecha límite de pago de ese corte
     let dueMonth = targetCutoff.getMonth();
     let dueYear = targetCutoff.getFullYear();
     if (paymentDueDay <= cutoffDay) {
@@ -384,11 +347,10 @@ export const creditCardService = {
 
       totalPrincipalToPayThisMonth += principalPerInstallment;
 
-      if ((p.installments === 1 && !p.is_advance) || p.is_zero_interest) {
-        // 1 cuota sin interés o convenio comercial 0%
-      } else {
-        const interest = remainingDebt * monthlyRate;
-        totalInterestThisMonth += interest;
+      // Una sola cuota (que no sea avance) y los convenios al 0 % no generan interés
+      const hasInterest = !((p.installments === 1 && !p.is_advance) || p.is_zero_interest);
+      if (hasInterest) {
+        totalInterestThisMonth += remainingDebt * monthlyRate;
       }
     });
 
@@ -411,7 +373,7 @@ export const creditCardService = {
     };
   },
 
-  // Resumen sincronizado para el banner de Inicio (Dashboard)
+  // Total a pagar de todas las tarjetas, para el banner de Inicio
   async getTotalStatementSummary() {
     const empty = { totalDue: 0, earliestDueDay: null, dueDateLabel: null, hasCards: false };
 
@@ -419,7 +381,6 @@ export const creditCardService = {
       const cards = await this.getCreditCards();
       if (!cards || cards.length === 0) return empty;
 
-      // Compras de todas las tarjetas y transacciones del mes, en paralelo
       const now = new Date();
       const [purchasesByCard, monthTransactions] = await Promise.all([
         this.getPurchasesForCards(cards.map(c => c.id)),

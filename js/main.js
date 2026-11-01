@@ -11,6 +11,7 @@ import { budgetsView } from "./views/budgetsView.js";
 import { tutorialTour } from "./components/tutorialTour.js";
 import { themeManager } from "./themeManager.js";
 
+const app = document.getElementById("app");
 const navTabs = document.getElementById("nav-tabs");
 const userMenu = document.getElementById("user-menu");
 const userName = document.getElementById("user-name");
@@ -18,7 +19,6 @@ const logoutBtn = document.getElementById("btn-logout");
 const tutorialBtn = document.getElementById("btn-start-tutorial");
 const themeBtn = document.getElementById("btn-theme");
 
-// Tab -> vista que la renderiza
 const VIEWS = {
   dashboard: dashboardView,
   wallets: walletsView,
@@ -30,8 +30,19 @@ const VIEWS = {
 };
 
 let currentTab = "dashboard";
+let activeUserId = null;
+let initPromise = null;
 
 themeManager.init(themeBtn);
+
+// Cada pantalla se pinta en su propio contenedor. Si el usuario cambia de pestaña
+// mientras otra sigue cargando, esa respuesta tardía escribe en un contenedor que
+// ya salió del DOM y no pisa la pestaña actual.
+function mountHost() {
+  const host = document.createElement("div");
+  app.replaceChildren(host);
+  return host;
+}
 
 function switchView(tab) {
   const view = VIEWS[tab];
@@ -42,11 +53,14 @@ function switchView(tab) {
     btn.classList.toggle("active", btn.dataset.tab === tab);
   });
 
-  view.render("app");
+  view.render(mountHost());
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-// Muestra u oculta la interfaz de usuario autenticado
+function resetViews() {
+  Object.values(VIEWS).forEach(view => view.resetState?.());
+}
+
 function setLoggedInUi(isLoggedIn) {
   const display = isLoggedIn ? "flex" : "none";
   userMenu.style.display = display;
@@ -55,8 +69,11 @@ function setLoggedInUi(isLoggedIn) {
 }
 
 function showAuth() {
+  activeUserId = null;
+  currentTab = "dashboard";
+  resetViews();
   setLoggedInUi(false);
-  authView.render("app", () => initApp());
+  authView.render(mountHost(), () => initApp());
 }
 
 document.addEventListener("click", (e) => {
@@ -64,7 +81,7 @@ document.addEventListener("click", (e) => {
   if (navBtn) switchView(navBtn.dataset.tab);
 });
 
-async function initApp() {
+async function bootstrap() {
   try {
     const user = await authService.getCurrentUser();
     if (!user) {
@@ -72,8 +89,16 @@ async function initApp() {
       return;
     }
 
+    // Esta sesión ya está en pantalla (por ejemplo, el evento de login llegó junto con el callback del formulario)
+    if (user.id === activeUserId) return;
+
+    // Otro usuario en el mismo navegador no hereda filtros, pestaña ni selecciones del anterior
+    resetViews();
+    currentTab = "dashboard";
+    activeUserId = user.id;
+
     setLoggedInUi(true);
-    if (userName) userName.textContent = user.user_metadata?.full_name || user.email;
+    userName.textContent = user.user_metadata?.full_name || user.email;
 
     switchView(currentTab);
 
@@ -86,15 +111,33 @@ async function initApp() {
   }
 }
 
+// Evita arrancar dos veces a la vez
+function initApp() {
+  if (!initPromise) {
+    initPromise = bootstrap().finally(() => { initPromise = null; });
+  }
+  return initPromise;
+}
+
 initApp();
 
+// La sesión de Supabase se comparte entre pestañas del navegador: si en otra pestaña se cierra
+// la sesión o entra otro usuario, esta pestaña debe reflejarlo y no seguir mostrando datos del anterior.
 authService.onAuthStateChanged((user) => {
-  if (!user) showAuth();
+  if (!user) {
+    if (activeUserId !== null) showAuth();
+  } else if (user.id !== activeUserId) {
+    // Fuera del callback: supabase-js no admite llamadas a su API dentro de este listener
+    setTimeout(initApp, 0);
+  }
 });
 
 logoutBtn.addEventListener("click", async () => {
-  await authService.signOut();
-  initApp();
+  try {
+    await authService.signOut();
+  } finally {
+    showAuth();
+  }
 });
 
 tutorialBtn.addEventListener("click", () => {
