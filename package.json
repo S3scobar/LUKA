@@ -1,0 +1,12 @@
+{
+  "name": "luka",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "node scripts/build.mjs && npx serve dist"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
