@@ -1,10 +1,12 @@
 // js/views/authView.js
 import { authService } from "../services/authService.js";
+import { resolveContainer } from "../utils.js";
 
 export const authView = {
-  render(containerId, onAuthSuccess) {
-    const container = document.getElementById(containerId);
+  render(target, onAuthSuccess) {
+    const container = resolveContainer(target);
     let isLoginMode = true;
+    let notice = "";
 
     const renderForm = () => {
       container.innerHTML = `
@@ -19,20 +21,21 @@ export const authView = {
             ${!isLoginMode ? `
               <div class="form-group">
                 <label for="auth-name">Nombre Completo</label>
-                <input type="text" id="auth-name" placeholder="Santiago Escobar" required />
+                <input type="text" id="auth-name" placeholder="Santiago Escobar" autocomplete="name" required />
               </div>
             ` : ""}
 
             <div class="form-group">
               <label for="auth-email">Correo Electrónico</label>
-              <input type="email" id="auth-email" placeholder="usuario@correo.com" required />
+              <input type="email" id="auth-email" placeholder="usuario@correo.com" autocomplete="email" required />
             </div>
 
             <div class="form-group">
               <label for="auth-password">Contraseña</label>
-              <input type="password" id="auth-password" placeholder="••••••••" minlength="6" required />
+              <input type="password" id="auth-password" placeholder="••••••••" minlength="6" autocomplete="${isLoginMode ? "current-password" : "new-password"}" required />
             </div>
 
+            ${notice ? `<div class="alert-info">${notice}</div>` : ""}
             <div id="auth-error" class="alert-error" style="display: none;"></div>
 
             <button type="submit" id="auth-submit-btn" class="btn btn-primary btn-block">
@@ -49,7 +52,6 @@ export const authView = {
         </div>
       `;
 
-      // Event Listeners
       const form = document.getElementById("auth-form");
       const toggleBtn = document.getElementById("toggle-mode-btn");
       const errorDiv = document.getElementById("auth-error");
@@ -57,6 +59,7 @@ export const authView = {
 
       toggleBtn.addEventListener("click", () => {
         isLoginMode = !isLoginMode;
+        notice = "";
         renderForm();
       });
 
@@ -74,7 +77,18 @@ export const authView = {
             await authService.signIn(email, password);
           } else {
             const fullName = document.getElementById("auth-name").value.trim();
-            await authService.signUp(email, password, fullName);
+            const { session } = await authService.signUp(email, password, fullName);
+            if (!session) {
+              // Cuentas auto-confirmadas: la sesión no viene en el registro, pero el login funciona
+              try {
+                await authService.signIn(email, password);
+              } catch {
+                isLoginMode = true;
+                notice = "Tu cuenta se creó. Si tu proyecto exige confirmar el correo, revisa tu bandeja y luego inicia sesión.";
+                renderForm();
+                return;
+              }
+            }
           }
           if (onAuthSuccess) onAuthSuccess();
         } catch (err) {

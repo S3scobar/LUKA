@@ -1,8 +1,12 @@
 // js/services/walletService.js
-import { supabase, requireUserId } from "../supabaseClient.js";
+import { supabase, requireUserId, isMissingRpc } from "../supabaseClient.js";
+
+// Las funciones RPC de supabase/functions.sql hacen los ajustes de saldo en una sola
+// sentencia SQL. Si no están desplegadas se usa leer + escribir, que no es atómico.
+let balanceRpcAvailable = true;
+let transferRpcAvailable = true;
 
 export const walletService = {
-  // Obtener todas las billeteras
   async getWallets() {
     const { data, error } = await supabase
       .from("wallets")
@@ -13,7 +17,6 @@ export const walletService = {
     return data || [];
   },
 
-  // Crear una nueva billetera
   async createWallet({ name, balance = 0, color = "#3B82F6", icon = "fa-wallet" }) {
     const userId = await requireUserId();
 
@@ -35,7 +38,6 @@ export const walletService = {
     return data;
   },
 
-  // Actualizar datos o saldo de billetera
   async updateWallet(id, updates) {
     const { data, error } = await supabase
       .from("wallets")
@@ -48,7 +50,34 @@ export const walletService = {
     return data;
   },
 
-  // Transferir dinero entre cuentas (NUEVO)
+  // Suma (o resta, si delta es negativo) al saldo sin depender del saldo que la pantalla tenía cargado.
+  // max limita el resultado, por ejemplo al cupo total de una tarjeta.
+  async adjustBalance(id, delta, { max = null } = {}) {
+    if (balanceRpcAvailable) {
+      const params = { p_wallet_id: id, p_delta: delta };
+      if (max !== null) params.p_max = max;
+
+      const { data, error } = await supabase.rpc("adjust_wallet_balance", params);
+      if (!error) return Number(data);
+      if (!isMissingRpc(error)) throw error;
+      balanceRpcAvailable = false;
+    }
+
+    const { data: wallet, error: readError } = await supabase
+      .from("wallets")
+      .select("balance")
+      .eq("id", id)
+      .single();
+    if (readError) throw readError;
+
+    let next = Number(wallet.balance) + delta;
+    if (max !== null) next = Math.min(max, next);
+
+    const updated = await this.updateWallet(id, { balance: next });
+    return Number(updated.balance);
+  },
+
+  // Mueve dinero entre cuentas sin crear ingresos ni gastos
   async transfer({ from_wallet_id, to_wallet_id, amount }) {
     if (from_wallet_id === to_wallet_id) {
       throw new Error("La cuenta de origen y de destino no pueden ser la misma.");
@@ -59,46 +88,29 @@ export const walletService = {
       throw new Error("El monto a transferir debe ser mayor a 0.");
     }
 
-    // 1. Obtener los saldos actuales de ambas cuentas (en paralelo)
-    const [fromRes, toRes] = await Promise.all([
-      supabase.from("wallets").select("balance, name").eq("id", from_wallet_id).single(),
-      supabase.from("wallets").select("balance, name").eq("id", to_wallet_id).single()
-    ]);
-    if (fromRes.error) throw fromRes.error;
-    if (toRes.error) throw toRes.error;
-
-    const fromWallet = fromRes.data;
-    const toWallet = toRes.data;
-
-    // 2. Calcular nuevos saldos
-    const newFromBalance = Number(fromWallet.balance) - transferAmount;
-    const newToBalance = Number(toWallet.balance) + transferAmount;
-
-    // 3. Actualizar la cuenta de origen
-    const { error: updateFromErr } = await supabase
-      .from("wallets")
-      .update({ balance: newFromBalance })
-      .eq("id", from_wallet_id);
-    if (updateFromErr) throw updateFromErr;
-
-    // 4. Actualizar la cuenta de destino; si falla, revertir el origen para no perder dinero
-    const { error: updateToErr } = await supabase
-      .from("wallets")
-      .update({ balance: newToBalance })
-      .eq("id", to_wallet_id);
-
-    if (updateToErr) {
-      await supabase
-        .from("wallets")
-        .update({ balance: Number(fromWallet.balance) })
-        .eq("id", from_wallet_id);
-      throw updateToErr;
+    if (transferRpcAvailable) {
+      const { error } = await supabase.rpc("transfer_between_wallets", {
+        p_from: from_wallet_id,
+        p_to: to_wallet_id,
+        p_amount: transferAmount
+      });
+      if (!error) return { amount: transferAmount };
+      if (!isMissingRpc(error)) throw error;
+      transferRpcAvailable = false;
     }
 
-    return { fromWallet, toWallet, amount: transferAmount };
+    await this.adjustBalance(from_wallet_id, -transferAmount);
+    try {
+      await this.adjustBalance(to_wallet_id, transferAmount);
+    } catch (err) {
+      // Si falla el destino se devuelve el dinero al origen para no perderlo
+      await this.adjustBalance(from_wallet_id, transferAmount);
+      throw err;
+    }
+
+    return { amount: transferAmount };
   },
 
-  // Eliminar billetera
   async deleteWallet(id) {
     const { error } = await supabase
       .from("wallets")

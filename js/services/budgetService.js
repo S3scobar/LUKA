@@ -3,7 +3,7 @@ import { supabase, requireUserId } from "../supabaseClient.js";
 import { transactionService } from "./transactionService.js";
 
 export const budgetService = {
-  // Obtener todos los presupuestos con su gasto acumulado del mes y transacciones asociadas
+  // Presupuestos con lo gastado en el mes indicado (por defecto el actual) y sus movimientos
   async getBudgets(year, month) {
     const userId = await requireUserId();
 
@@ -11,7 +11,6 @@ export const budgetService = {
     const curYear = year || now.getFullYear();
     const curMonth = month || now.getMonth() + 1;
 
-    // 1 y 2. Presupuestos (con su categoría) y transacciones del mes, en paralelo
     const [budgetsRes, transactions] = await Promise.all([
       supabase
         .from("budgets")
@@ -27,7 +26,7 @@ export const budgetService = {
     if (budgetsRes.error) throw budgetsRes.error;
     const budgets = budgetsRes.data;
 
-    // 3. Agrupar los gastos del mes por categoría una sola vez
+    // Gastos del mes agrupados por categoría
     const expensesByCategory = new Map();
     for (const t of transactions || []) {
       if (t.type !== "expense") continue;
@@ -37,7 +36,6 @@ export const budgetService = {
       expensesByCategory.get(catId).push(t);
     }
 
-    // 4. Cruzar cada presupuesto con sus gastos reales de este mes
     const processed = (budgets || []).map(b => {
       const catTransactions = expensesByCategory.get(b.category_id) || [];
 
@@ -54,7 +52,7 @@ export const budgetService = {
         percentage,
         remaining: Math.round(remaining),
         isExceeded,
-        transactions: catTransactions // Transacciones del mes para el modal de detalle
+        transactions: catTransactions
       };
     });
 
@@ -71,7 +69,7 @@ export const budgetService = {
     };
   },
 
-  // Crear o actualizar límite de presupuesto por categoría
+  // Crea el presupuesto de una categoría o actualiza su límite
   async setBudget({ category_id, monthly_limit }) {
     const userId = await requireUserId();
 

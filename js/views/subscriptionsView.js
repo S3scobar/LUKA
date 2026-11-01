@@ -4,11 +4,11 @@ import { walletService } from "../services/walletService.js";
 import { categoryService } from "../services/categoryService.js";
 import { transactionService } from "../services/transactionService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
+import { escapeHtml, resolveContainer, notifyError } from "../utils.js";
 
-import { escapeHtml } from "../utils.js";
 export const subscriptionsView = {
-  async render(containerId) {
-    const container = document.getElementById(containerId);
+  async render(target) {
+    const container = resolveContainer(target);
     container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando suscripciones...</div>`;
 
     try {
@@ -126,7 +126,7 @@ export const subscriptionsView = {
         showSubscriptionModal({
           wallets,
           categories,
-          onSave: () => subscriptionsView.render(containerId)
+          onSave: () => subscriptionsView.render(target)
         });
       });
 
@@ -138,7 +138,7 @@ export const subscriptionsView = {
             sub,
             wallets,
             categories,
-            onSave: () => subscriptionsView.render(containerId)
+            onSave: () => subscriptionsView.render(target)
           });
         });
       });
@@ -147,27 +147,34 @@ export const subscriptionsView = {
         btn.addEventListener("click", async () => {
           const id = btn.dataset.id;
           const currentActive = btn.dataset.active === "true";
-          await subscriptionService.toggleSubscription(id, !currentActive);
-          subscriptionsView.render(containerId);
+          try {
+            await subscriptionService.toggleSubscription(id, !currentActive);
+            subscriptionsView.render(target);
+          } catch (err) {
+            notifyError(err);
+          }
         });
       });
 
       container.querySelectorAll(".btn-delete-sub").forEach(btn => {
         btn.addEventListener("click", async () => {
           if (confirm("¿Deseas eliminar esta suscripción?")) {
-            await subscriptionService.deleteSubscription(btn.dataset.id);
-            subscriptionsView.render(containerId);
+            try {
+              await subscriptionService.deleteSubscription(btn.dataset.id);
+              subscriptionsView.render(target);
+            } catch (err) {
+              notifyError(err);
+            }
           }
         });
       });
 
     } catch (err) {
-      container.innerHTML = `<div class="alert-error">Error al cargar suscripciones: ${err.message}</div>`;
+      container.innerHTML = `<div class="alert-error">Error al cargar suscripciones: ${escapeHtml(err.message)}</div>`;
     }
   }
 };
 
-// Modal Pagar Suscripción
 function showPaySubscriptionModal({ sub, wallets, categories, onSave }) {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
@@ -260,7 +267,6 @@ function showPaySubscriptionModal({ sub, wallets, categories, onSave }) {
   });
 }
 
-// Modal Crear Suscripción
 function showSubscriptionModal({ wallets, categories, onSave }) {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
