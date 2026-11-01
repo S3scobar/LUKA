@@ -15,8 +15,8 @@ Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, 
 ## 2. Decisiones de diseño
 
 * **Sin framework ni bundler:** ES Modules nativos y dos dependencias por CDN (Font Awesome y `supabase-js`).
-* **Aislamiento entre usuarios con RLS:** cada fila tiene `user_id` y las políticas limitan el acceso a `auth.uid() = user_id` (ver `supabase/policies.sql`).
-* **Saldos ajustados en la base de datos:** `walletService.adjustBalance()` usa funciones RPC atómicas (`supabase/functions.sql`); si no están desplegadas, usa leer y escribir.
+* **Aislamiento entre usuarios con RLS:** cada fila tiene `user_id` y las políticas limitan el acceso a `auth.uid() = user_id` (ver `supabase/schema.sql`).
+* **Saldos coherentes:** el trigger `tr_transaction_balance` ajusta el saldo de la billetera al crear o borrar una transacción, por lo que el código no lo toca a mano en esos casos. Para el cupo de las tarjetas y las transferencias, `walletService.adjustBalance()` usa funciones RPC atómicas (`supabase/functions.sql`); si no están desplegadas, lee y escribe.
 * **Móvil primero:** pestañas deslizables, montos con separador de miles (`es-CO`) y tutorial en el primer ingreso.
 * **Tema claro y oscuro:** los colores salen de variables CSS en `css/main.css`; el tema oscuro solo las redefine.
 
@@ -107,7 +107,8 @@ Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, 
 ├── .gitignore
 ├── README.md
 ├── supabase/
-│   ├── policies.sql                # RLS por usuario e índices
+│   ├── schema.sql                  # Tablas, RLS y triggers (referencia del esquema actual)
+│   ├── indexes.sql                 # Índices por usuario y por fecha
 │   └── functions.sql               # Ajustes de saldo y transferencias atómicas
 ├── css/
 │   ├── main.css                    # Tokens de diseño (tema claro y oscuro), reset y tipografía
@@ -193,7 +194,7 @@ Importa el repositorio en Vercel como proyecto estático, sin comando de build. 
 
 ## 8. Varios usuarios a la vez
 
-* **Datos:** cada usuario solo ve sus filas gracias a RLS. Ejecuta `supabase/policies.sql` y confirma en el panel de Supabase que las ocho tablas tienen RLS activo.
+* **Datos:** cada usuario solo ve sus filas gracias a RLS. `supabase/schema.sql` define las políticas de las nueve tablas; confirma en el panel de Supabase que todas tienen RLS activo. Ejecuta `supabase/indexes.sql`: las políticas filtran por `user_id` en cada consulta y sin índices la base se vuelve más lenta con cada usuario nuevo.
 * **Saldos:** dos pestañas o dispositivos del mismo usuario pueden modificar una cuenta a la vez. Con `supabase/functions.sql` desplegado, el ajuste es una sola sentencia SQL y no se pierde ninguna actualización.
 * **Sesión compartida entre pestañas:** `supabase-js` guarda la sesión en `localStorage`. Si en otra pestaña se cierra sesión o entra otro usuario, esta pestaña vuelve al login o recarga los datos del usuario nuevo; no sigue mostrando los del anterior.
 * **Estado en pantalla:** al cambiar de usuario se reinician los filtros de mes, la tarjeta seleccionada y la pestaña activa.
@@ -205,7 +206,8 @@ Importa el repositorio en Vercel como proyecto estático, sin comando de build. 
 * **Clave pública:** la `anon key` de `config.js` es pública por diseño; la protección depende de las políticas RLS.
 * **Fondos de ahorro:** aportes y retiros siguen leyendo y escribiendo `saving_goals.current_amount` en pasos separados; falta una función RPC como la de las billeteras.
 * **Compras con tarjeta:** registrar una compra implica varias llamadas (compra, cupo, transacción). Si una falla a mitad, los datos pueden quedar a medias. Lo ideal es una función SQL que haga todo en una transacción.
-* **Posible doble conteo (verificar):** `payCard()` y el avance de `addPurchase()` ajustan un saldo y además registran una transacción. Si en Supabase hay un trigger que ajusta el saldo al insertar transacciones, se contaría dos veces.
+* **Pagos de tarjeta y avances anteriores:** hasta esta versión `payCard()` y el avance de `addPurchase()` ajustaban el saldo a mano y además el trigger lo ajustaba al registrar la transacción, así que el movimiento se contaba dos veces. Ya no ocurre, pero los saldos de pagos y avances hechos antes pueden estar desviados: corrígelos con el lápiz de editar en Billeteras.
+* **Correo sin verificar:** el trigger `auto_confirm_user` confirma cualquier correo al registrarse, por lo que nadie comprueba que el correo sea real. Es cómodo, pero no comprueba que el correo pertenezca a quien se registra.
 * **Pago de suscripciones y tarjetas:** se detecta por el texto del título del movimiento («Pago: nombre», «Pago Tarjeta: nombre»). Si el usuario edita ese texto, el estado cambia.
 * **Escape de HTML:** el texto escrito por el usuario pasa por `escapeHtml()` antes de entrar a una plantilla. Al agregar vistas nuevas, haz lo mismo.
 * **Accesibilidad:** el `viewport` bloquea el zoom (`user-scalable=no`).
@@ -215,9 +217,7 @@ Importa el repositorio en Vercel como proyecto estático, sin comando de build. 
 
 ## 10. Pendiente
 
-- [ ] Versionar el esquema completo de las tablas y los triggers.
 - [ ] Mover aportes de ahorro y compras con tarjeta a funciones RPC.
-- [ ] Revisar el criterio de saldos entre triggers y servicios.
 - [ ] Fijar la versión de `supabase-js`.
 - [ ] PWA instalable.
 - [ ] Exportar movimientos a CSV.
