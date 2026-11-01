@@ -4,17 +4,20 @@ import { categoryService } from "../services/categoryService.js";
 import { transactionService } from "../services/transactionService.js";
 import { creditCardService } from "../services/creditCardService.js";
 import { quickExpenseBar } from "../components/quickExpenseBar.js";
+import { escapeHtml, resolveContainer, notifyError } from "../utils.js";
 
-import { escapeHtml } from "../utils.js";
 export const dashboardView = {
   showAllTransactions: false,
 
-  async render(containerId) {
-    const container = document.getElementById(containerId);
+  resetState() {
+    this.showAllTransactions = false;
+  },
+
+  async render(target) {
+    const container = resolveContainer(target);
     container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tu información...</div>`;
 
     try {
-      // 1. Consultar todos los datos necesarios en paralelo (incluyendo el resumen de tarjetas)
       const [wallets, categories, transactions, creditCards, ccSummary] = await Promise.all([
         walletService.getWallets(),
         categoryService.getCategories(),
@@ -23,15 +26,13 @@ export const dashboardView = {
         creditCardService.getTotalStatementSummary()
       ]);
 
-      // 2. Identificar las billeteras vinculadas a tarjetas de crédito
+      // Las billeteras de tarjetas guardan el cupo disponible, no dinero propio
       const creditCardWalletIds = new Set((creditCards || []).map(cc => cc.wallet_id));
 
-      // 3. Saldo Total Real (SOLO cuentas de dinero propio: efectivo, ahorros, débito; sin cupos de crédito)
       const totalBalance = (wallets || [])
         .filter(w => !creditCardWalletIds.has(w.id))
         .reduce((sum, w) => sum + (parseFloat(w.balance) || 0), 0);
 
-      // 4. Flujo del periodo (Ingresos, Gastos y Balance neto del mes)
       const totalIncome = transactions
         .filter(t => t.type === "income")
         .reduce((sum, t) => sum + Number(t.amount), 0);
@@ -44,7 +45,6 @@ export const dashboardView = {
 
       container.innerHTML = `
         <div class="dashboard-module">
-          <!-- 1. Tarjetas de Resumen (Saldo Total + Flujo del Mes) -->
           <div class="summary-cards-grid">
             <div class="metric-card card-total">
               <span class="metric-label"><i class="fa-solid fa-wallet"></i> Saldo Total</span>
@@ -66,7 +66,7 @@ export const dashboardView = {
             </div>
           </div>
 
-          <!-- BANNER: EXTRACTO DE TARJETAS ESTE MES (OPCIÓN 1) -->
+          <!-- Extracto de tarjetas del mes -->
           ${ccSummary && ccSummary.hasCards ? `
             <div class="card-statement-banner ${ccSummary.totalDue > 0 ? 'banner-due' : 'banner-paid'}">
               <div class="banner-statement-left">
@@ -75,7 +75,10 @@ export const dashboardView = {
                 </div>
                 <div class="banner-statement-text">
                   <div class="banner-statement-title">
-                    ${ccSummary.totalDue > 0 ? 'Por pagar en tarjeta este mes' : 'Tarjetas de crédito'}                   </div>                   <div class="banner-statement-amount">                     $ ${ccSummary.totalDue.toLocaleString("es-CO", { maximumFractionDigits: 0 })}
+                    ${ccSummary.totalDue > 0 ? 'Por pagar en tarjeta este mes' : 'Tarjetas de crédito'}
+                  </div>
+                  <div class="banner-statement-amount">
+                    $ ${ccSummary.totalDue.toLocaleString("es-CO", { maximumFractionDigits: 0 })}
                   </div>
                   <small class="banner-statement-sub">
                     ${ccSummary.totalDue > 0 
@@ -92,10 +95,8 @@ export const dashboardView = {
             </div>
           ` : ''}
 
-          <!-- 2. Barra de Registro Rápido -->
           <div id="quick-expense-container"></div>
 
-          <!-- 3. Historial de Transacciones -->
           <div class="section-card history-section">
             <div class="section-header">
               <div>
@@ -105,25 +106,22 @@ export const dashboardView = {
               <span class="badge-count">${transactions.length} en total</span>
             </div>
 
-            <div id="transactions-container">
-              <!-- Renderizado dinámico -->
-            </div>
+            <div id="transactions-container"></div>
           </div>
         </div>
       `;
 
-      // Montar la barra de gasto rápido
       quickExpenseBar.render({
-        containerId: "quick-expense-container",
+        container: container.querySelector("#quick-expense-container"),
         wallets,
         categories,
         creditCards,
         onTransactionSaved: () => {
-          dashboardView.render(containerId);
+          dashboardView.render(target);
         }
       });
 
-      // AQUÍ VA EL EVENTO: Al hacer clic en Pagar, te lleva a la pestaña de Tarjetas
+      // "Pagar" lleva a la pestaña de Tarjetas
       const btnPayCC = container.querySelector("#btn-pay-cc-from-dashboard");
       if (btnPayCC) {
         btnPayCC.addEventListener("click", () => {
@@ -132,7 +130,6 @@ export const dashboardView = {
         });
       }
 
-      // Renderizar lista de movimientos con opción Ver todos
       const transContainer = container.querySelector("#transactions-container");
 
       const renderList = () => {
@@ -165,7 +162,7 @@ export const dashboardView = {
                   <div class="trans-info">
                     <span class="trans-title">${escapeHtml(t.title)}</span>
                     <div class="trans-meta">
-                      <span class="trans-wallet"><i class="fa-solid fa-wallet"></i> ${walletName}</span>
+                      <span class="trans-wallet"><i class="fa-solid fa-wallet"></i> ${escapeHtml(walletName)}</span>
                       <span class="trans-date">${t.transaction_date}</span>
                     </div>
                   </div>
@@ -199,22 +196,25 @@ export const dashboardView = {
         }
       };
 
-      // Delegación de eventos para eliminar movimientos
       transContainer.addEventListener("click", async (e) => {
         const btn = e.target.closest(".btn-delete-trans");
         if (!btn) return;
 
         const id = btn.dataset.id;
         if (confirm("¿Deseas eliminar este movimiento? Su valor volverá a tu cuenta.")) {
-          await transactionService.deleteTransaction(id);
-          dashboardView.render(containerId);
+          try {
+            await transactionService.deleteTransaction(id);
+            dashboardView.render(target);
+          } catch (err) {
+            notifyError(err);
+          }
         }
       });
 
       renderList();
 
     } catch (err) {
-      container.innerHTML = `<div class="alert-error">Error al cargar dashboard: ${err.message}</div>`;
+      container.innerHTML = `<div class="alert-error">Error al cargar dashboard: ${escapeHtml(err.message)}</div>`;
     }
   }
 };

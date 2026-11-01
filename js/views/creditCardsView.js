@@ -4,13 +4,17 @@ import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js
 import { walletService } from "../services/walletService.js";
 import { categoryService } from "../services/categoryService.js";
 import { transactionService } from "../services/transactionService.js";
+import { escapeHtml, resolveContainer, notifyError } from "../utils.js";
 
-import { escapeHtml } from "../utils.js";
 export const creditCardsView = {
   selectedCardId: null,
 
-  async render(containerId) {
-    const container = document.getElementById(containerId);
+  resetState() {
+    this.selectedCardId = null;
+  },
+
+  async render(target) {
+    const container = resolveContainer(target);
     container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tus tarjetas de crédito...</div>`;
 
     try {
@@ -35,7 +39,7 @@ export const creditCardsView = {
       const statement = creditCardService.calculateStatement(currentCard, purchases);
       const debitWallets = wallets.filter(w => w.id !== currentCard.wallet_id);
 
-      // Verificar si ya se realizó el pago de esta tarjeta en el mes en curso
+      // El extracto aparece en $0 si este mes ya hubo un pago a esta tarjeta
       const cardPaymentsThisMonth = monthTransactions.filter(t => 
         t.type === "expense" && t.title.toLowerCase().includes(`pago tarjeta: ${currentCard.name.toLowerCase()}`)
       );
@@ -46,7 +50,6 @@ export const creditCardsView = {
 
       container.innerHTML = `
         <div class="credit-cards-module">
-          <!-- Selector de Tarjetas -->
           <div class="cards-tabs-row">
             ${cards.map(c => `
               <button class="card-tab-btn ${c.id === this.selectedCardId ? "active" : ""}" data-id="${c.id}">
@@ -58,7 +61,6 @@ export const creditCardsView = {
             </button>
           </div>
 
-          <!-- TARJETA VISUAL -->
           <div class="credit-card-visual" style="background: linear-gradient(135deg, ${currentCard.color}, #1E1B4B);">
             <div class="card-visual-header">
               <div style="display: flex; align-items: center; gap: 0.6rem;">
@@ -84,7 +86,6 @@ export const creditCardsView = {
             </div>
           </div>
 
-          <!-- FECHAS CLAVE -->
           <div class="summary-cards-grid" style="margin-top: 1.25rem;">
             <div class="metric-card">
               <span class="metric-label"><i class="fa-regular fa-calendar-check"></i> Día de Corte</span>
@@ -103,7 +104,6 @@ export const creditCardsView = {
             </div>
           </div>
 
-          <!-- EXTRACTO DEL MES (Muestra $0 si ya pagó su cuota del mes) -->
           <div class="statement-card">
             <div class="statement-header">
               <div>
@@ -154,14 +154,12 @@ export const creditCardsView = {
             </div>
           </div>
 
-          <!-- BOTÓN AVANCE -->
           <div class="card-action-buttons">
             <button id="btn-new-advance" class="btn btn-secondary btn-block">
               <i class="fa-solid fa-hand-holding-dollar"></i> Registrar Avance en Efectivo
             </button>
           </div>
 
-          <!-- LISTA DE COMPRAS DIFERIDAS -->
           <div class="section-card" style="margin-top: 1.5rem;">
             <div class="section-header">
               <div>
@@ -225,7 +223,7 @@ export const creditCardsView = {
       this.attachEvents(container, currentCard, statement, debitWallets, categories, amountDueThisMonth);
 
     } catch (err) {
-      container.innerHTML = `<div class="alert-error">Error al cargar tarjetas de crédito: ${err.message}</div>`;
+      container.innerHTML = `<div class="alert-error">Error al cargar tarjetas de crédito: ${escapeHtml(err.message)}</div>`;
     }
   },
 
@@ -233,16 +231,16 @@ export const creditCardsView = {
     container.querySelectorAll(".card-tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         this.selectedCardId = btn.dataset.id;
-        this.render("app");
+        this.render(container);
       });
     });
 
     container.querySelector("#btn-add-card").addEventListener("click", () => {
-      showCardModal({ card: null, onSave: () => this.render("app") });
+      showCardModal({ card: null, onSave: () => this.render(container) });
     });
 
     container.querySelector("#btn-edit-current-card").addEventListener("click", () => {
-      showCardModal({ card, onSave: () => this.render("app") });
+      showCardModal({ card, onSave: () => this.render(container) });
     });
 
     container.querySelector("#btn-new-advance").addEventListener("click", () => {
@@ -251,7 +249,7 @@ export const creditCardsView = {
         debitWallets,
         categories,
         isAdvance: true,
-        onSave: () => this.render("app")
+        onSave: () => this.render(container)
       });
     });
 
@@ -261,7 +259,7 @@ export const creditCardsView = {
         statement,
         suggestedAmount: amountDueThisMonth > 0 ? amountDueThisMonth : statement.estimatedStatement,
         debitWallets,
-        onSave: () => this.render("app")
+        onSave: () => this.render(container)
       });
     });
 
@@ -272,9 +270,9 @@ export const creditCardsView = {
         if (confirm("¿Deseas eliminar este registro? El cupo se restaurará y desaparecerá también del historial de gastos.")) {
           try {
             await creditCardService.deletePurchase(purId);
-            this.render("app");
+            this.render(container);
           } catch (err) {
-            alert("Error al eliminar: " + err.message);
+            notifyError(err);
           }
         }
       });
@@ -296,14 +294,12 @@ export const creditCardsView = {
     `;
 
     container.querySelector("#btn-create-first-card").addEventListener("click", () => {
-      showCardModal({ card: null, onSave: () => this.render("app") });
+      showCardModal({ card: null, onSave: () => this.render(container) });
     });
   }
 };
 
-// ====================================================
-// MODAL: CREAR / EDITAR TARJETA (CON FORMATEO DE MILES)
-// ====================================================
+// Modal: crear / editar tarjeta
 function showCardModal({ card = null, onSave }) {
   const isEditing = !!card;
 
@@ -385,7 +381,6 @@ function showCardModal({ card = null, onSave }) {
     if (e.target === modal) closeModal();
   });
 
-  // Vincular formateo en tiempo real a Cupo Total y Cuota de manejo
   attachCurrencyInput(modal.querySelector("#card-limit"));
   attachCurrencyInput(modal.querySelector("#card-fee"));
 
@@ -448,7 +443,7 @@ function showCardModal({ card = null, onSave }) {
             closeModal();
             if (onSave) onSave();
           } catch (err) {
-            alert("Error: " + err.message);
+            notifyError(err);
           }
         }
       });
@@ -456,9 +451,7 @@ function showCardModal({ card = null, onSave }) {
   }
 }
 
-// ====================================================
-// MODAL: REGISTRAR AVANCE (CON FORMATEO DE MILES)
-// ====================================================
+// Modal: registrar avance
 function showPurchaseModal({ card, categories = [], debitWallets = [], isAdvance = true, onSave }) {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
@@ -558,7 +551,6 @@ function showPurchaseModal({ card, categories = [], debitWallets = [], isAdvance
     `;
   };
 
-  // Formatear montos en vivo
   attachCurrencyInput(amountInput, updateSim);
   attachCurrencyInput(modal.querySelector("#pur-fee"));
   installmentsSelect.addEventListener("change", updateSim);
@@ -598,9 +590,7 @@ function showPurchaseModal({ card, categories = [], debitWallets = [], isAdvance
   });
 }
 
-// ====================================================
-// MODAL: PAGAR TARJETA (CON FORMATEO DE MILES)
-// ====================================================
+// Modal: pagar tarjeta
 function showPayCardModal({ card, statement, suggestedAmount, debitWallets, onSave }) {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
@@ -655,7 +645,6 @@ function showPayCardModal({ card, statement, suggestedAmount, debitWallets, onSa
     if (e.target === modal) closeModal();
   });
 
-  // Vincular formateo en tiempo real al input de pago
   attachCurrencyInput(modal.querySelector("#pay-card-val"));
 
   const submitBtn = modal.querySelector("#btn-submit-paycard");

@@ -2,8 +2,28 @@
 import { supabase, requireUserId } from "../supabaseClient.js";
 import { walletService } from "./walletService.js";
 
+const TRANSACTION_COLUMNS = `
+  *,
+  category:categories(name, icon, color),
+  wallet:wallets(name, color, icon)
+`;
+
+// Supabase devuelve como máximo 1000 filas por petición: se pide por páginas
+// para que un mes o un año con muchos movimientos no se corte en silencio.
+const PAGE_SIZE = 1000;
+
+async function fetchAllPages(buildQuery) {
+  const rows = [];
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await buildQuery().range(from, from + PAGE_SIZE - 1);
+    if (error) throw error;
+    rows.push(...data);
+    if (data.length < PAGE_SIZE) break;
+  }
+  return rows;
+}
+
 export const transactionService = {
-  // Registrar un gasto o ingreso
   async addTransaction({ wallet_id, category_id, type, title, amount, date = null }) {
     const userId = await requireUserId();
 
@@ -22,66 +42,52 @@ export const transactionService = {
           transaction_date: transactionDate
         }
       ])
-      .select(`
-        *,
-        category:categories(name, icon, color),
-        wallet:wallets(name, color, icon)
-      `)
+      .select(TRANSACTION_COLUMNS)
       .single();
 
     if (error) throw error;
     return data;
   },
 
-  // Obtener transacciones del mes
+  // Transacciones de un mes (por defecto el actual), de la más reciente a la más antigua
   async getTransactions(year = null, month = null) {
     const now = new Date();
     const currentYear = year !== null ? year : now.getFullYear();
     const currentMonth = month !== null ? month : now.getMonth() + 1;
 
-    const startDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-01`;
+    const monthText = String(currentMonth).padStart(2, "0");
+    const startDate = `${currentYear}-${monthText}-01`;
     const lastDay = new Date(currentYear, currentMonth, 0).getDate();
-    const endDate = `${currentYear}-${String(currentMonth).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+    const endDate = `${currentYear}-${monthText}-${String(lastDay).padStart(2, "0")}`;
 
-    const { data, error } = await supabase
-      .from("transactions")
-      .select(`
-        *,
-        category:categories(name, icon, color),
-        wallet:wallets(name, color, icon)
-      `)
-      .gte("transaction_date", startDate)
-      .lte("transaction_date", endDate)
-      .order("transaction_date", { ascending: false });
-
-    if (error) throw error;
-    return data || [];
+    return fetchAllPages(() =>
+      supabase
+        .from("transactions")
+        .select(TRANSACTION_COLUMNS)
+        .gte("transaction_date", startDate)
+        .lte("transaction_date", endDate)
+        .order("transaction_date", { ascending: false })
+        .order("id", { ascending: false })
+    );
   },
 
-  // Obtener transacciones del año
+  // Transacciones de un año (por defecto el actual), de la más antigua a la más reciente
   async getYearlyTransactions(year = null) {
     const targetYear = year !== null ? year : new Date().getFullYear();
-    const startDate = `${targetYear}-01-01`;
-    const endDate = `${targetYear}-12-31`;
 
-    const { data, error } = await supabase
-      .from("transactions")
-      .select(`
-        *,
-        category:categories(name, icon, color),
-        wallet:wallets(name, color, icon)
-      `)
-      .gte("transaction_date", startDate)
-      .lte("transaction_date", endDate)
-      .order("transaction_date", { ascending: true });
-
-    if (error) throw error;
-    return data || [];
+    return fetchAllPages(() =>
+      supabase
+        .from("transactions")
+        .select(TRANSACTION_COLUMNS)
+        .gte("transaction_date", `${targetYear}-01-01`)
+        .lte("transaction_date", `${targetYear}-12-31`)
+        .order("transaction_date", { ascending: true })
+        .order("id", { ascending: true })
+    );
   },
 
-  // Eliminar transacción (SINCRONIZACIÓN: si es de tarjeta de crédito, borra la compra y restaura cupo)
+  // Si el movimiento viene de una compra con tarjeta, también se borra la compra y se devuelve el cupo
   async deleteTransaction(id) {
-    // 1. Verificar si está vinculada a una compra en credit_card_purchases
     const { data: linkedPurchase } = await supabase
       .from("credit_card_purchases")
       .select("*, card:credit_cards(id, wallet_id, credit_limit)")
@@ -89,29 +95,16 @@ export const transactionService = {
       .maybeSingle();
 
     if (linkedPurchase) {
-      // Eliminar la compra en credit_card_purchases
       await supabase.from("credit_card_purchases").delete().eq("id", linkedPurchase.id);
 
-      // Restaurar el cupo disponible
-      const totalImpact = Number(linkedPurchase.total_amount) + Number(linkedPurchase.advance_fee || 0);
       if (linkedPurchase.card?.wallet_id) {
-        const { data: wallet } = await supabase
-          .from("wallets")
-          .select("balance")
-          .eq("id", linkedPurchase.card.wallet_id)
-          .single();
-
-        if (wallet) {
-          const restoredBalance = Math.min(
-            Number(linkedPurchase.card.credit_limit),
-            Number(wallet.balance) + totalImpact
-          );
-          await walletService.updateWallet(linkedPurchase.card.wallet_id, { balance: restoredBalance });
-        }
+        const totalImpact = Number(linkedPurchase.total_amount) + Number(linkedPurchase.advance_fee || 0);
+        await walletService.adjustBalance(linkedPurchase.card.wallet_id, totalImpact, {
+          max: Number(linkedPurchase.card.credit_limit)
+        });
       }
     }
 
-    // 2. Eliminar de transactions
     const { error } = await supabase
       .from("transactions")
       .delete()

@@ -1,7 +1,7 @@
 // js/views/analyticsView.js
 import { transactionService } from "../services/transactionService.js";
+import { escapeHtml, resolveContainer } from "../utils.js";
 
-import { escapeHtml } from "../utils.js";
 const MONTH_NAMES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
@@ -13,30 +13,32 @@ export const analyticsView = {
   currentMonth: new Date().getMonth() + 1,
   currentBreakdownType: "expense", // 'expense' | 'income'
 
-  async render(containerId) {
-    const container = document.getElementById(containerId);
+  resetState() {
+    this.currentMode = "monthly";
+    this.currentYear = new Date().getFullYear();
+    this.currentMonth = new Date().getMonth() + 1;
+    this.currentBreakdownType = "expense";
+  },
+
+  async render(target) {
+    const container = resolveContainer(target);
     container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Analizando tus finanzas...</div>`;
 
     try {
       if (this.currentMode === "monthly") {
-        await this.renderMonthly(container, containerId);
+        await this.renderMonthly(container, target);
       } else {
-        await this.renderAnnual(container, containerId);
+        await this.renderAnnual(container, target);
       }
     } catch (err) {
-      container.innerHTML = `<div class="alert-error">Error al cargar análisis: ${err.message}</div>`;
+      container.innerHTML = `<div class="alert-error">Error al cargar análisis: ${escapeHtml(err.message)}</div>`;
     }
   },
 
-  // ==========================================
-  // VISTA MENSUAL (DESGLOSE REAL Y COMPARATIVA)
-  // ==========================================
-  async renderMonthly(container, containerId) {
-    // 1. Determinar el mes anterior para la comparativa
+  async renderMonthly(container, target) {
     const prevMonth = this.currentMonth === 1 ? 12 : this.currentMonth - 1;
     const prevYear = this.currentMonth === 1 ? this.currentYear - 1 : this.currentYear;
 
-    // 2. Consultar en paralelo las transacciones del mes actual y del mes anterior
     const [transactions, prevTransactions] = await Promise.all([
       transactionService.getTransactions(this.currentYear, this.currentMonth),
       transactionService.getTransactions(prevYear, prevMonth)
@@ -49,12 +51,11 @@ export const analyticsView = {
     const totalExpense = expenseTx.reduce((sum, t) => sum + Number(t.amount), 0);
     const netBalance = totalIncome - totalExpense;
 
-    // 3. Comparación con el mes anterior a la misma fecha (Día de corte)
+    // Se compara el gasto hasta el mismo día del mes anterior
     const today = new Date();
     const isCurrentActiveMonth = (this.currentYear === today.getFullYear() && this.currentMonth === (today.getMonth() + 1));
     const cutoffDay = isCurrentActiveMonth ? today.getDate() : 31;
 
-    // Filtrar gastos ocurridos hasta el día de corte
     const currentExpensePace = expenseTx
       .filter(t => {
         const day = new Date(t.transaction_date + "T00:00:00").getDate();
@@ -70,7 +71,6 @@ export const analyticsView = {
       })
       .reduce((sum, t) => sum + Number(t.amount), 0);
 
-    // Si hay datos previos se calcula el porcentaje; si no, se prepara el mensaje informativo
     let paceComparison = null;
     if (prevExpensePace > 0) {
       const diffPercent = ((currentExpensePace - prevExpensePace) / prevExpensePace) * 100;
@@ -87,7 +87,6 @@ export const analyticsView = {
       };
     }
 
-    // 4. Agrupación por categoría
     const groupByCategory = (txList, total) => {
       const map = {};
 
@@ -127,7 +126,6 @@ export const analyticsView = {
 
     container.innerHTML = `
       <div class="analytics-module">
-        <!-- Selector de Modo: Mensual vs Anual -->
         <div class="analytics-mode-pills">
           <button type="button" class="mode-pill ${this.currentMode === "monthly" ? "active" : ""}" data-mode="monthly">
             <i class="fa-solid fa-calendar-day"></i> Mensual
@@ -137,7 +135,6 @@ export const analyticsView = {
           </button>
         </div>
 
-        <!-- Navegador de Meses -->
         <div class="period-navigator-card">
           <button type="button" id="btn-prev-period" class="nav-arrow-btn" title="Mes anterior">
             <i class="fa-solid fa-chevron-left"></i>
@@ -151,7 +148,6 @@ export const analyticsView = {
           </button>
         </div>
 
-        <!-- Tarjetas de Métricas -->
         <div class="summary-cards-grid">
           <div class="metric-card card-income">
             <span class="metric-label"><i class="fa-solid fa-arrow-down"></i> Ingresos</span>
@@ -181,7 +177,6 @@ export const analyticsView = {
           </div>
         </div>
 
-        <!-- Banner Comparativo Inteligente -->
         ${paceComparison.hasData ? `
           <div class="pace-insight-banner" style="background: ${paceComparison.isLower ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; border: 1px solid ${paceComparison.isLower ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}; border-radius: 10px; padding: 0.8rem 1rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.75rem; font-size: 0.88rem; color: ${paceComparison.isLower ? 'var(--success-text)' : 'var(--danger-text)'};">
             <i class="fa-solid ${paceComparison.isLower ? 'fa-circle-check text-success' : 'fa-triangle-exclamation text-danger'}" style="font-size: 1.15rem;"></i>
@@ -201,7 +196,6 @@ export const analyticsView = {
           </div>
         `}
 
-        <!-- SECCIÓN PRINCIPAL: DESGLOSE POR CATEGORÍA -->
         <div class="section-card">
           <div class="breakdown-toggle-pills">
             <button type="button" id="toggle-breakdown-expense" class="breakdown-toggle-btn ${isExpenseActive ? "active expense" : ""}">
@@ -218,7 +212,6 @@ export const analyticsView = {
               <p>No tienes ${isExpenseActive ? "gastos" : "ingresos"} registrados en ${MONTH_NAMES[this.currentMonth - 1]}.</p>
             </div>
           ` : `
-            <!-- Alerta de Mayor Gasto o Mayor Ingreso -->
             ${topItem ? `
               <div class="${isExpenseActive ? "top-expense-alert" : "top-income-alert"}">
                 <i class="fa-solid ${isExpenseActive ? "fa-fire text-danger" : "fa-trophy text-success"}"></i>
@@ -230,14 +223,12 @@ export const analyticsView = {
               </div>
             ` : ""}
 
-            <!-- Barra Segmentada -->
             <div class="segmented-bar-container">
               ${activeList.map(item => `
                 <div class="bar-segment" style="width: ${item.exactPercentage}%; background-color: ${item.color};" title="${escapeHtml(item.name)}: ${item.percentage}%"></div>
               `).join("")}
             </div>
 
-            <!-- Lista de Categorías Desglosadas -->
             <div class="category-breakdown-list">
               ${activeList.map(item => `
                 <div class="cat-breakdown-item">
@@ -264,13 +255,10 @@ export const analyticsView = {
       </div>
     `;
 
-    this.attachEvents(container, containerId);
+    this.attachEvents(container, target);
   },
 
-  // ==========================================
-  // VISTA ANUAL (COMPARATIVA MES A MES)
-  // ==========================================
-  async renderAnnual(container, containerId) {
+  async renderAnnual(container, target) {
     const yearlyTransactions = await transactionService.getYearlyTransactions(this.currentYear);
 
     const monthsData = Array.from({ length: 12 }, () => ({ income: 0, expense: 0 }));
@@ -341,8 +329,8 @@ export const analyticsView = {
               return `
                 <div class="month-col">
                   <div class="month-bars">
-                    <div class="bar bar-income" style="height: ${incomeHeight}%;" title="Ingresos (${MONTH_NAMES[idx]}):$ ${m.income.toLocaleString("es-CO")}"></div>
-                    <div class="bar bar-expense" style="height: ${expenseHeight}%;" title="Gastos (${MONTH_NAMES[idx]}):$ ${m.expense.toLocaleString("es-CO")}"></div>
+                    <div class="bar bar-income" style="height: ${incomeHeight}%;" title="Ingresos (${MONTH_NAMES[idx]}): $ ${m.income.toLocaleString("es-CO")}"></div>
+                    <div class="bar bar-expense" style="height: ${expenseHeight}%;" title="Gastos (${MONTH_NAMES[idx]}): $ ${m.expense.toLocaleString("es-CO")}"></div>
                   </div>
                   <span class="month-col-label">${shortMonth}</span>
                 </div>
@@ -366,7 +354,8 @@ export const analyticsView = {
                   return `
                     <tr>
                       <td><strong>${MONTH_NAMES[idx]}</strong></td>
-                      <td class="text-success">$ ${m.income.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</td>                       <td class="text-danger">$ ${m.expense.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</td>
+                      <td class="text-success">$ ${m.income.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</td>
+                      <td class="text-danger">$ ${m.expense.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</td>
                       <td class="${net < 0 ? "text-danger" : "text-success"}" style="font-weight: 700;">
                         ${net < 0 ? "-" : "+"}$ ${Math.abs(net).toLocaleString("es-CO", { maximumFractionDigits: 0 })}
                       </td>
@@ -380,17 +369,14 @@ export const analyticsView = {
       </div>
     `;
 
-    this.attachEvents(container, containerId);
+    this.attachEvents(container, target);
   },
 
-  // ==========================================
-  // EVENTOS
-  // ==========================================
-  attachEvents(container, containerId) {
+  attachEvents(container, target) {
     container.querySelectorAll(".mode-pill").forEach(btn => {
       btn.addEventListener("click", () => {
         this.currentMode = btn.dataset.mode;
-        this.render(containerId);
+        this.render(target);
       });
     });
 
@@ -405,7 +391,7 @@ export const analyticsView = {
       } else {
         this.currentYear--;
       }
-      this.render(containerId);
+      this.render(target);
     });
 
     container.querySelector("#btn-next-period").addEventListener("click", () => {
@@ -419,7 +405,7 @@ export const analyticsView = {
       } else {
         this.currentYear++;
       }
-      this.render(containerId);
+      this.render(target);
     });
 
     const toggleExpense = container.querySelector("#toggle-breakdown-expense");
@@ -429,14 +415,14 @@ export const analyticsView = {
       toggleExpense.addEventListener("click", () => {
         if (this.currentBreakdownType !== "expense") {
           this.currentBreakdownType = "expense";
-          this.render(containerId);
+          this.render(target);
         }
       });
 
       toggleIncome.addEventListener("click", () => {
         if (this.currentBreakdownType !== "income") {
           this.currentBreakdownType = "income";
-          this.render(containerId);
+          this.render(target);
         }
       });
     }

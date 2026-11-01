@@ -2,8 +2,8 @@
 import { budgetService } from "../services/budgetService.js";
 import { categoryService } from "../services/categoryService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
+import { escapeHtml, resolveContainer, notifyError } from "../utils.js";
 
-import { escapeHtml } from "../utils.js";
 const MONTH_NAMES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
@@ -13,8 +13,13 @@ export const budgetsView = {
   currentYear: new Date().getFullYear(),
   currentMonth: new Date().getMonth() + 1,
 
-  async render(containerId) {
-    const container = document.getElementById(containerId);
+  resetState() {
+    this.currentYear = new Date().getFullYear();
+    this.currentMonth = new Date().getMonth() + 1;
+  },
+
+  async render(target) {
+    const container = resolveContainer(target);
     container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tus presupuestos...</div>`;
 
     try {
@@ -28,7 +33,6 @@ export const budgetsView = {
 
       container.innerHTML = `
         <div class="budgets-module">
-          <!-- Cabecera / Navegador de periodo -->
           <div class="period-navigator-card">
             <button type="button" id="btn-prev-budget-month" class="nav-arrow-btn" title="Mes anterior">
               <i class="fa-solid fa-chevron-left"></i>
@@ -42,7 +46,7 @@ export const budgetsView = {
             </button>
           </div>
 
-          <!-- Hero Card: Resumen General de Presupuestos (Alto Contraste) -->
+          <!-- Resumen global -->
           <div class="budget-hero-card">
             <div class="budget-hero-top">
               <div class="budget-hero-badge">
@@ -58,7 +62,6 @@ export const budgetsView = {
               <span class="budget-hero-limit">/ $ ${totalBudgeted.toLocaleString("es-CO")}</span>
             </div>
 
-            <!-- Barra de progreso gruesa, nítida y visible -->
             <div class="budget-hero-progress-track">
               <div class="budget-hero-progress-fill" style="width: ${Math.min(100, globalPercentage)}%; background: ${globalPercentage > 100 ? '#EF4444' : globalPercentage > 80 ? '#F59E0B' : 'linear-gradient(90deg, #2563EB, #10B981)'};"></div>
             </div>
@@ -73,7 +76,6 @@ export const budgetsView = {
             </div>
           </div>
 
-          <!-- Sección de Tarjetas de Presupuesto -->
           <div class="section-card">
             <div class="section-header">
               <div>
@@ -119,7 +121,6 @@ export const budgetsView = {
                         </div>
                       </div>
 
-                      <!-- Barra de progreso de la categoría: gruesa y con color vivo -->
                       <div class="budget-progress-track">
                         <div class="budget-progress-fill" style="width: ${Math.min(100, b.percentage)}%; background-color: ${barColor};"></div>
                       </div>
@@ -132,7 +133,6 @@ export const budgetsView = {
         </div>
       `;
 
-      // Eventos de cambio de mes
       container.querySelector("#btn-prev-budget-month").addEventListener("click", () => {
         if (this.currentMonth === 1) {
           this.currentMonth = 12;
@@ -140,7 +140,7 @@ export const budgetsView = {
         } else {
           this.currentMonth--;
         }
-        this.render(containerId);
+        this.render(target);
       });
 
       container.querySelector("#btn-next-budget-month").addEventListener("click", () => {
@@ -150,18 +150,17 @@ export const budgetsView = {
         } else {
           this.currentMonth++;
         }
-        this.render(containerId);
+        this.render(target);
       });
 
-      // Botón crear presupuesto
       container.querySelector("#btn-create-budget").addEventListener("click", () => {
         showBudgetModal({
           categories: expenseCategories,
-          onSave: () => this.render(containerId)
+          onSave: () => this.render(target)
         });
       });
 
-      // Clic en tarjeta -> Abrir modal de desglose detallado
+      // Al tocar una tarjeta se abre el detalle de sus gastos
       container.querySelectorAll(".budget-card").forEach(cardEl => {
         cardEl.addEventListener("click", () => {
           const budgetId = cardEl.dataset.id;
@@ -170,21 +169,19 @@ export const budgetsView = {
             showBudgetDetailModal({
               budget: targetBudget,
               categories: expenseCategories,
-              onRefresh: () => this.render(containerId)
+              onRefresh: () => this.render(target)
             });
           }
         });
       });
 
     } catch (err) {
-      container.innerHTML = `<div class="alert-error">Error al cargar presupuestos: ${err.message}</div>`;
+      container.innerHTML = `<div class="alert-error">Error al cargar presupuestos: ${escapeHtml(err.message)}</div>`;
     }
   }
 };
 
-// ==========================================
-// MODAL DE DETALLE DE GASTOS DE LA CATEGORÍA
-// ==========================================
+// Detalle de los gastos de un presupuesto
 function showBudgetDetailModal({ budget, categories, onRefresh }) {
   const cat = budget.category || { name: "Categoría", icon: "fa-tag", color: "#64748B" };
   const txList = budget.transactions || [];
@@ -206,7 +203,6 @@ function showBudgetDetailModal({ budget, categories, onRefresh }) {
         <button id="btn-close-detail-modal" class="modal-close-btn">&times;</button>
       </div>
 
-      <!-- Resumen del Presupuesto en el Modal -->
       <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.9rem; margin-bottom: 1.25rem;">
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; text-align: center;">
           <div>
@@ -230,7 +226,6 @@ function showBudgetDetailModal({ budget, categories, onRefresh }) {
         </div>
       </div>
 
-      <!-- Listado de Movimientos de esta categoría -->
       <div style="margin-bottom: 1.25rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.65rem;">
           <strong style="font-size: 0.9rem;"><i class="fa-solid fa-list-check"></i> Gastos de este mes</strong>
@@ -254,7 +249,7 @@ function showBudgetDetailModal({ budget, categories, onRefresh }) {
                   <div class="trans-info">
                     <span class="trans-title" style="font-size: 0.85rem;">${escapeHtml(t.title)}</span>
                     <div class="trans-meta">
-                      <span class="trans-wallet"><i class="fa-solid fa-wallet"></i> ${walletName}</span>
+                      <span class="trans-wallet"><i class="fa-solid fa-wallet"></i> ${escapeHtml(walletName)}</span>
                       <span class="trans-date">${t.transaction_date}</span>
                     </div>
                   </div>
@@ -268,7 +263,6 @@ function showBudgetDetailModal({ budget, categories, onRefresh }) {
         `}
       </div>
 
-      <!-- Acciones de edición y eliminación -->
       <div style="display: flex; gap: 0.5rem; border-top: 1px solid var(--border); padding-top: 0.85rem;">
         <button type="button" id="btn-edit-this-budget" class="btn btn-secondary btn-sm" style="flex: 1;">
           <i class="fa-solid fa-pen-to-square"></i> Modificar Límite
@@ -288,7 +282,6 @@ function showBudgetDetailModal({ budget, categories, onRefresh }) {
     if (e.target === modal) closeModal();
   });
 
-  // Editar límite
   modal.querySelector("#btn-edit-this-budget").addEventListener("click", () => {
     closeModal();
     showBudgetModal({
@@ -298,19 +291,20 @@ function showBudgetDetailModal({ budget, categories, onRefresh }) {
     });
   });
 
-  // Eliminar presupuesto
   modal.querySelector("#btn-delete-this-budget").addEventListener("click", async () => {
     if (confirm(`¿Deseas eliminar el presupuesto para ${cat.name}? Los gastos seguirán existiendo normalmente.`)) {
-      await budgetService.deleteBudget(budget.id);
-      closeModal();
-      onRefresh();
+      try {
+        await budgetService.deleteBudget(budget.id);
+        closeModal();
+        onRefresh();
+      } catch (err) {
+        notifyError(err);
+      }
     }
   });
 }
 
-// ==========================================
-// MODAL PARA CREAR O EDITAR PRESUPUESTO
-// ==========================================
+// Crear o editar el límite de una categoría
 function showBudgetModal({ categories, initialBudget = null, onSave }) {
   const isEditing = !!initialBudget;
 

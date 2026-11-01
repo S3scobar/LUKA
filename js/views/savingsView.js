@@ -2,8 +2,8 @@
 import { goalService } from "../services/goalService.js";
 import { walletService } from "../services/walletService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
+import { escapeHtml, resolveContainer, notifyError } from "../utils.js";
 
-import { escapeHtml } from "../utils.js";
 const SAVING_ICONS = [
   "fa-piggy-bank", "fa-vault", "fa-box-archive", "fa-building-columns",
   "fa-wallet", "fa-money-bill-wave", "fa-car", "fa-house", "fa-plane",
@@ -11,8 +11,8 @@ const SAVING_ICONS = [
 ];
 
 export const savingsView = {
-  async render(containerId) {
-    const container = document.getElementById(containerId);
+  async render(target) {
+    const container = resolveContainer(target);
     container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tus fondos de ahorro...</div>`;
 
     try {
@@ -90,13 +90,15 @@ export const savingsView = {
                       ${hasTarget ? `
                         <div class="fund-progress-wrap">
                           <div class="progress-bar-container">
-                            <div class="progress-bar-fill" style="width: ${fund.progressPercentage}\%;"></div>                           </div>                           <div class="fund-target-meta">                             <span>Objetivo: $ ${Number(fund.target_amount).toLocaleString("es-CO")}</span>
+                            <div class="progress-bar-fill" style="width: ${fund.progressPercentage}%;"></div>
+                          </div>
+                          <div class="fund-target-meta">
+                            <span>Objetivo: $ ${Number(fund.target_amount).toLocaleString("es-CO")}</span>
                             <strong>${fund.progressPercentage}%</strong>
                           </div>
                         </div>
                       ` : ""}
 
-                      <!-- BOTONES: AÑADIR Y RETIRAR DINERO -->
                       <div class="fund-actions-bar" style="display: flex; gap: 0.5rem; margin-top: 0.35rem;">
                         <button class="btn btn-primary btn-sm btn-add-savings" data-id="${fund.id}" data-title="${escapeHtml(fund.title)}" style="flex: 1;">
                           <i class="fa-solid fa-circle-plus"></i> Añadir
@@ -114,15 +116,13 @@ export const savingsView = {
         </div>
       `;
 
-      // 1. Crear nuevo fondo
       container.querySelector("#btn-new-fund").addEventListener("click", () => {
         showNewFundModal({
           wallets,
-          onSave: () => savingsView.render(containerId)
+          onSave: () => savingsView.render(target)
         });
       });
 
-      // 2. Añadir dinero al ahorro
       container.querySelectorAll(".btn-add-savings").forEach(btn => {
         btn.addEventListener("click", () => {
           const fundId = btn.dataset.id;
@@ -131,12 +131,11 @@ export const savingsView = {
             fundId,
             fundTitle,
             wallets,
-            onSave: () => savingsView.render(containerId)
+            onSave: () => savingsView.render(target)
           });
         });
       });
 
-      // 3. Retirar dinero del ahorro
       container.querySelectorAll(".btn-withdraw-savings:not([disabled])").forEach(btn => {
         btn.addEventListener("click", () => {
           const fundId = btn.dataset.id;
@@ -147,28 +146,30 @@ export const savingsView = {
             fundTitle,
             currentAmount,
             wallets,
-            onSave: () => savingsView.render(containerId)
+            onSave: () => savingsView.render(target)
           });
         });
       });
 
-      // 4. Eliminar fondo
       container.querySelectorAll(".btn-delete-fund").forEach(btn => {
         btn.addEventListener("click", async () => {
           if (confirm("¿Estás seguro de eliminar este fondo de ahorro?")) {
-            await goalService.deleteGoal(btn.dataset.id);
-            savingsView.render(containerId);
+            try {
+              await goalService.deleteGoal(btn.dataset.id);
+              savingsView.render(target);
+            } catch (err) {
+              notifyError(err);
+            }
           }
         });
       });
 
     } catch (err) {
-      container.innerHTML = `<div class="alert-error">Error al cargar ahorros: ${err.message}</div>`;
+      container.innerHTML = `<div class="alert-error">Error al cargar ahorros: ${escapeHtml(err.message)}</div>`;
     }
   }
 };
 
-// Modal Crear Fondo
 function showNewFundModal({ wallets = [], onSave }) {
   let selectedIcon = "fa-piggy-bank";
 
@@ -198,7 +199,6 @@ function showNewFundModal({ wallets = [], onSave }) {
           </div>
         </div>
 
-        <!-- CAMPO DE RENDIMIENTO ANUAL -->
         <div class="form-group">
           <label><i class="fa-solid fa-chart-line text-success"></i> Rendimiento Anual (% E.A. Opcional)</label>
           <input type="number" id="fund-yield" placeholder="Ej. 13 (Cajitas Nu, Lulo, Ualá)" step="0.1" min="0" />
@@ -290,7 +290,7 @@ function showNewFundModal({ wallets = [], onSave }) {
         current_amount,
         icon: selectedIcon,
         wallet_id,
-        yield_rate // <-- Se envía la tasa al servicio
+        yield_rate
       });
       closeModal();
       if (onSave) onSave();
@@ -303,7 +303,6 @@ function showNewFundModal({ wallets = [], onSave }) {
   });
 }
 
-// Modal Añadir Ahorro
 function showAddSavingsModal({ fundId, fundTitle, wallets, onSave }) {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
@@ -316,7 +315,7 @@ function showAddSavingsModal({ fundId, fundTitle, wallets, onSave }) {
 
       <form id="add-savings-form">
         <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">
-          Sumar dinero a: <strong>${fundTitle}</strong>
+          Sumar dinero a: <strong>${escapeHtml(fundTitle)}</strong>
         </p>
 
         <div class="form-group">
@@ -381,7 +380,6 @@ function showAddSavingsModal({ fundId, fundTitle, wallets, onSave }) {
   });
 }
 
-// Modal Retirar Dinero del Ahorro
 function showWithdrawSavingsModal({ fundId, fundTitle, currentAmount, wallets, onSave }) {
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
@@ -395,7 +393,7 @@ function showWithdrawSavingsModal({ fundId, fundTitle, currentAmount, wallets, o
       <form id="withdraw-savings-form">
         <div style="background: var(--bg-subtle); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.75rem; margin-bottom: 1rem;">
           <small style="color: var(--text-muted); display: block;">Retirando de:</small>
-          <strong style="font-size: 0.95rem;">${fundTitle}</strong>
+          <strong style="font-size: 0.95rem;">${escapeHtml(fundTitle)}</strong>
           <div style="margin-top: 4px; font-size: 0.85rem; color: var(--success); font-weight: 700;">
             Disponible para retirar: $ ${currentAmount.toLocaleString("es-CO")}
           </div>
