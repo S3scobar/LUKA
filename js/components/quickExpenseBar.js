@@ -2,9 +2,9 @@
 import { transactionService } from "../services/transactionService.js";
 import { creditCardService } from "../services/creditCardService.js";
 import { modalCategoryPicker } from "./modalCategoryPicker.js";
-
 import { escapeHtml } from "../utils.js";
-// Función ligera de animación (salida de dinero para gastos, entrada para ingresos)
+
+// Animación breve al guardar: el dinero sale en un gasto y entra en un ingreso
 function showExpenseAnimation(amount, type = "expense") {
   const overlay = document.createElement("div");
   overlay.className = "expense-anim-overlay";
@@ -13,7 +13,6 @@ function showExpenseAnimation(amount, type = "expense") {
   overlay.innerHTML = `
     <div class="expense-anim-card ${isExpense ? "is-expense" : "is-income"}">
       <div class="anim-illustration">
-        <!-- Si es gasto, el dinero vuela hacia afuera; si es ingreso, entra a la billetera -->
         <span class="flying-particle particle-1"><i class="fa-solid ${isExpense ? "fa-money-bill-wave" : "fa-coins"}"></i></span>
         <span class="flying-particle particle-2"><i class="fa-solid ${isExpense ? "fa-coins" : "fa-money-bill-wave"}"></i></span>
         <span class="flying-particle particle-3"><i class="fa-solid ${isExpense ? "fa-money-bill" : "fa-hand-holding-dollar"}"></i></span>
@@ -41,9 +40,9 @@ function showExpenseAnimation(amount, type = "expense") {
 }
 
 export const quickExpenseBar = {
-  render({ containerId, wallets, categories, creditCards = [], onTransactionSaved }) {
-    const container = document.getElementById(containerId);
+  render({ container, wallets, categories, creditCards = [], onTransactionSaved }) {
     let activeType = "expense"; // 'expense' | 'income'
+    let isSaving = false;
     let selectedWalletId = wallets.length > 0 ? wallets[0].id : null;
     let savedTitle = "";
     let savedAmount = "";
@@ -67,7 +66,6 @@ export const quickExpenseBar = {
 
       container.innerHTML = `
         <div class="quick-expense-card">
-          <!-- 1. Toggle Gasto / Ingreso -->
           <div class="type-toggle-pill">
             <button type="button" id="tab-expense" class="toggle-btn ${activeType === "expense" ? "active expense" : ""}">
               <i class="fa-solid fa-arrow-trend-down"></i> Gasto
@@ -77,7 +75,6 @@ export const quickExpenseBar = {
             </button>
           </div>
 
-          <!-- 2. Botones de Cuenta al Inicio -->
           <div class="wallet-chips-section">
             <span class="action-hint">
               <i class="fa-solid fa-wallet"></i> ${activeType === "expense" ? "¿Con qué cuenta pagas?" : "¿A qué cuenta entra el dinero?"}
@@ -95,7 +92,7 @@ export const quickExpenseBar = {
             </div>
           </div>
 
-          <!-- 3. Cuotas (Si es Tarjeta) -->
+          <!-- Cuotas: solo si la cuenta elegida es una tarjeta -->
           ${linkedCard && activeType === "expense" ? `
             <div class="credit-cuotas-bar">
               <div class="cuotas-row">
@@ -111,7 +108,7 @@ export const quickExpenseBar = {
                 </select>
               </div>
 
-              <!-- Casilla 0% Interés / Convenio (se activa si hay más de 1 cuota) -->
+              <!-- Convenio 0 %: solo con más de una cuota -->
               <div id="quick-zero-interest-wrap" class="zero-interest-wrap" style="display: none; margin: 6px 0 2px;">
                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
                   <input type="checkbox" id="quick-zero-interest" ${savedZeroInterest ? "checked" : ""} style="width: 16px; height: 16px; accent-color: var(--success, #10B981); cursor: pointer;" />
@@ -125,20 +122,18 @@ export const quickExpenseBar = {
             </div>
           ` : ""}
 
-          <!-- 4. Campos de Texto -->
           <div class="quick-inputs-row">
             <div class="input-field input-title">
-              <input type="text" id="quick-title" value="${savedTitle}" placeholder="${activeType === "expense" ? "¿En qué gastaste? (Ej. Almuerzo)" : "¿Concepto del ingreso? (Ej. Sueldo)"}" required autocomplete="off" />
+              <input type="text" id="quick-title" value="${escapeHtml(savedTitle)}" placeholder="${activeType === "expense" ? "¿En qué gastaste? (Ej. Almuerzo)" : "¿Concepto del ingreso? (Ej. Sueldo)"}" required autocomplete="off" />
             </div>
             <div class="input-field input-amount">
               <span class="currency-symbol">$</span>
-              <input type="text" id="quick-amount" value="${savedAmount}" inputmode="numeric" placeholder="0" required autocomplete="off" />
+              <input type="text" id="quick-amount" value="${escapeHtml(savedAmount)}" inputmode="numeric" placeholder="0" required autocomplete="off" />
             </div>
           </div>
 
           <div id="quick-error" class="alert-error" style="display: none; margin-top: 0.5rem;"></div>
 
-          <!-- 5. Categorías (1 Clic) -->
           <div class="categories-action-section">
             <span class="action-hint">
               ${activeType === "expense" ? "Toca una categoría para guardar el gasto:" : "Toca una categoría para guardar el ingreso:"}
@@ -180,7 +175,6 @@ export const quickExpenseBar = {
         return cat.icon || (activeType === "expense" ? "fa-tag" : "fa-money-bill-wave");
       }
 
-      // Eventos
       const tabExpense = container.querySelector("#tab-expense");
       const tabIncome = container.querySelector("#tab-income");
       const titleInput = container.querySelector("#quick-title");
@@ -226,7 +220,6 @@ export const quickExpenseBar = {
         const installments = parseInt(installmentsSelect.value);
         const isZeroInt = zeroInterestCheck ? zeroInterestCheck.checked : false;
 
-        // Mostrar u ocultar el checkbox según si hay más de 1 cuota
         if (zeroInterestWrap) {
           zeroInterestWrap.style.display = installments > 1 ? "block" : "none";
         }
@@ -253,7 +246,6 @@ export const quickExpenseBar = {
 
       if (installmentsSelect) {
         installmentsSelect.addEventListener("change", updateCreditSim);
-        // Inicializar visibilidad del checkbox según la opción actual
         if (zeroInterestWrap) {
           zeroInterestWrap.style.display = parseInt(installmentsSelect.value) > 1 ? "block" : "none";
         }
@@ -263,8 +255,8 @@ export const quickExpenseBar = {
         zeroInterestCheck.addEventListener("change", updateCreditSim);
       }
 
-      // Guardar transacción con animación
       const executeSave = async (categoryId) => {
+        if (isSaving) return; // evita registros duplicados por doble toque
         errorDiv.style.display = "none";
         const title = titleInput.value.trim();
         const rawNumbers = amountInput.value.replace(/\D/g, "");
@@ -284,6 +276,7 @@ export const quickExpenseBar = {
           return;
         }
 
+        isSaving = true;
         const closeAnim = showExpenseAnimation(amount, activeType);
         const startTime = Date.now();
 
@@ -299,7 +292,7 @@ export const quickExpenseBar = {
               total_amount: amount,
               installments,
               is_advance: false,
-              is_zero_interest: isZeroInterest // <-- Envía la marca de convenio 0%
+              is_zero_interest: isZeroInterest
             });
           } else {
             await transactionService.addTransaction({
@@ -329,6 +322,8 @@ export const quickExpenseBar = {
           closeAnim();
           errorDiv.textContent = err.message || "Error al registrar.";
           errorDiv.style.display = "block";
+        } finally {
+          isSaving = false;
         }
       };
 

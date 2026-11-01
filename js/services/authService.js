@@ -2,7 +2,7 @@
 import { supabase } from "../supabaseClient.js";
 
 export const authService = {
-  // Registro con correo, contraseña y nombre
+  // Registro con correo, contraseña y nombre. Si el proyecto exige confirmar el correo, data.session viene vacío.
   async signUp(email, password, fullName) {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -15,7 +15,6 @@ export const authService = {
     return data;
   },
 
-  // Inicio de sesión
   async signIn(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -25,20 +24,18 @@ export const authService = {
     return data;
   },
 
-  // Cerrar sesión
   async signOut() {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
   },
 
-  // Obtener usuario en sesión actual
+  // Valida la sesión contra el servidor de Supabase
   async getCurrentUser() {
     const { data: { user }, error } = await supabase.auth.getUser();
     if (error) return null;
     return user;
   },
 
-  // Listener reactivo de cambios de sesión
   onAuthStateChanged(callback) {
     return supabase.auth.onAuthStateChange((event, session) => {
       callback(session?.user || null, event);

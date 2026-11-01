@@ -1,8 +1,8 @@
+// js/components/modalCategoryPicker.js
+import { escapeHtml } from "../utils.js";
 
-import { escapeHtml } from "../utils.js";// js/components/modalCategoryPicker.js
 export const modalCategoryPicker = {
   render({ categories, onSelect }) {
-    // Eliminar modal previo si existe
     const existing = document.getElementById("modal-category-picker");
     if (existing) existing.remove();
 

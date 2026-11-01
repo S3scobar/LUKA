@@ -3,7 +3,7 @@ import { supabase, requireUserId } from "../supabaseClient.js";
 import { transactionService } from "./transactionService.js";
 import { categoryService } from "./categoryService.js";
 
-// Función matemática para liquidar rendimientos diarios (Tasa Efectiva Anual -> Diaria)
+// Rendimiento pendiente de un fondo: convierte la tasa E.A. a diaria y la compone por los días completos transcurridos
 function calculatePendingYield(goal) {
   const yieldRate = parseFloat(goal.yield_rate) || 0;
   const currentAmount = parseFloat(goal.current_amount) || 0;
@@ -17,27 +17,25 @@ function calculatePendingYield(goal) {
   const msPerDay = 1000 * 60 * 60 * 24;
   const daysPassed = Math.floor(diffMs / msPerDay);
 
-  // Si no ha pasado al menos un día completo (24h), no liquida aún
+  // Sin un día completo transcurrido no hay nada que liquidar
   if (daysPassed < 1) return null;
 
-  // Fórmula E.A. a Tasa Diaria
   const annualRate = yieldRate / 100;
   const dailyRate = Math.pow(1 + annualRate, 1 / 365) - 1;
 
-  // Interés compuesto por los días transcurridos
   const newAmount = currentAmount * Math.pow(1 + dailyRate, daysPassed);
-  
-  // Avanzar la fecha exactamente los días liquidados para no perder horas residuales
+
+  // La fecha avanza solo los días liquidados para no perder las horas sobrantes
   const updatedDate = new Date(lastDate.getTime() + daysPassed * msPerDay).toISOString();
 
   return {
-    newAmount: Math.round(newAmount), // Redondeado al entero más cercano (COP)
+    newAmount: Math.round(newAmount), // pesos enteros
     updatedDate
   };
 }
 
 export const goalService = {
-  // Obtener metas y liquidar rendimientos pendientes automáticamente
+  // Devuelve los fondos y liquida antes los rendimientos pendientes
   async getGoals() {
     const { data, error } = await supabase
       .from("saving_goals")
@@ -48,9 +46,8 @@ export const goalService = {
 
     const goals = data || [];
 
-    // Liquidar rendimientos pendientes: las actualizaciones son independientes, se envían en paralelo.
-    // Si alguna falla no se interrumpe la carga: el rendimiento se recalcula en la siguiente consulta
-    // porque last_yield_date no avanzó.
+    // Si una actualización falla no se interrumpe la carga: como last_yield_date no avanzó,
+    // el rendimiento se vuelve a calcular en la siguiente consulta.
     const pendingUpdates = [];
     for (const goal of goals) {
       const yieldResult = calculatePendingYield(goal);
@@ -81,7 +78,7 @@ export const goalService = {
     }));
   },
 
-  // Crear fondo o cajita de ahorro con rendimiento opcional
+  // Crea un fondo de ahorro; yield_rate es la tasa E.A. en porcentaje (13 = 13 %)
   async createGoal({
     title,
     target_amount,
@@ -89,7 +86,7 @@ export const goalService = {
     target_date = null,
     icon = "fa-piggy-bank",
     wallet_id = null,
-    yield_rate = 0 // Tasa anual en porcentaje (ej: 13 para 13% E.A.)
+    yield_rate = 0
   }) {
     const userId = await requireUserId();
 
@@ -97,7 +94,6 @@ export const goalService = {
     const rate = parseFloat(yield_rate) || 0;
     const nowIso = new Date().toISOString();
 
-    // 1. Guardar en saving_goals
     const { data, error } = await supabase
       .from("saving_goals")
       .insert([
@@ -117,7 +113,7 @@ export const goalService = {
 
     if (error) throw error;
 
-    // 2. Si hay dinero inicial y se eligió cuenta, registrar el gasto
+    // El dinero inicial sale de la cuenta elegida y queda como gasto de ahorro
     if (initialAmount > 0 && wallet_id) {
       const categoryId = await categoryService.resolveCategoryId(userId, "expense", "%ahorro%");
 
@@ -133,7 +129,7 @@ export const goalService = {
     return data;
   },
 
-  // Aportar dinero a la meta
+  // Aporte a un fondo: sale de la billetera y queda como gasto de ahorro
   async contributeToGoal(goal_id, amount, wallet_id) {
     const userId = await requireUserId();
 
@@ -146,7 +142,6 @@ export const goalService = {
       throw new Error("Debes seleccionar de qué cuenta saldrá el dinero.");
     }
 
-    // 1. Obtener la meta actual
     const { data: goal, error: fetchErr } = await supabase
       .from("saving_goals")
       .select("*")
@@ -155,7 +150,7 @@ export const goalService = {
 
     if (fetchErr) throw fetchErr;
 
-    // Si había rendimientos pendientes antes del aporte, liquidarlos primero
+    // Primero se liquidan los rendimientos pendientes
     let baseAmount = Number(goal.current_amount);
     const yieldResult = calculatePendingYield(goal);
     if (yieldResult) {
@@ -165,7 +160,6 @@ export const goalService = {
     const newAmount = baseAmount + contribution;
     const nowIso = new Date().toISOString();
 
-    // 2. Actualizar monto y resetear fecha de corte al momento del nuevo aporte
     const { data: updatedGoal, error: updateErr } = await supabase
       .from("saving_goals")
       .update({
@@ -178,7 +172,6 @@ export const goalService = {
 
     if (updateErr) throw updateErr;
 
-    // 3. Registrar como gasto de ahorro en la billetera
     const categoryId = await categoryService.resolveCategoryId(userId, "expense", "%ahorro%");
 
     await transactionService.addTransaction({
@@ -192,7 +185,7 @@ export const goalService = {
     return updatedGoal;
   },
 
-  // Retirar dinero de la cajita hacia una billetera
+  // Retiro de un fondo hacia una billetera, registrado como ingreso
   async withdrawFromGoal(goal_id, amount, wallet_id) {
     const userId = await requireUserId();
 
@@ -240,7 +233,6 @@ export const goalService = {
 
     if (updateErr) throw updateErr;
 
-    // Registrar como ingreso en la billetera seleccionada
     const categoryId = await categoryService.resolveCategoryId(userId, "income", "%ahorro%");
 
     await transactionService.addTransaction({
@@ -254,7 +246,7 @@ export const goalService = {
     return updatedGoal;
   },
 
-  // Eliminar fondo
+  // Elimina el fondo (no devuelve el dinero a ninguna billetera)
   async deleteGoal(id) {
     const { error } = await supabase
       .from("saving_goals")
