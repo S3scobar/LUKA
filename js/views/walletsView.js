@@ -3,17 +3,8 @@ import { walletService } from "../services/walletService.js";
 import { categoryService } from "../services/categoryService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 import { escapeHtml, resolveContainer, notifyError } from "../utils.js";
-
-const AVAILABLE_ICONS = [
-  "fa-utensils", "fa-burger", "fa-pizza-slice", "fa-mug-hot", "fa-apple-whole",
-  "fa-bus", "fa-car", "fa-gas-pump", "fa-train", "fa-plane",
-  "fa-house", "fa-bolt", "fa-faucet-drip", "fa-wifi", "fa-couch",
-  "fa-gamepad", "fa-film", "fa-music", "fa-ticket", "fa-dumbbell",
-  "fa-bag-shopping", "fa-cart-shopping", "fa-shirt", "fa-gift", "fa-tag",
-  "fa-heart-pulse", "fa-hospital", "fa-pills", "fa-paw",
-  "fa-graduation-cap", "fa-book", "fa-laptop",
-  "fa-briefcase", "fa-money-bill-wave", "fa-building-columns", "fa-chart-line", "fa-piggy-bank", "fa-wallet"
-];
+import { CATEGORY_ICON_GROUPS, WALLET_ICONS, iconPickerHtml, bindIconPicker } from "../icons.js";
+import { colorSwatchesHtml, bindColorSwatches } from "../colorSwatches.js";
 
 export const walletsView = {
   async render(target) {
@@ -63,7 +54,7 @@ export const walletsView = {
                     </div>
                     <div class="wallet-item-info">
                       <span class="wallet-name">${escapeHtml(w.name)}</span>
-                      <span class="wallet-balance">$ ${Number(w.balance).toLocaleString("es-CO", { minimumFractionDigits: 2 })}</span>
+                      <span class="wallet-balance">$ ${Number(w.balance).toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
                     </div>
                     <div class="wallet-actions">
                       <button class="btn-edit-wallet" data-id="${w.id}" title="Editar saldo o datos">
@@ -90,7 +81,7 @@ export const walletsView = {
                   </button>
                   ${activeCategoryTab === "expense" ? `
                     <button id="btn-save-favorites" class="btn btn-primary btn-sm">
-                      <i class="fa-solid fa-check"></i> Guardar Favoritas (<span id="fav-count">${selectedFavoriteIds.length}</span>/4)
+                      <i class="fa-solid fa-check"></i> <span>Guardar Favoritas (<span id="fav-count">${selectedFavoriteIds.length}</span>/4)</span>
                     </button>
                   ` : ""}
                 </div>
@@ -277,7 +268,7 @@ export const walletsView = {
                 notifyError(err);
               } finally {
                 saveBtn.disabled = false;
-                saveBtn.innerHTML = `<i class="fa-solid fa-check"></i> Guardar Favoritas (<span id="fav-count">${selectedFavoriteIds.length}</span>/4)`;
+                saveBtn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Guardar Favoritas (<span id="fav-count">${selectedFavoriteIds.length}</span>/4)</span>`;
               }
             });
           }
@@ -383,6 +374,8 @@ function showTransferModal({ wallets, onSave }) {
 
 function showWalletModal({ wallet = null, onSave }) {
   const isEditing = !!wallet;
+  const walletColor = isEditing ? wallet.color : "#3B82F6";
+  let selectedWalletIcon = isEditing ? wallet.icon : "fa-wallet";
 
   const modal = document.createElement("div");
   modal.className = "modal-backdrop";
@@ -404,21 +397,17 @@ function showWalletModal({ wallet = null, onSave }) {
           <input type="text" id="modal-wallet-balance" value="${isEditing ? wallet.balance : "0"}" placeholder="0" required />
         </div>
 
-        <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
-          <div class="form-group">
-            <label>Color</label>
-            <input type="color" id="modal-wallet-color" value="${isEditing ? wallet.color : "#3B82F6"}" />
+        <div class="form-group">
+          <label>Color</label>
+          <div class="color-row">
+            <input type="color" id="modal-wallet-color" value="${walletColor}" />
+            ${colorSwatchesHtml(walletColor)}
           </div>
-          <div class="form-group">
-            <label>Icono</label>
-            <select id="modal-wallet-icon">
-              <option value="fa-wallet" ${isEditing && wallet.icon === "fa-wallet" ? "selected" : ""}>Billetera</option>
-              <option value="fa-money-bill-wave" ${isEditing && wallet.icon === "fa-money-bill-wave" ? "selected" : ""}>Efectivo</option>
-              <option value="fa-building-columns" ${isEditing && wallet.icon === "fa-building-columns" ? "selected" : ""}>Banco</option>
-              <option value="fa-credit-card" ${isEditing && wallet.icon === "fa-credit-card" ? "selected" : ""}>Tarjeta</option>
-              <option value="fa-piggy-bank" ${isEditing && wallet.icon === "fa-piggy-bank" ? "selected" : ""}>Ahorros</option>
-            </select>
-          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Icono</label>
+          ${iconPickerHtml([{ icons: WALLET_ICONS }], selectedWalletIcon)}
         </div>
 
         <div id="wallet-modal-error" class="alert-error" style="display: none; margin-top: 0.5rem;"></div>
@@ -441,13 +430,15 @@ function showWalletModal({ wallet = null, onSave }) {
   });
 
   attachCurrencyInput(modal.querySelector("#modal-wallet-balance"));
+  bindIconPicker(modal, (icon) => { selectedWalletIcon = icon; });
+  bindColorSwatches(modal, modal.querySelector("#modal-wallet-color"));
 
   modal.querySelector("#wallet-modal-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = modal.querySelector("#modal-wallet-name").value.trim();
     const balance = parseCurrencyInput(modal.querySelector("#modal-wallet-balance").value);
     const color = modal.querySelector("#modal-wallet-color").value;
-    const icon = modal.querySelector("#modal-wallet-icon").value;
+    const icon = selectedWalletIcon;
     const errorDiv = modal.querySelector("#wallet-modal-error");
 
     try {
@@ -480,6 +471,13 @@ function showCategoryModal({ category = null, type = "expense", onSave }) {
       </div>
 
       <form id="category-modal-form">
+        <div class="cat-preview" aria-hidden="true">
+          <div class="cat-preview-icon" id="cat-preview-icon" style="background-color: ${selectedColor}25; color: ${selectedColor};">
+            <i class="fa-solid ${selectedIcon}"></i>
+          </div>
+          <span class="cat-preview-name" id="cat-preview-name">${escapeHtml(isEditing ? category.name : "Nombre de la categoría")}</span>
+        </div>
+
         <div class="form-group">
           <label>Nombre</label>
           <input type="text" id="cat-form-name" value="${escapeHtml(isEditing ? category.name : "")}" placeholder="Ej. Cine, Ropa, Gimnasio" required />
@@ -499,15 +497,11 @@ function showCategoryModal({ category = null, type = "expense", onSave }) {
           </div>
         </div>
 
+        ${colorSwatchesHtml(selectedColor)}
+
         <div class="form-group">
           <label>Selecciona un Icono</label>
-          <div class="icon-picker-grid">
-            ${AVAILABLE_ICONS.map(icon => `
-              <button type="button" class="icon-choice ${icon === selectedIcon ? "selected" : ""}" data-icon="${icon}">
-                <i class="fa-solid ${icon}"></i>
-              </button>
-            `).join("")}
-          </div>
+          ${iconPickerHtml(CATEGORY_ICON_GROUPS, selectedIcon)}
         </div>
 
         <div id="cat-modal-error" class="alert-error" style="display: none;"></div>
@@ -529,14 +523,26 @@ function showCategoryModal({ category = null, type = "expense", onSave }) {
     if (e.target === modal) closeModal();
   });
 
-  const iconButtons = modal.querySelectorAll(".icon-choice");
-  iconButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      iconButtons.forEach(b => b.classList.remove("selected"));
-      btn.classList.add("selected");
-      selectedIcon = btn.dataset.icon;
-    });
+  const nameInput = modal.querySelector("#cat-form-name");
+  const colorInput = modal.querySelector("#cat-form-color");
+  const previewIcon = modal.querySelector("#cat-preview-icon");
+  const previewName = modal.querySelector("#cat-preview-name");
+
+  const updatePreview = () => {
+    const color = colorInput.value;
+    previewIcon.style.backgroundColor = `${color}25`;
+    previewIcon.style.color = color;
+    previewIcon.innerHTML = `<i class="fa-solid ${selectedIcon}"></i>`;
+    previewName.textContent = nameInput.value.trim() || "Nombre de la categoría";
+  };
+
+  bindIconPicker(modal, (icon) => {
+    selectedIcon = icon;
+    updatePreview();
   });
+  bindColorSwatches(modal, colorInput);
+  nameInput.addEventListener("input", updatePreview);
+  colorInput.addEventListener("input", updatePreview);
 
   modal.querySelector("#category-modal-form").addEventListener("submit", async (e) => {
     e.preventDefault();

@@ -109,6 +109,7 @@ Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, 
 ├── supabase/
 │   ├── schema.sql                  # Tablas, RLS y triggers (referencia del esquema actual)
 │   ├── indexes.sql                 # Índices por usuario y por fecha
+│   ├── default_categories.sql      # Categorías Ahorro y Gasto hormiga (usuarios nuevos y existentes)
 │   └── functions.sql               # Ajustes de saldo y transferencias atómicas
 ├── css/
 │   ├── main.css                    # Tokens de diseño (tema claro y oscuro), reset y tipografía
@@ -121,6 +122,8 @@ Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, 
     ├── themeManager.js             # Tema claro/oscuro: preferencia, persistencia y botón
     ├── utils.js                    # escapeHtml(), resolveContainer() y notifyError()
     ├── currencyFormatter.js        # Entrada de moneda con separador de miles (es-CO)
+    ├── icons.js                    # Iconos disponibles para categorías, billeteras y ahorros, y su selector
+    ├── colorSwatches.js            # Colores rápidos para categorías y billeteras
     ├── services/
     │   ├── authService.js          # Registro, login, logout y sesión
     │   ├── walletService.js        # Billeteras, ajustes de saldo y transferencias

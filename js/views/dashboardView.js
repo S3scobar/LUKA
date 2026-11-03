@@ -4,7 +4,7 @@ import { categoryService } from "../services/categoryService.js";
 import { transactionService } from "../services/transactionService.js";
 import { creditCardService } from "../services/creditCardService.js";
 import { quickExpenseBar } from "../components/quickExpenseBar.js";
-import { escapeHtml, resolveContainer, notifyError } from "../utils.js";
+import { escapeHtml, resolveContainer, notifyError, formatShortDate } from "../utils.js";
 
 export const dashboardView = {
   showAllTransactions: false,
@@ -163,7 +163,7 @@ export const dashboardView = {
                     <span class="trans-title">${escapeHtml(t.title)}</span>
                     <div class="trans-meta">
                       <span class="trans-wallet"><i class="fa-solid fa-wallet"></i> ${escapeHtml(walletName)}</span>
-                      <span class="trans-date">${t.transaction_date}</span>
+                      <span class="trans-date">${formatShortDate(t.transaction_date)}</span>
                     </div>
                   </div>
                   <div class="trans-amount ${isExpense ? "amount-expense" : "amount-income"}">

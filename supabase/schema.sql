@@ -219,6 +219,8 @@ begin
     (new.id, 'Servicios', 'expense', 'fa-bolt', '#06B6D4', false, 0),
     (new.id, 'Salud', 'expense', 'fa-heart-pulse', '#EF4444', false, 0),
     (new.id, 'Educación', 'expense', 'fa-graduation-cap', '#10B981', false, 0),
+    (new.id, 'Ahorro', 'expense', 'fa-piggy-bank', '#14B8A6', false, 0),
+    (new.id, 'Gasto hormiga', 'expense', 'fa-cookie-bite', '#F97316', false, 0),
     (new.id, 'Salario', 'income', 'fa-briefcase', '#10B981', false, 0),
     (new.id, 'Inversiones', 'income', 'fa-chart-line', '#3B82F6', false, 0),
     (new.id, 'Otros Ingresos', 'income', 'fa-wallet', '#6366F1', false, 0);

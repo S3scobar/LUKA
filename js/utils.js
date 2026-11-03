@@ -24,3 +24,10 @@ export function resolveContainer(target) {
 export function notifyError(err) {
   alert(err?.message || "Ocurrió un error. Inténtalo de nuevo.");
 }
+
+// "2026-11-03" -> "3 nov". Se arma con partes numéricas para que la zona horaria no mueva el día.
+export function formatShortDate(isoDate) {
+  const [year, month, day] = String(isoDate || "").split("-").map(Number);
+  if (!year || !month || !day) return escapeHtml(isoDate);
+  return new Date(year, month - 1, day).toLocaleDateString("es-CO", { day: "numeric", month: "short" }).replace(" de ", " ").replace(".", "");
+}
