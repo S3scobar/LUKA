@@ -111,6 +111,9 @@
   opacity: 1;
 }
 
+/* Los gestos horizontales cambian de pestaña (js/components/swipeNav.js): evita que el navegador los use para ir atrás/adelante */
+html, body { overscroll-behavior-x: none; }
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-main);
