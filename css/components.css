@@ -929,3 +929,102 @@ html, body {
 
   .tutorial-fab span { display: none; }
 }
+
+/* ==========================================
+   DESLIZADOR DE INGRESO ("desliza para ingresar")
+   ========================================== */
+.slide-track {
+  position: relative;
+  height: 52px;
+  margin-top: 0.5rem;
+  border-radius: 999px;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: pan-y;
+}
+
+.slide-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary-soft), var(--primary));
+  transition: width 0.25s ease;
+}
+
+.slide-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 44px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* Brillo suave que recorre el texto para invitar a deslizar */
+.slide-track:not(.is-done) .slide-label {
+  background: linear-gradient(100deg, var(--text-muted) 40%, var(--text-main) 50%, var(--text-muted) 60%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: slide-shimmer 2.6s linear infinite;
+}
+
+.slide-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #fff;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  box-shadow: 0 2px 8px rgb(37 99 235 / 0.35);
+  transition: transform 0.25s ease, box-shadow 0.2s ease;
+  touch-action: none;
+}
+
+.slide-thumb:focus-visible {
+  outline: 2px solid var(--primary-text);
+  outline-offset: 2px;
+}
+
+.slide-track.is-dragging .slide-thumb { cursor: grabbing; transition: none; }
+.slide-track.is-dragging .slide-fill { transition: none; }
+
+.slide-track.is-done .slide-label { color: #fff; -webkit-text-fill-color: #fff; padding: 0 44px 0 0; }
+.slide-track.is-busy .slide-thumb { opacity: 0.85; }
+
+@keyframes slide-shimmer {
+  from { background-position: 150% 0; }
+  to { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide-track:not(.is-done) .slide-label { animation: none; -webkit-text-fill-color: currentColor; background: none; }
+  .slide-thumb, .slide-fill { transition: none; }
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

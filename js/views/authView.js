@@ -1,6 +1,7 @@
 // js/views/authView.js
 import { authService } from "../services/authService.js";
 import { resolveContainer } from "../utils.js";
+import { slideToSubmit } from "../components/slideToSubmit.js";
 
 export const authView = {
   render(target, onAuthSuccess) {
@@ -38,9 +39,12 @@ export const authView = {
             ${notice ? `<div class="alert-info">${notice}</div>` : ""}
             <div id="auth-error" class="alert-error" style="display: none;"></div>
 
-            <button type="submit" id="auth-submit-btn" class="btn btn-primary btn-block">
-              ${isLoginMode ? "Ingresar" : "Registrarme"}
-            </button>
+            ${isLoginMode ? `
+              <div id="auth-slider"></div>
+              <button type="submit" class="visually-hidden" tabindex="-1" aria-hidden="true">Ingresar</button>
+            ` : `
+              <button type="submit" id="auth-submit-btn" class="btn btn-primary btn-block">Registrarme</button>
+            `}
           </form>
 
           <div class="auth-toggle">
@@ -57,6 +61,30 @@ export const authView = {
       const errorDiv = document.getElementById("auth-error");
       const submitBtn = document.getElementById("auth-submit-btn");
 
+      // En el login se confirma deslizando; en el registro sigue el botón normal
+      const slider = isLoginMode
+        ? slideToSubmit.mount(document.getElementById("auth-slider"), {
+            label: "Desliza para ingresar",
+            onComplete: () => {
+              if (!form.checkValidity()) {
+                form.reportValidity();
+                slider.reset();
+                return;
+              }
+              form.requestSubmit();
+            }
+          })
+        : null;
+
+      const setBusy = () => {
+        if (slider) slider.setBusy();
+        else { submitBtn.disabled = true; submitBtn.textContent = "Procesando..."; }
+      };
+      const setIdle = () => {
+        if (slider) slider.reset();
+        else { submitBtn.disabled = false; submitBtn.textContent = "Registrarme"; }
+      };
+
       toggleBtn.addEventListener("click", () => {
         isLoginMode = !isLoginMode;
         notice = "";
@@ -66,8 +94,7 @@ export const authView = {
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         errorDiv.style.display = "none";
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Procesando...";
+        setBusy();
 
         const email = document.getElementById("auth-email").value.trim();
         const password = document.getElementById("auth-password").value;
@@ -94,8 +121,7 @@ export const authView = {
         } catch (err) {
           errorDiv.textContent = err.message || "Ocurrió un error en la autenticación";
           errorDiv.style.display = "block";
-          submitBtn.disabled = false;
-          submitBtn.textContent = isLoginMode ? "Ingresar" : "Registrarme";
+          setIdle();
         }
       });
     };
