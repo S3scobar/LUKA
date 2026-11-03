@@ -1,5 +1,5 @@
 // js/components/swipeNav.js — cambia de pestaña deslizando el dedo por la pantalla
-// Deslizar a la derecha avanza a la pestaña siguiente; a la izquierda vuelve a la anterior.
+// Deslizar a la izquierda avanza a la pestaña siguiente; a la derecha vuelve a la anterior.
 const MIN_DISTANCE = 70;      // px horizontales necesarios
 const DIRECTION_RATIO = 1.6;  // el gesto debe ser claramente más horizontal que vertical
 const MAX_DURATION = 700;     // ms: un arrastre lento suele ser otra intención (seleccionar, desplazar)
@@ -41,7 +41,7 @@ export const swipeNav = {
 
       const tabs = getTabs();
       const index = tabs.indexOf(getCurrent());
-      const next = tabs[index + (dx > 0 ? 1 : -1)];
+      const next = tabs[index + (dx < 0 ? 1 : -1)];
       if (next) onChange(next);
     }, { passive: true });
 
