@@ -3,9 +3,6 @@
 .env.local
 .env.*.local
 
-# Resultado del build (incluye la configuración generada)
-dist/
-
 # Vercel
 .vercel
 

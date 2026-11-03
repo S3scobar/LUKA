@@ -14,7 +14,7 @@ Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, 
 
 ## 2. Decisiones de diseño
 
-* **Sin framework ni bundler:** ES Modules nativos y dos dependencias por CDN (Font Awesome y `supabase-js`). Un script de Node sin dependencias (`scripts/build.mjs`) copia la app a `dist/` y genera `js/config.js` desde variables de entorno.
+* **Sin framework ni bundler:** ES Modules nativos y dos dependencias por CDN (Font Awesome y `supabase-js`).
 * **Aislamiento entre usuarios con RLS:** cada fila tiene `user_id` y las políticas limitan el acceso a `auth.uid() = user_id` (ver `supabase/schema.sql`).
 * **Saldos coherentes:** el trigger `tr_transaction_balance` ajusta el saldo de la billetera al crear o borrar una transacción, por lo que el código no lo toca a mano en esos casos. Para el cupo de las tarjetas y las transferencias, `walletService.adjustBalance()` usa funciones RPC atómicas (`supabase/functions.sql`); si no están desplegadas, lee y escribe.
 * **Móvil primero:** pestañas deslizables, montos con separador de miles (`es-CO`) y tutorial en el primer ingreso.
@@ -93,7 +93,7 @@ Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, 
 * **Autenticación:** Supabase Auth (correo y contraseña) con JWT.
 
 ### Infraestructura
-* **Despliegue:** Vercel ejecuta `node scripts/build.mjs`, publica `dist/` y reescribe todas las rutas a `index.html`.
+* **Despliegue:** Vercel (sitio estático con `cleanUrls` y reescritura de todas las rutas a `index.html`).
 * **Control de versiones:** Git / GitHub.
 
 ---
@@ -102,11 +102,7 @@ Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, 
 
 ```text
 ├── index.html                      # Estructura HTML, script anti-parpadeo del tema y carga de js/main.js
-├── vercel.json                     # Build, carpeta publicada, rutas de la SPA y cabeceras de seguridad
-├── package.json                    # Scripts build y start
-├── .env.example                    # Variables necesarias (copiar a .env)
-├── scripts/
-│   └── build.mjs                   # Genera dist/ y js/config.js desde las variables de entorno
+├── vercel.json                     # cleanUrls + reescritura de rutas para SPA
 ├── favicon.svg                     # Icono de la app
 ├── .gitignore
 ├── README.md
@@ -120,7 +116,7 @@ Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, 
 │   └── views.css                   # Estilos específicos de cada vista
 └── js/
     ├── main.js                     # Punto de entrada: sesión, navegación entre vistas y tema
-    ├── config.js                   # Generado por el build (no está en Git): URL y clave anon
+    ├── config.js                   # URL y clave pública (anon) de Supabase
     ├── supabaseClient.js           # Cliente Supabase, requireUserId() e isMissingRpc()
     ├── themeManager.js             # Tema claro/oscuro: preferencia, persistencia y botón
     ├── utils.js                    # escapeHtml(), resolveContainer() y notifyError()
@@ -174,23 +170,25 @@ Todas las tablas incluyen `user_id` y deben tener RLS activado con políticas ba
 
 ## 7. Instalación y Ejecución Local
 
-Requiere Node 18 o superior solo para el paso de configuración; no hay dependencias que instalar.
+No requiere compilación ni `npm install`: es un sitio estático.
 
 1. Clona el repositorio:
    ```bash
    git clone https://github.com/S3scobar/LUKA.git
    cd LUKA
    ```
-2. Crea tu propio proyecto en [Supabase](https://supabase.com) y ejecuta `supabase/schema.sql`, `supabase/indexes.sql` y `supabase/functions.sql` en el SQL Editor.
-3. Copia `.env.example` a `.env` y completa `SUPABASE_URL` y `SUPABASE_ANON_KEY` (Project Settings → API). Usa la clave `anon` o `publishable`; el build rechaza una `service_role` o `sb_secret_`.
-4. Genera `dist/` y sírvela (los ES Modules no funcionan abriendo el archivo directamente):
+2. Crea tu propio proyecto en [Supabase](https://supabase.com), crea las tablas de la sección 6 y activa RLS con políticas por `user_id`.
+3. Edita `js/config.js` con la URL y la **anon key** de tu proyecto (nunca uses la `service_role` key en el cliente).
+4. Sirve la carpeta con cualquier servidor estático (los ES Modules no funcionan abriendo el archivo directamente):
    ```bash
-   npm start
+   npx serve .
+   # o
+   python3 -m http.server 8000
    ```
-5. Abre `http://localhost:3000` y crea una cuenta. Cada vez que cambies código o `.env`, vuelve a ejecutar `npm start`.
+5. Abre `http://localhost:3000` (o `:8000`) y crea una cuenta.
 
 ### Despliegue en Vercel
-Importa el repositorio y, antes del primer deploy, agrega `SUPABASE_URL` y `SUPABASE_ANON_KEY` en Settings → Environment Variables (marca Production y Preview). Sin ellas el build falla con un mensaje claro. `vercel.json` ya define el comando de build y la carpeta `dist`.
+Importa el repositorio en Vercel como proyecto estático, sin comando de build. El archivo `vercel.json` ya incluye la configuración necesaria.
 
 ---
 
@@ -205,7 +203,7 @@ Importa el repositorio y, antes del primer deploy, agrega `SUPABASE_URL` y `SUPA
 
 ## 9. Seguridad y limitaciones
 
-* **Clave pública:** la `anon key` sigue llegando al navegador (cualquiera puede verla con las herramientas del navegador), aunque ya no esté en el repositorio. Un `.env` no la oculta; la protección real son las políticas RLS. La clave anterior sigue en el historial de Git: no es un problema mientras RLS esté activo.
+* **Clave pública:** la `anon key` de `config.js` es pública por diseño; la protección depende de las políticas RLS.
 * **Fondos de ahorro:** aportes y retiros siguen leyendo y escribiendo `saving_goals.current_amount` en pasos separados; falta una función RPC como la de las billeteras.
 * **Compras con tarjeta:** registrar una compra implica varias llamadas (compra, cupo, transacción). Si una falla a mitad, los datos pueden quedar a medias. Lo ideal es una función SQL que haga todo en una transacción.
 * **Pagos de tarjeta y avances anteriores:** hasta esta versión `payCard()` y el avance de `addPurchase()` ajustaban el saldo a mano y además el trigger lo ajustaba al registrar la transacción, así que el movimiento se contaba dos veces. Ya no ocurre, pero los saldos de pagos y avances hechos antes pueden estar desviados: corrígelos con el lápiz de editar en Billeteras.
