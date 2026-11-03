@@ -3,12 +3,7 @@ import { goalService } from "../services/goalService.js";
 import { walletService } from "../services/walletService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 import { escapeHtml, resolveContainer, notifyError } from "../utils.js";
-
-const SAVING_ICONS = [
-  "fa-piggy-bank", "fa-vault", "fa-box-archive", "fa-building-columns",
-  "fa-wallet", "fa-money-bill-wave", "fa-car", "fa-house", "fa-plane",
-  "fa-laptop", "fa-mobile-screen", "fa-gamepad", "fa-graduation-cap", "fa-shield-heart"
-];
+import { SAVING_ICONS, iconPickerHtml, bindIconPicker } from "../icons.js";
 
 export const savingsView = {
   async render(target) {
@@ -223,13 +218,7 @@ function showNewFundModal({ wallets = [], onSave }) {
 
         <div class="form-group">
           <label>Selecciona un Icono</label>
-          <div class="icon-picker-grid">
-            ${SAVING_ICONS.map(icon => `
-              <button type="button" class="icon-choice ${icon === selectedIcon ? "selected" : ""}" data-icon="${icon}">
-                <i class="fa-solid ${icon}"></i>
-              </button>
-            `).join("")}
-          </div>
+          ${iconPickerHtml([{ icons: SAVING_ICONS }], selectedIcon)}
         </div>
 
         <div id="fund-modal-error" class="alert-error" style="display: none;"></div>
@@ -260,14 +249,7 @@ function showNewFundModal({ wallets = [], onSave }) {
   attachCurrencyInput(currentInput, toggleWalletBox);
   attachCurrencyInput(modal.querySelector("#fund-target"));
 
-  const iconButtons = modal.querySelectorAll(".icon-choice");
-  iconButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      iconButtons.forEach(b => b.classList.remove("selected"));
-      btn.classList.add("selected");
-      selectedIcon = btn.dataset.icon;
-    });
-  });
+  bindIconPicker(modal, (icon) => { selectedIcon = icon; });
 
   const submitBtn = modal.querySelector("#btn-submit-newfund");
 

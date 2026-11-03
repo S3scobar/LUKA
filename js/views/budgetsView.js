@@ -2,7 +2,7 @@
 import { budgetService } from "../services/budgetService.js";
 import { categoryService } from "../services/categoryService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
-import { escapeHtml, resolveContainer, notifyError } from "../utils.js";
+import { escapeHtml, resolveContainer, notifyError, formatShortDate } from "../utils.js";
 
 const MONTH_NAMES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -250,7 +250,7 @@ function showBudgetDetailModal({ budget, categories, onRefresh }) {
                     <span class="trans-title" style="font-size: 0.85rem;">${escapeHtml(t.title)}</span>
                     <div class="trans-meta">
                       <span class="trans-wallet"><i class="fa-solid fa-wallet"></i> ${escapeHtml(walletName)}</span>
-                      <span class="trans-date">${t.transaction_date}</span>
+                      <span class="trans-date">${formatShortDate(t.transaction_date)}</span>
                     </div>
                   </div>
                   <div class="trans-amount amount-expense" style="font-size: 0.9rem;">
