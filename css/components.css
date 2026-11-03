@@ -116,6 +116,8 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   margin-bottom: 1.25rem;
 }
 
@@ -282,9 +284,12 @@
 
 .section-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
 }
+
+.section-header .btn { white-space: nowrap; }
 
 /* Tarjeta de categoría con gestión */
 .category-manage-card {
@@ -366,6 +371,98 @@
   border-color: var(--primary);
   background: var(--primary-soft);
   color: var(--primary);
+}
+
+/* Selector de iconos agrupado (categorías, billeteras, ahorros) */
+.icon-picker {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+  overscroll-behavior: contain;
+}
+
+.icon-picker .icon-picker-grid {
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.icon-group + .icon-group { margin-top: 0.85rem; }
+
+.icon-group-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+@media (max-width: 480px) {
+  .icon-picker { max-height: none; overflow: visible; }
+}
+
+/* Colores rápidos */
+.color-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+
+.color-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0 0 1rem;
+}
+
+.color-row .color-swatches { margin: 0; flex: 1; }
+
+.color-swatch {
+  width: 24px;
+  height: 24px;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+  transition: transform 0.15s;
+}
+
+.color-swatch:hover { transform: scale(1.12); }
+
+.color-swatch.selected {
+  border-color: var(--bg-card);
+  outline: 2px solid var(--text-main);
+}
+
+/* Vista previa de la categoría mientras se crea o edita */
+.cat-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+}
+
+.cat-preview-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-size: 1.1rem;
+}
+
+.cat-preview-name {
+  font-weight: 700;
+  overflow-wrap: anywhere;
 }
 
 /* Botones de acción en tarjetas de billetera */
@@ -538,9 +635,8 @@ html, body {
 }
 
 .tutorial-fab i {
-  color: #FACC15; /* Bombillo amarillo encendido */
+  color: inherit;
   font-size: 1rem;
-  filter: drop-shadow(0 0 4px rgba(250, 204, 21, 0.6));
 }
 
 .tutorial-fab:hover {
@@ -785,4 +881,51 @@ html, body {
 .quick-icons-row::-webkit-scrollbar-thumb {
   background: var(--scroll-thumb);
   border-radius: 4px;
+}
+/* Selector de color nativo: un botón compacto (los colores rápidos van al lado) */
+.form-group input[type="color"] {
+  width: 48px;
+  height: 36px;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.modal-content .form-group input[type="color"] { width: 48px; }
+
+/* Inicio: las cuatro métricas en dos columnas (sin una tarjeta huérfana en la segunda fila) */
+.dashboard-module .summary-cards-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@media (max-width: 480px) {
+  .dashboard-module .metric-card { padding: 0.9rem; }
+  .dashboard-module .metric-value { font-size: 1.15rem; }
+  .dashboard-module .metric-label { font-size: 0.7rem; letter-spacing: 0.3px; }
+}
+
+/* Movimientos: el importe no se parte y la información pasa a otra línea si falta espacio */
+.trans-info { min-width: 0; }
+.trans-meta { flex-wrap: wrap; gap: 0.15rem 0.75rem; }
+.trans-amount { white-space: nowrap; }
+
+/* Celulares: la firma y el botón de tutorial dejan de tapar el contenido */
+@media (max-width: 640px) {
+  .watermark-author {
+    position: static;
+    display: block;
+    width: fit-content;
+    margin: 1.5rem auto 5.5rem;
+  }
+
+  .tutorial-fab {
+    bottom: 16px;
+    right: 14px;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .tutorial-fab span { display: none; }
 }
