@@ -10,6 +10,7 @@ import { analyticsView } from "./views/analyticsView.js";
 import { budgetsView } from "./views/budgetsView.js";
 import { tutorialTour } from "./components/tutorialTour.js";
 import { themeManager } from "./themeManager.js";
+import { swipeNav } from "./components/swipeNav.js";
 
 const app = document.getElementById("app");
 const navTabs = document.getElementById("nav-tabs");
@@ -52,6 +53,8 @@ function switchView(tab) {
   document.querySelectorAll("[data-tab]").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.tab === tab);
   });
+  // En móvil la barra se desplaza: el botón activo debe quedar a la vista al cambiar deslizando
+  navTabs.querySelector(".active")?.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
 
   view.render(mountHost());
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -120,6 +123,14 @@ function initApp() {
 }
 
 initApp();
+
+// Deslizar el dedo entre pestañas (solo con sesión iniciada)
+swipeNav.init({
+  getTabs: () => Object.keys(VIEWS),
+  getCurrent: () => currentTab,
+  onChange: switchView,
+  isEnabled: () => activeUserId !== null
+});
 
 // La sesión de Supabase se comparte entre pestañas del navegador: si en otra pestaña se cierra
 // la sesión o entra otro usuario, esta pestaña debe reflejarlo y no seguir mostrando datos del anterior.
