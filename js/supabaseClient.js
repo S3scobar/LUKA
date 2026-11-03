@@ -1,5 +1,4 @@
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
-// config.js no está en el repositorio: lo genera scripts/build.mjs desde las variables de entorno
 import { SUPABASE_CONFIG } from "./config.js";
 
 export const supabase = createClient(
