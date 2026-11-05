@@ -11,6 +11,7 @@ import { budgetsView } from "./views/budgetsView.js";
 import { tutorialTour } from "./components/tutorialTour.js";
 import { themeManager } from "./themeManager.js";
 import { swipeNav } from "./components/swipeNav.js";
+import { liquidNav } from "./components/liquidNav.js";
 
 const app = document.getElementById("app");
 const navTabs = document.getElementById("nav-tabs");
@@ -35,6 +36,27 @@ let activeUserId = null;
 let initPromise = null;
 
 themeManager.init(themeBtn);
+liquidNav.init(navTabs);
+
+// Los modales brotan desde el punto donde se tocó (css/glass.css define la animación)
+let lastPointer = null;
+document.addEventListener("pointerdown", (e) => {
+  lastPointer = { x: e.clientX, y: e.clientY, time: Date.now() };
+}, { capture: true, passive: true });
+
+new MutationObserver((mutations) => {
+  if (!lastPointer || Date.now() - lastPointer.time > 1500) return;
+  for (const m of mutations) {
+    for (const node of m.addedNodes) {
+      const panel = node.nodeType === 1 && node.classList.contains("modal-backdrop") && node.querySelector(".modal-content");
+      if (!panel) continue;
+      const box = panel.getBoundingClientRect();
+      const x = Math.max(0, Math.min(box.width, lastPointer.x - box.left));
+      const y = Math.max(0, Math.min(box.height, lastPointer.y - box.top));
+      panel.style.transformOrigin = `${x}px ${y}px`;
+    }
+  }
+}).observe(document.body, { childList: true });
 
 // Cada pantalla se pinta en su propio contenedor. Si el usuario cambia de pestaña
 // mientras otra sigue cargando, esa respuesta tardía escribe en un contenedor que
@@ -48,11 +70,16 @@ function mountHost() {
 function switchView(tab) {
   const view = VIEWS[tab];
   if (!view) return;
+  // Dirección del cambio: las pantallas entran desde el lado hacia el que se avanza
+  const order = Object.keys(VIEWS);
+  const step = order.indexOf(tab) - order.indexOf(currentTab);
+  app.dataset.dir = step > 0 ? "next" : step < 0 ? "prev" : "";
   currentTab = tab;
 
   document.querySelectorAll("[data-tab]").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.tab === tab);
   });
+  liquidNav.update();
   // En móvil la barra se desplaza: el botón activo debe quedar a la vista al cambiar deslizando
   navTabs.querySelector(".active")?.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
 
