@@ -498,7 +498,7 @@ html, body {
   width: 100%;
 }
 
-/* 1. Barra principal en una sola fila */
+/* 1. Barra principal en una sola fila — Liquid Frosted Navbar */
 .navbar {
   display: flex !important;
   flex-direction: row !important;
@@ -506,13 +506,17 @@ html, body {
   justify-content: space-between !important;
   gap: 0.6rem !important;
   padding: 0.65rem 0.85rem !important;
-  background: var(--bg-card) !important;
-  border-bottom: 1px solid var(--border) !important;
+  background: var(--liquid-bg) !important;
+  backdrop-filter: blur(var(--liquid-blur)) !important;
+  -webkit-backdrop-filter: blur(var(--liquid-blur)) !important;
+  border-bottom: 1px solid var(--liquid-border-outer) !important;
+  box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.04), var(--liquid-shine) !important;
   position: sticky !important;
   top: 0 !important;
   z-index: 1000 !important;
   width: 100% !important;
   box-sizing: border-box !important;
+  transition: background 0.25s ease, border-color 0.25s ease !important;
 }
 
 /* 2. Logo fijo a la izquierda */
@@ -549,21 +553,26 @@ html, body {
   color: var(--text-muted);
   width: 32px;
   height: 32px;
-  border-radius: 8px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .btn-theme-icon:hover {
   background: var(--primary-soft);
   color: var(--primary);
+  border-color: var(--primary-text);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2), var(--liquid-shine);
 }
 
 .btn-logout-icon:hover {
   background: var(--danger-soft);
   color: var(--danger);
+  border-color: var(--danger);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2), var(--liquid-shine);
 }
 
 /* 4. Pestañas en el centro (SIN !important para poder ocultarse en login) */
@@ -602,11 +611,15 @@ html, body {
   user-select: none !important;
 }
 
+.nav-item-btn {
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+}
+
 .nav-item-btn.active {
-  background: var(--primary) !important;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%) !important;
   color: #FFFFFF !important;
-  border-color: var(--primary) !important;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32), inset 0 1px 1px 0 rgba(255, 255, 255, 0.45) !important;
 }
 
 /* ==========================================
@@ -617,9 +630,9 @@ html, body {
   position: fixed;
   bottom: 22px;
   right: 18px;
-  background: linear-gradient(135deg, #2563EB, #1D4ED8);
+  background: linear-gradient(135deg, var(--primary) 0%, #1D4ED8 100%);
   color: #FFFFFF;
-  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
   padding: 0.65rem 1.1rem;
   border-radius: 30px;
   font-weight: 700;
@@ -627,11 +640,18 @@ html, body {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.38), inset 0 1px 1px rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   cursor: pointer;
   z-index: 1500;
-  transition: all 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
   user-select: none;
+}
+
+.tutorial-fab:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.7);
 }
 
 .tutorial-fab i {
@@ -938,8 +958,11 @@ html, body {
   height: 52px;
   margin-top: 0.5rem;
   border-radius: 999px;
-  background: var(--bg-muted);
-  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  border: 1px solid var(--liquid-border);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05), var(--liquid-shine);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
@@ -952,6 +975,7 @@ html, body {
   width: 0;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--primary-soft), var(--primary));
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3);
   transition: width 0.25s ease;
 }
 
@@ -985,16 +1009,16 @@ html, body {
   left: 3px;
   width: 44px;
   height: 44px;
-  border: none;
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 50%;
-  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
   color: #fff;
   font-size: 0.95rem;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: grab;
-  box-shadow: 0 2px 8px rgb(37 99 235 / 0.35);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4), inset 0 1px 1px 0 rgba(255, 255, 255, 0.5);
   transition: transform 0.25s ease, box-shadow 0.2s ease;
   touch-action: none;
 }
