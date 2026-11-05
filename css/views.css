@@ -86,23 +86,138 @@
 }
 
 .metric-label {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.metric-label i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 0.72rem;
+  background: var(--chip-bg);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.card-total .metric-label i {
+  background: var(--primary-soft);
+  color: var(--primary);
+}
+
+.card-income .metric-label i {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.card-expense .metric-label i {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.card-balance .metric-label i {
+  background: rgba(14, 165, 233, 0.12);
+  color: #0EA5E9;
+}
+
+/* ==========================================
+   TIPOGRAFÍA Y NÚMEROS LÍQUIDOS DINÁMICOS
+   ========================================== */
+.metric-value,
+.wallet-balance,
+.statement-total,
+.sub-amount,
+.budget-hero-spent,
+.budget-cat-spent,
+.hero-amount,
+.trans-amount {
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.03em;
+  font-weight: 750;
+  display: inline-block;
 }
 
 .metric-value {
-  font-size: 1.4rem;
-  font-weight: 800;
-  color: var(--text-main);
+  font-size: 1.45rem;
 }
 
-.card-income .metric-label i { color: var(--success); }
-.card-expense .metric-label i { color: var(--danger); }
-.text-success { color: var(--success); }
-.text-danger { color: var(--danger); }
+/* Números Positivos / Ingresos */
+.text-success,
+.amount-income,
+.trans-amount.amount-income {
+  background: linear-gradient(135deg, #059669 0%, #047857 50%, #065F46 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #047857;
+}
+
+:root[data-theme="dark"] .text-success,
+:root[data-theme="dark"] .amount-income,
+:root[data-theme="dark"] .trans-amount.amount-income {
+  background: linear-gradient(135deg, #6EE7B7 0%, #34D399 50%, #10B981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #34D399;
+  filter: drop-shadow(0 2px 10px rgba(52, 211, 153, 0.22));
+}
+
+/* Números Negativos / Gastos */
+.text-danger,
+.amount-expense,
+.trans-amount.amount-expense {
+  background: linear-gradient(135deg, #E11D48 0%, #BE123C 50%, #9F1239 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #BE123C;
+}
+
+:root[data-theme="dark"] .text-danger,
+:root[data-theme="dark"] .amount-expense,
+:root[data-theme="dark"] .trans-amount.amount-expense {
+  background: linear-gradient(135deg, #FDA4AF 0%, #FB7185 50%, #F43F5E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #FB7185;
+  filter: drop-shadow(0 2px 10px rgba(244, 63, 94, 0.22));
+}
+
+/* Números Neutros / Saldo Total */
+.card-total .metric-value,
+.wallet-balance,
+.hero-amount {
+  background: linear-gradient(135deg, #0F172A 15%, #334155 70%, #475569 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #0F172A;
+}
+
+:root[data-theme="dark"] .card-total .metric-value,
+:root[data-theme="dark"] .wallet-balance,
+:root[data-theme="dark"] .hero-amount {
+  background: linear-gradient(135deg, #FFFFFF 20%, #F1F5F9 65%, #CBD5E1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: #FFFFFF;
+  filter: drop-shadow(0 2px 10px rgba(255, 255, 255, 0.12));
+}
+
+/* Mantener glifos de iconos libres de gradient clip */
+i.text-success,
+i.text-danger {
+  -webkit-background-clip: initial !important;
+  -webkit-text-fill-color: initial !important;
+}
+i.text-success { color: var(--success) !important; }
+i.text-danger { color: var(--danger) !important; }
 
 /* BARRA RÁPIDA DE GASTOS — Liquid Morph Card */
 .quick-expense-card {
@@ -132,8 +247,9 @@
   opacity: 0.6;
 }
 
-/* Toggle Gasto / Ingreso — Fluid Pill */
+/* Toggle Gasto / Ingreso — Fluid Lava Lamp Pill */
 .type-toggle-pill {
+  position: relative;
   display: flex;
   background: var(--bg-hover);
   padding: 4px;
@@ -144,7 +260,35 @@
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
+.toggle-slider-blob {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  border-radius: 25px;
+  pointer-events: none;
+  z-index: 1;
+  transition: transform 0.32s cubic-bezier(0.34, 1.45, 0.5, 1), background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.type-toggle-pill.is-expense .toggle-slider-blob {
+  transform: translateX(0);
+  background: var(--danger-soft);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  box-shadow: 0 4px 14px -2px rgba(239, 68, 68, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+}
+
+.type-toggle-pill.is-income .toggle-slider-blob {
+  transform: translateX(100%);
+  background: var(--success-soft);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  box-shadow: 0 4px 14px -2px rgba(16, 185, 129, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+}
+
 .toggle-btn {
+  position: relative;
+  z-index: 2;
   flex: 1;
   padding: 0.5rem 1rem;
   border: 1px solid transparent;
@@ -154,7 +298,7 @@
   font-size: 0.85rem;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: color 0.25s ease;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -162,17 +306,17 @@
 }
 
 .toggle-btn.active.expense {
-  background: var(--danger-soft);
+  background: transparent;
   color: var(--danger-text);
-  border-color: rgba(239, 68, 68, 0.35);
-  box-shadow: 0 3px 10px rgba(239, 68, 68, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.45);
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .toggle-btn.active.income {
-  background: var(--success-soft);
+  background: transparent;
   color: var(--success-text);
-  border-color: rgba(16, 185, 129, 0.35);
-  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.45);
+  border-color: transparent;
+  box-shadow: none;
 }
 
 /* Selector de Billetera — Liquid Dropdown Container */
@@ -428,12 +572,9 @@
 }
 
 .trans-amount {
-  font-weight: 800;
+  font-weight: 750;
   font-size: 1.05rem;
 }
-
-.amount-expense { color: var(--danger); }
-.amount-income { color: var(--success); }
 
 .btn-delete-trans {
   background: none;
@@ -597,14 +738,23 @@
 }
 
 .sub-card {
-  background: var(--bg-subtle);
-  border: 1.5px solid var(--border);
+  background: var(--liquid-bg);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
+  border: 1px solid var(--liquid-border);
   border-radius: var(--radius-md);
   padding: 1rem;
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  transition: all 0.2s;
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.04), var(--liquid-shine);
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.sub-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08), var(--liquid-shine);
+  border-color: var(--border-strong);
 }
 
 .sub-card.sub-paused {
@@ -613,13 +763,15 @@
 }
 
 .sub-date-badge {
-  background: var(--bg-muted);
+  background: var(--bg-hover);
   padding: 0.5rem 0.65rem;
   border-radius: var(--radius-md);
   text-align: center;
   display: flex;
   flex-direction: column;
   min-width: 68px;
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.35);
 }
 
 .sub-day {
@@ -696,13 +848,22 @@
 }
 
 .goal-card {
-  background: var(--bg-subtle);
-  border: 1.5px solid var(--border);
+  background: var(--liquid-bg);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
+  border: 1px solid var(--liquid-border);
   border-radius: var(--radius-lg);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  box-shadow: var(--liquid-shadow), var(--liquid-shine);
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+}
+
+.goal-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.1), var(--liquid-shine);
 }
 
 .goal-card-header {
@@ -712,15 +873,16 @@
 }
 
 .goal-icon-box {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
   background: var(--primary-soft);
   color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.15rem;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.45), 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .goal-title-wrap {
@@ -889,11 +1051,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--bg-card);
+  background: var(--liquid-bg);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
   padding: 0.75rem 1.25rem;
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
-  border: 1px solid var(--border);
+  box-shadow: var(--liquid-shadow), var(--liquid-shine);
+  border: 1px solid var(--liquid-border);
   margin-bottom: 1.5rem;
 }
 
@@ -969,11 +1133,12 @@
 .cat-breakdown-icon {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.15rem;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.4), 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .cat-breakdown-info {
@@ -1115,13 +1280,16 @@
 .hero-icon-box {
   width: 60px;
   height: 60px;
-  border-radius: 16px;
+  border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2rem;
   flex-shrink: 0;
+  box-shadow: inset 0 1.5px 2px rgba(255, 255, 255, 0.5), 0 4px 10px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .hero-info {
@@ -1155,13 +1323,22 @@
 }
 
 .fund-card {
-  background: var(--bg-subtle);
-  border: 1.5px solid var(--border);
+  background: var(--liquid-bg);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
+  border: 1px solid var(--liquid-border);
   border-radius: var(--radius-lg);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+  box-shadow: var(--liquid-shadow), var(--liquid-shine);
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+}
+
+.fund-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.1), var(--liquid-shine);
 }
 
 .fund-card-top {
@@ -1173,13 +1350,14 @@
 .fund-icon {
   width: 42px;
   height: 42px;
-  border-radius: 10px;
+  border-radius: 50%;
   background: var(--primary-soft);
   color: var(--primary);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.45), 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .fund-title-wrap {
@@ -1420,21 +1598,31 @@
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
+  background: var(--liquid-bg);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
+  border: 1px solid var(--liquid-border);
   border-radius: var(--radius-md);
   padding: 0.85rem;
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.04), var(--liquid-shine);
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
+}
+
+.purchase-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08), var(--liquid-shine);
 }
 
 .purchase-icon {
   width: 42px;
   height: 42px;
-  border-radius: 10px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.15rem;
   flex-shrink: 0;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.45), 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .purchase-info {
@@ -1852,12 +2040,15 @@
 
 /* 1. Tarjeta Resumen Principal (Hero Card) */
 .budget-hero-card {
-  background: var(--bg-card, #FFFFFF);
-  border: 1px solid var(--border, #E2E8F0);
+  background: var(--liquid-bg);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
+  border: 1px solid var(--liquid-border);
   border-radius: var(--radius-lg, 16px);
   padding: 1.25rem 1.4rem;
   margin-bottom: 1.25rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--liquid-shadow), var(--liquid-shine);
+  position: relative;
 }
 
 .budget-hero-top {
@@ -1965,17 +2156,20 @@
 }
 
 .budget-card {
-  background: var(--bg-card, #FFFFFF);
-  border: 1px solid var(--border, #E2E8F0);
+  background: var(--liquid-bg);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
+  border: 1px solid var(--liquid-border);
   border-radius: var(--radius-lg, 16px);
   padding: 1.1rem 1.25rem;
   transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
   user-select: none;
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.04), var(--liquid-shine);
 }
 
 .budget-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08), var(--liquid-shine);
   border-color: var(--border-strong);
 }
 
@@ -1996,12 +2190,13 @@
 .budget-cat-icon {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
   flex-shrink: 0;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.45), 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .budget-meta {

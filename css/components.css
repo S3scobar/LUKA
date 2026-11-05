@@ -1,26 +1,99 @@
 /* css/components.css */
 
-/* Botones */
+/* Botones — Liquid Glass Style */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.65rem 1.2rem;
+  padding: 0.65rem 1.25rem;
   font-weight: 600;
-  border-radius: var(--radius-md);
-  border: none;
+  border-radius: 30px;
+  border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
 }
 
-.btn-primary { background: var(--primary); color: #fff; }
-.btn-primary:hover { background: var(--primary-hover); }
-.btn-secondary { background: var(--bg-muted); color: var(--text-main); }
-.btn-secondary:hover { background: var(--border); }
-.btn-ghost { background: transparent; color: var(--text-muted); }
-.btn-sm { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
-.btn-block { width: 100%; }
+.btn i {
+  font-size: 0.9em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn:hover i {
+  transform: scale(1.15);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 4px 14px -2px rgba(37, 99, 235, 0.45), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+:root[data-theme="dark"] .btn-primary {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 4px 16px -2px rgba(59, 130, 246, 0.5), inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px -2px rgba(37, 99, 235, 0.55), inset 0 1px 2px 0 rgba(255, 255, 255, 0.65);
+  filter: brightness(1.05);
+}
+
+.btn-primary:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 8px -1px rgba(37, 99, 235, 0.4), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+  background: var(--liquid-bg);
+  color: var(--text-main);
+  border: 1px solid var(--liquid-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), var(--liquid-shine);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
+}
+
+.btn-secondary:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), var(--liquid-shine);
+}
+
+.btn-secondary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-hover);
+  color: var(--text-main);
+}
+
+.btn-sm {
+  padding: 0.42rem 0.95rem;
+  font-size: 0.85rem;
+  border-radius: 20px;
+}
+
+.btn-block {
+  width: 100%;
+}
 
 .btn-link {
   background: none;
@@ -106,13 +179,17 @@
   font-size: 0.85rem;
 }
 
-/* Sección Billeteras */
+/* Tarjetas de Sección — Liquid Morph */
 .section-card {
-  background: var(--bg-card);
+  background: var(--liquid-bg);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
+  border: 1px solid var(--liquid-border);
   padding: 1.5rem;
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
+  box-shadow: var(--liquid-shadow), var(--liquid-shine);
   margin-bottom: 1.5rem;
+  position: relative;
 }
 
 .section-header {
@@ -124,7 +201,34 @@
   margin-bottom: 1.25rem;
 }
 
-.section-header h3 { font-size: 1.15rem; }
+.section-header h3 {
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-header h3 i,
+.section-title i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(59, 130, 246, 0.04) 100%);
+  color: var(--primary);
+  font-size: 0.95rem;
+  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.4), 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--liquid-border);
+  flex-shrink: 0;
+}
+
+:root[data-theme="dark"] .section-header h3 i,
+:root[data-theme="dark"] .section-title i {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.22) 0%, rgba(37, 99, 235, 0.1) 100%);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), 0 4px 12px rgba(0, 0, 0, 0.2);
+}
 .section-header p { font-size: 0.85rem; color: var(--text-muted); }
 
 .wallets-grid {

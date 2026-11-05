@@ -48,7 +48,7 @@ export const walletsView = {
 
               <div class="wallets-grid">
                 ${wallets.map(w => `
-                  <div class="wallet-item" style="border-left: 5px solid ${w.color};">
+                  <div class="wallet-item" style="background: linear-gradient(135deg, ${w.color}15 0%, var(--liquid-bg) 70%); border: 1px solid ${w.color}40; box-shadow: 0 4px 14px -2px ${w.color}20, var(--liquid-shine);">
                     <div class="wallet-item-icon" style="background-color: ${w.color}20; color: ${w.color};">
                       <i class="fa-solid ${w.icon}"></i>
                     </div>
