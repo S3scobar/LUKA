@@ -17,6 +17,42 @@
   flex-direction: column;
   gap: 0.35rem;
   border: 1px solid var(--border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hero Liquid Morph — Saldo Total */
+.metric-card.card-total {
+  position: relative;
+  overflow: hidden;
+  background: var(--liquid-bg-hero);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
+  border: 1px solid var(--liquid-border);
+  box-shadow: var(--liquid-shadow), var(--liquid-shine);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
+}
+
+.metric-card.card-total::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -30px;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, var(--liquid-glow) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.metric-card.card-total > * {
+  position: relative;
+  z-index: 1;
+}
+
+.metric-card.card-total:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px -6px rgba(37, 99, 235, 0.18), var(--liquid-shine);
 }
 
 .metric-label {
@@ -38,17 +74,35 @@
 .text-success { color: var(--success); }
 .text-danger { color: var(--danger); }
 
-/* BARRA RÁPIDA DE GASTOS */
+/* BARRA RÁPIDA DE GASTOS — Liquid Morph Card */
 .quick-expense-card {
-  background: var(--bg-card);
+  position: relative;
+  overflow: hidden;
+  background: var(--liquid-bg);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
   padding: 1.5rem;
   border-radius: var(--radius-lg);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
-  border: 2px solid var(--border);
+  box-shadow: var(--liquid-shadow), var(--liquid-shine);
+  border: 1px solid var(--liquid-border);
   margin-bottom: 1.5rem;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
-/* Toggle Gasto / Ingreso */
+.quick-expense-card::after {
+  content: "";
+  position: absolute;
+  bottom: -50px;
+  left: 20%;
+  width: 160px;
+  height: 100px;
+  background: radial-gradient(circle, var(--liquid-glow) 0%, transparent 75%);
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Toggle Gasto / Ingreso — Fluid Pill */
 .type-toggle-pill {
   display: flex;
   background: var(--bg-hover);
@@ -56,19 +110,21 @@
   border-radius: 30px;
   max-width: 260px;
   margin: 0 auto 1.25rem auto;
+  border: 1px solid var(--border);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
 }
 
 .toggle-btn {
   flex: 1;
   padding: 0.5rem 1rem;
-  border: none;
+  border: 1px solid transparent;
   background: transparent;
   border-radius: 25px;
   font-weight: 600;
   font-size: 0.85rem;
   color: var(--text-muted);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -78,11 +134,15 @@
 .toggle-btn.active.expense {
   background: var(--danger-soft);
   color: var(--danger-text);
+  border-color: rgba(239, 68, 68, 0.35);
+  box-shadow: 0 3px 10px rgba(239, 68, 68, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.45);
 }
 
 .toggle-btn.active.income {
   background: var(--success-soft);
   color: var(--success-text);
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.45);
 }
 
 /* Selector de Billetera */
@@ -316,11 +376,13 @@
   color: var(--border-strong);
 }
 
-/* Modal Selector de Categorías (+) */
+/* Modal Selector de Categorías (+) — Liquid Glass Sheet */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -330,16 +392,19 @@
 }
 
 .modal-content {
-  background: var(--bg-card);
+  background: var(--liquid-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   width: 100%;
   max-width: 480px;
   max-height: 80vh;
   max-height: calc(100dvh - 2rem); /* nunca más alto que la pantalla visible (barra del navegador incluida) */
   border-radius: var(--radius-lg);
+  border: 1px solid var(--liquid-border);
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), var(--liquid-shine);
   overflow-y: auto; /* si el formulario es largo, el modal hace scroll en vez de desbordarse */
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;

@@ -47,6 +47,16 @@
   --radius-md: 10px;
   --radius-sm: 6px;
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+
+  /* Tokens Liquid Morph (superficies fluidas adaptativas y reflejos especulares) */
+  --liquid-bg: rgba(255, 255, 255, 0.88);
+  --liquid-bg-hero: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(239, 246, 255, 0.9) 100%);
+  --liquid-border: rgba(255, 255, 255, 0.7);
+  --liquid-border-outer: rgba(226, 232, 240, 0.75);
+  --liquid-shine: inset 0 1px 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.02);
+  --liquid-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  --liquid-glow: rgba(37, 99, 235, 0.12);
+  --liquid-blur: 16px;
 }
 
 /* ==========================================
@@ -91,6 +101,16 @@
   --warning-text: #FCD34D;
 
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+
+  /* Tokens Liquid Morph en modo oscuro */
+  --liquid-bg: rgba(19, 28, 46, 0.88);
+  --liquid-bg-hero: linear-gradient(135deg, rgba(19, 28, 46, 0.95) 0%, rgba(30, 42, 66, 0.88) 100%);
+  --liquid-border: rgba(255, 255, 255, 0.12);
+  --liquid-border-outer: rgba(38, 52, 77, 0.75);
+  --liquid-shine: inset 0 1px 1px 0 rgba(255, 255, 255, 0.16), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.3);
+  --liquid-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.5), 0 0 20px -4px rgba(59, 130, 246, 0.14);
+  --liquid-glow: rgba(59, 130, 246, 0.2);
+  --liquid-blur: 16px;
 }
 
 * {
@@ -152,12 +172,13 @@ body {
   left: 16px;
   font-size: 0.78rem;
   color: var(--text-muted);
-  background: var(--glass);
-  backdrop-filter: blur(6px);
+  background: var(--liquid-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   padding: 5px 12px;
   border-radius: 20px;
-  border: 1px solid var(--border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--liquid-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), var(--liquid-shine);
   z-index: 1000;
   pointer-events: none;
   font-weight: 500;
