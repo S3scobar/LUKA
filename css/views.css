@@ -9,50 +9,80 @@
 }
 
 .metric-card {
-  background: var(--bg-card);
+  position: relative;
+  overflow: hidden;
+  background: var(--liquid-bg);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
   padding: 1.25rem;
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
+  border: 1px solid var(--liquid-border);
+  box-shadow: var(--liquid-shadow), var(--liquid-shine);
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  border: 1px solid var(--border);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
-/* Hero Liquid Morph — Saldo Total */
-.metric-card.card-total {
-  position: relative;
-  overflow: hidden;
-  background: var(--liquid-bg-hero);
-  backdrop-filter: blur(var(--liquid-blur));
-  -webkit-backdrop-filter: blur(var(--liquid-blur));
-  border: 1px solid var(--liquid-border);
-  box-shadow: var(--liquid-shadow), var(--liquid-shine);
-  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
-}
-
-.metric-card.card-total::before {
-  content: "";
-  position: absolute;
-  top: -40px;
-  right: -30px;
-  width: 120px;
-  height: 120px;
-  background: radial-gradient(circle, var(--liquid-glow) 0%, transparent 70%);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.metric-card.card-total > * {
+.metric-card > * {
   position: relative;
   z-index: 1;
 }
 
-.metric-card.card-total:hover {
+.metric-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 28px -6px rgba(37, 99, 235, 0.18), var(--liquid-shine);
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.15), var(--liquid-shine);
+  border-color: var(--border-strong);
+}
+
+/* Auras orgánicas líquidas para cada tarjeta métrica */
+.metric-card::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -30px;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.8;
+}
+
+.metric-card.card-total {
+  background: var(--liquid-bg-hero);
+}
+
+.metric-card.card-total::before {
+  background: radial-gradient(circle, var(--liquid-glow) 0%, transparent 70%);
+}
+
+.metric-card.card-total:hover {
+  box-shadow: 0 14px 28px -6px rgba(37, 99, 235, 0.22), var(--liquid-shine);
+}
+
+.metric-card.card-income::before {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, transparent 70%);
+}
+
+.metric-card.card-income:hover {
+  box-shadow: 0 14px 28px -6px rgba(16, 185, 129, 0.18), var(--liquid-shine);
+}
+
+.metric-card.card-expense::before {
+  background: radial-gradient(circle, rgba(239, 68, 68, 0.18) 0%, transparent 70%);
+}
+
+.metric-card.card-expense:hover {
+  box-shadow: 0 14px 28px -6px rgba(239, 68, 68, 0.18), var(--liquid-shine);
+}
+
+.metric-card.card-balance::before {
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.18) 0%, transparent 70%);
+}
+
+.metric-card.card-balance:hover {
+  box-shadow: 0 14px 28px -6px rgba(14, 165, 233, 0.18), var(--liquid-shine);
 }
 
 .metric-label {
@@ -217,15 +247,21 @@
 .quick-inputs-row input {
   width: 100%;
   padding: 0.85rem 1rem;
-  border: 2px solid var(--border);
-  border-radius: var(--radius-md);
+  background: var(--liquid-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--liquid-border);
+  border-radius: 14px;
   font-size: 1rem;
+  color: var(--text-main);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03), var(--liquid-shine);
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .quick-inputs-row input:focus {
   border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft), var(--liquid-shine);
 }
 
 /* Fila de Iconos de 1 Clic */
@@ -248,23 +284,26 @@
 }
 
 .btn-fav-category {
-  background: var(--bg-subtle);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 0.75rem 0.25rem;
+  background: var(--liquid-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--liquid-border);
+  border-radius: 18px;
+  padding: 0.85rem 0.35rem 0.65rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
   user-select: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02), var(--liquid-shine);
 }
 
 .btn-fav-category:hover {
   transform: translateY(-2px);
   border-color: var(--primary);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 6px 16px -2px rgba(37, 99, 235, 0.18), var(--liquid-shine);
 }
 
 .btn-fav-category:active {
@@ -279,11 +318,19 @@
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.45), 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease;
+}
+
+.btn-fav-category:hover .fav-icon-box {
+  transform: scale(1.06);
 }
 
 .btn-more .fav-icon-box {
-  background: var(--bg-muted);
+  background: var(--liquid-bg);
+  border: 1.5px dashed var(--liquid-border);
   color: var(--text-secondary);
+  box-shadow: var(--liquid-shine);
 }
 
 .fav-label {
@@ -297,14 +344,29 @@
   max-width: 100%;
 }
 
-/* Historial de Transacciones */
+/* Historial de Transacciones — Liquid Morph Section */
+.section-card.history-section {
+  background: var(--liquid-bg);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
+  border: 1px solid var(--liquid-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--liquid-shadow), var(--liquid-shine);
+  position: relative;
+  overflow: hidden;
+}
+
 .badge-count {
-  background: var(--bg-hover);
+  background: var(--liquid-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: var(--text-muted);
+  border: 1px solid var(--liquid-border);
+  box-shadow: var(--liquid-shine);
   font-size: 0.75rem;
   font-weight: 700;
-  padding: 0.25rem 0.65rem;
-  border-radius: 12px;
+  padding: 0.3rem 0.75rem;
+  border-radius: 20px;
 }
 
 .transactions-list {
@@ -317,23 +379,33 @@
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  padding: 0.85rem;
-  background: var(--bg-subtle);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  transition: background 0.2s;
+  padding: 0.9rem 1rem;
+  background: var(--liquid-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--liquid-border);
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02), var(--liquid-shine);
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
 }
 
-.transaction-item:hover { background: var(--bg-hover); }
+.transaction-item:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.08), var(--liquid-shine);
+}
 
 .trans-cat-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.15rem;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.45), 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .trans-info {
