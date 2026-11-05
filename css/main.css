@@ -6,11 +6,11 @@
   color-scheme: light;
 
   /* Superficies */
-  --bg-primary: #F8FAFC;
+  --bg-primary: #EEF2F6;
   --bg-card: #FFFFFF;
   --bg-subtle: #F8FAFC;   /* Superficie interior dentro de una tarjeta */
-  --bg-hover: #F1F5F9;    /* Hover y pistas de progreso */
-  --bg-muted: #EEF2F6;    /* Botones secundarios */
+  --bg-hover: #E2E8F0;    /* Hover y pistas de progreso */
+  --bg-muted: #E2E8F0;    /* Botones secundarios */
   --glass: rgba(255, 255, 255, 0.9);
   --chip-bg: rgba(0, 0, 0, 0.06);
   --scroll-track: rgba(226, 232, 240, 0.4);
@@ -23,7 +23,7 @@
   --text-secondary: #475569;
 
   /* Bordes */
-  --border: #E2E8F0;
+  --border: #DDE3EA;
   --border-strong: #CBD5E1;
 
   /* Marca y estados */
@@ -31,13 +31,13 @@
   --primary-hover: #1D4ED8;
   --primary-soft: #EFF6FF;
   --primary-text: #1D4ED8;
-  --success: #10B981;
-  --success-soft: #DCFCE7;
-  --success-border: #BBF7D0;
-  --success-text: #15803D;
-  --danger: #EF4444;
-  --danger-soft: #FEE2E2;
-  --danger-text: #B91C1C;
+  --success: #059669;
+  --success-soft: rgba(5, 150, 105, 0.1);
+  --success-border: rgba(5, 150, 105, 0.25);
+  --success-text: #047857;
+  --danger: #E11D48;
+  --danger-soft: rgba(225, 29, 72, 0.1);
+  --danger-text: #BE123C;
   --warning: #F59E0B;
   --warning-soft: #FEF3C7;
   --warning-border: #FDE68A;
@@ -49,12 +49,12 @@
   --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
 
   /* Tokens Liquid Morph (superficies fluidas adaptativas y reflejos especulares) */
-  --liquid-bg: rgba(255, 255, 255, 0.88);
-  --liquid-bg-hero: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(239, 246, 255, 0.9) 100%);
-  --liquid-border: rgba(255, 255, 255, 0.7);
-  --liquid-border-outer: rgba(226, 232, 240, 0.75);
-  --liquid-shine: inset 0 1px 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.02);
-  --liquid-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+  --liquid-bg: rgba(255, 255, 255, 0.78);
+  --liquid-bg-hero: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(239, 246, 255, 0.85) 100%);
+  --liquid-border: rgba(255, 255, 255, 0.95);
+  --liquid-border-outer: rgba(203, 213, 225, 0.6);
+  --liquid-shine: inset 0 1.5px 1px 0 #FFFFFF, inset 0 -1px 1px 0 rgba(0, 0, 0, 0.03);
+  --liquid-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.03);
   --liquid-glow: rgba(37, 99, 235, 0.12);
   --liquid-blur: 16px;
 }
@@ -88,13 +88,13 @@
   --primary-hover: #60A5FA;
   --primary-soft: rgba(59, 130, 246, 0.16);
   --primary-text: #93C5FD;
-  --success: #10B981;
-  --success-soft: rgba(16, 185, 129, 0.16);
-  --success-border: rgba(16, 185, 129, 0.35);
+  --success: #34D399;
+  --success-soft: rgba(52, 211, 153, 0.16);
+  --success-border: rgba(52, 211, 153, 0.35);
   --success-text: #6EE7B7;
-  --danger: #F87171;
-  --danger-soft: rgba(239, 68, 68, 0.16);
-  --danger-text: #FCA5A5;
+  --danger: #FB7185;
+  --danger-soft: rgba(251, 113, 133, 0.16);
+  --danger-text: #FDA4AF;
   --warning: #F59E0B;
   --warning-soft: rgba(245, 158, 11, 0.16);
   --warning-border: rgba(245, 158, 11, 0.35);
@@ -136,10 +136,23 @@ html, body { overscroll-behavior-x: none; }
 
 body {
   background-color: var(--bg-primary);
+  background-image:
+    radial-gradient(at 10% 15%, rgba(37, 99, 235, 0.06) 0px, transparent 45%),
+    radial-gradient(at 90% 20%, rgba(16, 185, 129, 0.05) 0px, transparent 45%),
+    radial-gradient(at 50% 85%, rgba(99, 102, 241, 0.05) 0px, transparent 55%);
+  background-attachment: fixed;
   color: var(--text-main);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+:root[data-theme="dark"] body {
+  background-image:
+    radial-gradient(at 10% 15%, rgba(59, 130, 246, 0.09) 0px, transparent 45%),
+    radial-gradient(at 90% 20%, rgba(16, 185, 129, 0.07) 0px, transparent 45%),
+    radial-gradient(at 50% 85%, rgba(139, 92, 246, 0.08) 0px, transparent 55%);
+  background-attachment: fixed;
 }
 
 .container {

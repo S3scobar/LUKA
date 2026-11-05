@@ -66,7 +66,8 @@ export const quickExpenseBar = {
 
       container.innerHTML = `
         <div class="quick-expense-card">
-          <div class="type-toggle-pill">
+          <div class="type-toggle-pill ${activeType === "expense" ? "is-expense" : "is-income"}">
+            <span class="toggle-slider-blob" aria-hidden="true"></span>
             <button type="button" id="tab-expense" class="toggle-btn ${activeType === "expense" ? "active expense" : ""}">
               <i class="fa-solid fa-arrow-trend-down"></i> Gasto
             </button>
@@ -186,13 +187,25 @@ export const quickExpenseBar = {
       const zeroInterestWrap = container.querySelector("#quick-zero-interest-wrap");
 
       tabExpense.addEventListener("click", () => {
+        if (activeType === "expense") return;
+        const pill = container.querySelector(".type-toggle-pill");
+        if (pill) {
+          pill.classList.remove("is-income");
+          pill.classList.add("is-expense");
+        }
         activeType = "expense";
-        renderBar();
+        setTimeout(renderBar, 140);
       });
 
       tabIncome.addEventListener("click", () => {
+        if (activeType === "income") return;
+        const pill = container.querySelector(".type-toggle-pill");
+        if (pill) {
+          pill.classList.remove("is-expense");
+          pill.classList.add("is-income");
+        }
         activeType = "income";
-        renderBar();
+        setTimeout(renderBar, 140);
       });
 
       container.querySelectorAll(".wallet-chip-btn").forEach(chip => {
