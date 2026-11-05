@@ -2,9 +2,10 @@
 // Se arrastra la perilla hasta el final para confirmar. También funciona con teclado
 // (Enter, espacio o flecha derecha sobre la perilla) y se puede pulsar en lectores de pantalla.
 const COMPLETE_AT = 0.92; // fracción del recorrido a partir de la cual se confirma
+const BUSY_LOADER_HTML = '<span class="slide-busy-loader" role="status" aria-label="Cargando..."><span class="slide-dot"></span><span class="slide-dot"></span><span class="slide-dot"></span></span>';
 
 export const slideToSubmit = {
-  mount(host, { label = "Desliza para continuar", busyLabel = "Procesando...", onComplete }) {
+  mount(host, { label = "Desliza para continuar", busyLabel = BUSY_LOADER_HTML, onComplete }) {
     host.classList.add("slide-track");
     host.innerHTML = `
       <div class="slide-fill"></div>
@@ -75,11 +76,16 @@ export const slideToSubmit = {
 
     return {
       // Deja el control en espera mientras se procesa la petición
-      setBusy() {
+      setBusy(customBusy) {
         busy = true;
         thumb.disabled = true;
         host.classList.add("is-done", "is-busy");
-        labelEl.textContent = busyLabel;
+        const val = customBusy !== undefined ? customBusy : busyLabel;
+        if (typeof val === "string" && val.includes("<")) {
+          labelEl.innerHTML = val;
+        } else {
+          labelEl.textContent = val;
+        }
         labelEl.style.opacity = "1";
       },
       // Vuelve al inicio (por ejemplo tras un error o un formulario incompleto)
