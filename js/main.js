@@ -3,7 +3,7 @@ import { authService } from "./services/authService.js";
 import { authView } from "./views/authView.js";
 import { walletsView } from "./views/walletsView.js";
 import { dashboardView } from "./views/dashboardView.js";
-import { creditCardsView } from "./views/creditCardsView.js";
+import { creditView } from "./views/creditView.js";
 import { subscriptionsView } from "./views/subscriptionsView.js";
 import { savingsView } from "./views/savingsView.js";
 import { analyticsView } from "./views/analyticsView.js";
@@ -25,7 +25,7 @@ const VIEWS = {
   dashboard: dashboardView,
   wallets: walletsView,
   budgets: budgetsView,
-  cards: creditCardsView,
+  cards: creditView,
   subs: subscriptionsView,
   savings: savingsView,
   analytics: analyticsView

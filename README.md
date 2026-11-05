@@ -42,12 +42,22 @@ Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, 
 * Cruce automático con las transacciones reales del mes: gastado, restante, porcentaje de uso y aviso de presupuesto excedido.
 * Resumen global (total presupuestado vs. total gastado) y detalle de las transacciones de cada categoría.
 
-### 3.4. Tarjetas de Crédito
+### 3.4. Crédito: Tarjetas y Préstamos
+La pestaña **Crédito** tiene dos secciones, porque funcionan distinto.
+
+**Tarjetas**
 * Cada tarjeta crea una billetera vinculada que representa el **cupo disponible**.
 * Registro de **compras a cuotas** y **avances en efectivo** (con comisión y cuenta de destino), con opción de compra a 0 % de interés.
 * **Proyección del extracto** del próximo corte: capital de cuotas, intereses (tasa E.A. convertida a mensual), cuota de manejo y fecha límite de pago.
 * Pago de tarjeta desde una cuenta de débito: libera cupo, avanza las cuotas pagadas y registra el gasto.
 * Eliminar una compra restaura el cupo disponible.
+
+**Préstamos** (apps de crédito como Addi, bancos o deudas con personas)
+* Cada préstamo guarda quién prestó (app, persona o banco), el monto, y opcionalmente cuotas fijas con interés E.A. (cuota calculada con el sistema francés) o pago libre, más una fecha de primer pago o límite.
+* Se ve el saldo pendiente, el avance, la próxima cuota y si está vencida; arriba, el total que debes y el próximo pago.
+* **Registrar pago** descuenta de la cuenta elegida y queda como gasto ("Pago préstamo: …"); borrar un pago devuelve el dinero a la cuenta.
+* Al crear el préstamo se puede sumar el dinero a una cuenta, sin contarlo como ingreso.
+* Usa las tablas `loans` y `loan_payments` (con RLS por usuario); si aún no existen, la sección lo avisa.
 
 ### 3.5. Suscripciones y Pagos Fijos
 * Pagos recurrentes asociados a un día de cobro, billetera y categoría.
@@ -68,7 +78,7 @@ Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, 
 * Navegación entre meses y años.
 
 ### 3.8. Tutorial interactivo
-* Guía paso a paso por cada pestaña (Inicio, Billeteras, Presupuesto, Tarjetas, Suscripciones, Ahorros y Análisis), disponible desde un botón flotante.
+* Guía paso a paso por cada pestaña (Inicio, Billeteras, Presupuesto, Crédito, Suscripciones, Ahorros y Análisis), disponible desde un botón flotante.
 
 ### 3.9. Modo oscuro
 * Botón de luna/sol en el header (visible también en la pantalla de acceso).
@@ -131,6 +141,7 @@ Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, 
     │   ├── transactionService.js   # Transacciones (consulta mensual/anual, alta y baja)
     │   ├── budgetService.js        # Presupuestos por categoría y su avance
     │   ├── creditCardService.js    # Tarjetas, compras, avances, pagos y extracto
+    │   ├── loanService.js          # Préstamos, pagos y cálculo de cuotas/saldo
     │   ├── subscriptionService.js  # Pagos fijos recurrentes
     │   └── goalService.js          # Fondos de ahorro, aportes, retiros y rendimientos
     ├── components/
@@ -142,7 +153,9 @@ Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, 
         ├── dashboardView.js        # Inicio: métricas, registro rápido e historial
         ├── walletsView.js          # Cuentas, transferencias y categorías
         ├── budgetsView.js          # Presupuestos
+        ├── creditView.js           # Pestaña Crédito: selector Tarjetas / Préstamos
         ├── creditCardsView.js      # Tarjetas de crédito
+        ├── loansView.js            # Préstamos
         ├── subscriptionsView.js    # Suscripciones
         ├── savingsView.js          # Ahorros
         └── analyticsView.js        # Análisis mensual y anual
