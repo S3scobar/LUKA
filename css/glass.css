@@ -1,0 +1,285 @@
+/* css/glass.css — capa "liquid glass"
+   Va al final de la cascada y solo suma encima de los estilos existentes:
+   quitar el <link> en index.html devuelve la app al diseño anterior. */
+
+:root {
+  /* Vidrio — tema claro: más blanco y luminoso, con borde de luz arriba y un filo azulado abajo */
+  --g-bar: rgba(255, 255, 255, 0.5);
+  --g-panel: rgba(255, 255, 255, 0.68);
+  --g-card: rgba(255, 255, 255, 0.46);
+  --g-chip: rgba(255, 255, 255, 0.55);
+  --g-chip-hover: rgba(255, 255, 255, 0.85);
+  --g-edge: rgba(255, 255, 255, 0.85);
+  --g-edge-low: rgba(37, 99, 235, 0.14);
+  --g-sheen: rgba(255, 255, 255, 0.95);
+  --g-shadow: 0 12px 32px -10px rgba(30, 64, 175, 0.28), 0 2px 6px rgba(15, 23, 42, 0.05);
+  --g-blur: blur(22px) saturate(190%);
+  --g-scrim: rgba(30, 58, 138, 0.22);
+  --g-spring: cubic-bezier(0.34, 1.45, 0.5, 1);
+  --g-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root[data-theme="dark"] {
+  --g-bar: rgba(19, 28, 46, 0.55);
+  --g-panel: rgba(24, 35, 56, 0.72);
+  --g-card: rgba(24, 35, 56, 0.55);
+  --g-chip: rgba(255, 255, 255, 0.07);
+  --g-chip-hover: rgba(255, 255, 255, 0.14);
+  --g-edge: rgba(255, 255, 255, 0.16);
+  --g-edge-low: rgba(0, 0, 0, 0.35);
+  --g-sheen: rgba(255, 255, 255, 0.22);
+  --g-shadow: 0 14px 34px -10px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --g-blur: blur(22px) saturate(160%);
+  --g-scrim: rgba(3, 7, 18, 0.55);
+}
+
+/* ------------------------------------------------------------------
+   Fondo ambiental: sin color detrás, el vidrio no se ve. Tres manchas con
+   la paleta de LUKA (azul de marca, verde de ingresos, índigo) que derivan despacio.
+   ------------------------------------------------------------------ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -15%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(34vmax 34vmax at 18% 6%, rgba(37, 99, 235, 0.46), transparent 64%),
+    radial-gradient(30vmax 30vmax at 88% 30%, rgba(16, 185, 129, 0.34), transparent 64%),
+    radial-gradient(38vmax 38vmax at 30% 78%, rgba(99, 102, 241, 0.36), transparent 64%),
+    radial-gradient(28vmax 28vmax at 92% 92%, rgba(56, 189, 248, 0.32), transparent 64%);
+  animation: g-drift 28s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+:root[data-theme="dark"] body::before {
+  background:
+    radial-gradient(38vmax 38vmax at 10% 0%, rgba(59, 130, 246, 0.26), transparent 62%),
+    radial-gradient(34vmax 34vmax at 96% 14%, rgba(16, 185, 129, 0.14), transparent 62%),
+    radial-gradient(42vmax 42vmax at 68% 104%, rgba(99, 102, 241, 0.22), transparent 62%);
+}
+
+@keyframes g-drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(-3%, 4%, 0) scale(1.08); }
+}
+
+/* ------------------------------------------------------------------
+   Barra superior
+   ------------------------------------------------------------------ */
+.navbar {
+  background: var(--g-bar) !important;
+  -webkit-backdrop-filter: var(--g-blur);
+  backdrop-filter: var(--g-blur);
+  border-bottom: 1px solid var(--g-edge-low) !important;
+  box-shadow: inset 0 -1px 0 var(--g-edge), 0 8px 24px -14px rgba(30, 64, 175, 0.35);
+}
+
+/* Botones de la barra: cuadrados que se funden en círculo al pasar el cursor */
+.btn-theme-icon,
+.btn-logout-icon {
+  background: var(--g-chip) !important;
+  border: 1px solid var(--g-edge) !important;
+  box-shadow: inset 0 1px 0 var(--g-edge), 0 1px 3px rgba(15, 23, 42, 0.08);
+  transition: border-radius 0.45s var(--g-spring), transform 0.35s var(--g-spring), background 0.25s ease, color 0.25s ease;
+}
+.btn-theme-icon:hover,
+.btn-logout-icon:hover { border-radius: 50%; transform: scale(1.08); }
+.btn-theme-icon:active,
+.btn-logout-icon:active { transform: scale(0.92); }
+
+/* ------------------------------------------------------------------
+   Pestañas: una sola píldora de vidrio se desliza y se estira hacia la pestaña nueva
+   (js/components/liquidNav.js). Sin JS, las pestañas conservan su estilo anterior.
+   ------------------------------------------------------------------ */
+.nav-links.has-liquid { position: relative; }
+
+.nav-links.has-liquid .nav-item-btn {
+  position: relative;
+  z-index: 1;
+  background: var(--g-chip) !important;
+  border-color: var(--g-edge) !important;
+  box-shadow: inset 0 1px 0 var(--g-edge);
+  transition: color 0.3s ease, transform 0.3s var(--g-spring), background 0.25s ease !important;
+}
+.nav-links.has-liquid .nav-item-btn:hover { background: var(--g-chip-hover) !important; transform: translateY(-1px); }
+.nav-links.has-liquid .nav-item-btn:active { transform: scale(0.94); }
+
+.nav-links.has-liquid .nav-item-btn.active {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+.nav-liquid {
+  position: absolute;
+  z-index: 0;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  border-radius: 999px;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0) 52%),
+    linear-gradient(135deg, var(--primary), var(--primary-hover));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    inset 0 -2px 4px rgba(15, 23, 42, 0.18),
+    0 6px 16px -4px rgba(37, 99, 235, 0.55);
+}
+
+/* ------------------------------------------------------------------
+   Tarjetas de métricas y formularios principales
+   ------------------------------------------------------------------ */
+.metric-card,
+.quick-expense-card,
+.auth-card {
+  background: var(--g-card);
+  -webkit-backdrop-filter: var(--g-blur);
+  backdrop-filter: var(--g-blur);
+  border: 1px solid var(--g-edge);
+  box-shadow: inset 0 1px 0 var(--g-sheen), inset 0 -1px 0 var(--g-edge-low), var(--g-shadow);
+}
+
+.metric-card { transition: transform 0.4s var(--g-spring), box-shadow 0.3s ease; }
+.metric-card:hover { transform: translateY(-3px); }
+
+.auth-card { background: var(--g-panel); }
+
+/* ------------------------------------------------------------------
+   Modales: el fondo se difumina y el panel "brota" desde donde se tocó
+   ------------------------------------------------------------------ */
+.modal-backdrop {
+  background: var(--g-scrim) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(140%);
+  animation: g-fade 0.3s ease both;
+}
+
+.modal-content {
+  background: var(--g-panel) !important;
+  -webkit-backdrop-filter: var(--g-blur);
+  backdrop-filter: var(--g-blur);
+  border: 1px solid var(--g-edge);
+  box-shadow: inset 0 1px 0 var(--g-sheen), inset 0 -1px 0 var(--g-edge-low), 0 28px 60px -16px rgba(15, 23, 42, 0.45) !important;
+  transform-origin: 50% 50%; /* js/main.js lo ajusta al punto tocado */
+  animation: g-bloom 0.55s var(--g-spring) backwards;
+}
+
+@keyframes g-fade { from { opacity: 0; } to { opacity: 1; } }
+
+@keyframes g-bloom {
+  0%   { opacity: 0; transform: scale(0.6); border-radius: 40px; filter: blur(6px); }
+  55%  { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 480px) {
+  /* En celular el modal es una hoja que sube desde abajo */
+  .modal-content { transform-origin: 50% 100% !important; animation: g-sheet 0.5s var(--g-spring) backwards; }
+  @keyframes g-sheet {
+    from { opacity: 0.4; transform: translateY(60%) scale(0.96); }
+    to   { opacity: 1; transform: none; }
+  }
+}
+
+/* ------------------------------------------------------------------
+   Botón flotante del tutorial
+   ------------------------------------------------------------------ */
+.tutorial-fab {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 55%),
+    rgba(37, 99, 235, 0.88) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  backdrop-filter: blur(14px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 10px 26px -6px rgba(37, 99, 235, 0.6) !important;
+  overflow: hidden;
+  transition: transform 0.4s var(--g-spring), box-shadow 0.3s ease !important;
+}
+.tutorial-fab::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.45) 50%, transparent 65%);
+  transform: translateX(-120%);
+  transition: transform 0.7s var(--g-smooth);
+  pointer-events: none;
+}
+.tutorial-fab:hover::after { transform: translateX(120%); }
+.tutorial-fab:active { transform: scale(0.94) !important; }
+
+/* ------------------------------------------------------------------
+   Deslizador de ingreso: pista de vidrio y perilla que se estira al arrastrar
+   ------------------------------------------------------------------ */
+.slide-track {
+  background: var(--g-chip);
+  border-color: var(--g-edge);
+  box-shadow: inset 0 2px 6px rgba(15, 23, 42, 0.12), 0 1px 0 var(--g-edge);
+}
+.slide-thumb {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0) 55%),
+    linear-gradient(135deg, var(--primary), var(--primary-hover));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 4px 12px rgba(37, 99, 235, 0.45);
+  transition: transform 0.25s ease, scale 0.3s var(--g-spring), box-shadow 0.2s ease;
+}
+.slide-track.is-dragging .slide-thumb { scale: 1.14 0.94; }
+.slide-track:not(.is-done):not(.is-dragging) .slide-thumb { animation: g-nudge 2.6s ease-in-out 1.2s infinite; }
+@keyframes g-nudge {
+  0%, 70%, 100% { translate: 0 0; }
+  80% { translate: 7px 0; }
+  90% { translate: 0 0; }
+}
+
+/* ------------------------------------------------------------------
+   Entrada de pantallas (con la dirección del cambio de pestaña) y de tarjetas
+   ------------------------------------------------------------------ */
+#app > div { animation: g-view-in 0.5s var(--g-smooth) backwards; }
+#app[data-dir="next"] > div { animation-name: g-view-next; }
+#app[data-dir="prev"] > div { animation-name: g-view-prev; }
+
+@keyframes g-view-in   { from { opacity: 0; transform: translateY(14px); filter: blur(6px); } to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes g-view-next { from { opacity: 0; transform: translateX(28px); filter: blur(6px); } to { opacity: 1; transform: none; filter: blur(0); } }
+@keyframes g-view-prev { from { opacity: 0; transform: translateX(-28px); filter: blur(6px); } to { opacity: 1; transform: none; filter: blur(0); } }
+
+.summary-cards-grid .metric-card { animation: g-rise 0.6s var(--g-spring) backwards; }
+.summary-cards-grid .metric-card:nth-child(2) { animation-delay: 0.06s; }
+.summary-cards-grid .metric-card:nth-child(3) { animation-delay: 0.12s; }
+.summary-cards-grid .metric-card:nth-child(4) { animation-delay: 0.18s; }
+@keyframes g-rise { from { opacity: 0; transform: translateY(18px) scale(0.96); } to { opacity: 1; transform: none; } }
+
+/* Botones: respuesta elástica al pulsar */
+.btn { transition: transform 0.3s var(--g-spring), box-shadow 0.25s ease, background 0.2s ease, color 0.2s ease; }
+.btn:active { transform: scale(0.96); }
+.btn-primary {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0) 55%), var(--primary);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 4px 12px -3px rgba(37, 99, 235, 0.45);
+}
+
+/* ------------------------------------------------------------------
+   Accesibilidad y compatibilidad
+   ------------------------------------------------------------------ */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root { --g-bar: var(--bg-card); --g-panel: var(--bg-card); --g-card: var(--bg-card); --g-chip: var(--bg-hover); }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root { --g-bar: var(--bg-card); --g-panel: var(--bg-card); --g-card: var(--bg-card); --g-chip: var(--bg-hover); }
+  .navbar, .metric-card, .quick-expense-card, .auth-card, .modal-backdrop, .modal-content, .tutorial-fab {
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before,
+  #app > div,
+  .summary-cards-grid .metric-card,
+  .modal-backdrop,
+  .modal-content,
+  .slide-thumb { animation: none !important; }
+  .nav-links.has-liquid .nav-item-btn,
+  .metric-card, .btn, .btn-theme-icon, .btn-logout-icon { transition: none !important; }
+}
