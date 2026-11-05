@@ -80,10 +80,13 @@
 .auth-card {
   max-width: 400px;
   margin: 3rem auto;
-  background: var(--bg-card);
+  background: var(--liquid-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   padding: 2rem;
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
+  border: 1px solid var(--liquid-border);
+  box-shadow: var(--liquid-shadow), var(--liquid-shine);
 }
 
 .auth-header {
@@ -134,11 +137,31 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: var(--bg-subtle);
-  padding: 1rem;
+  background: var(--liquid-bg);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
+  padding: 1rem 1.15rem;
   border-radius: var(--radius-md);
-  border: 1px solid var(--border);
+  border: 1px solid var(--liquid-border);
+  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.04), var(--liquid-shine);
   position: relative;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.wallet-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08), var(--liquid-shine);
+  border-color: var(--border-strong);
+}
+
+.wallets-module .section-card {
+  background: var(--liquid-bg);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
+  border: 1px solid var(--liquid-border);
+  box-shadow: var(--liquid-shadow), var(--liquid-shine);
+  position: relative;
+  overflow: hidden;
 }
 
 .wallet-item-icon {
@@ -790,10 +813,19 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.9rem 1.15rem;
-  border-radius: var(--radius-md, 12px);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-lg, 16px);
   margin-bottom: 1.25rem;
-  transition: transform 0.2s ease;
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
+  box-shadow: var(--liquid-shadow), var(--liquid-shine);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
+}
+
+.card-statement-banner:hover {
+  transform: translateY(-2px);
 }
 
 .banner-statement-left {
@@ -833,13 +865,14 @@ html, body {
 
 /* Estado pendiente de pago */
 .banner-due {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.08), rgba(245, 158, 11, 0.08));
-  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(245, 158, 11, 0.08) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.35);
 }
 
 .banner-due .banner-statement-icon {
-  background: rgba(239, 68, 68, 0.15);
+  background: rgba(239, 68, 68, 0.18);
   color: var(--danger);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3);
 }
 
 .banner-due .banner-statement-amount {
@@ -848,13 +881,14 @@ html, body {
 
 /* Estado al día (pagado) */
 .banner-paid {
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(59, 130, 246, 0.06) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.35);
 }
 
 .banner-paid .banner-statement-icon {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgba(16, 185, 129, 0.18);
   color: var(--success);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3);
 }
 
 .banner-paid .banner-statement-amount {
@@ -1032,7 +1066,51 @@ html, body {
 .slide-track.is-dragging .slide-fill { transition: none; }
 
 .slide-track.is-done .slide-label { color: #fff; -webkit-text-fill-color: #fff; padding: 0 44px 0 0; }
+.slide-track.is-busy {
+  background: linear-gradient(90deg, var(--primary) 0%, var(--primary-hover) 50%, var(--primary) 100%);
+  background-size: 200% 100%;
+  animation: slide-busy-flow 1.8s linear infinite;
+}
+
 .slide-track.is-busy .slide-thumb { opacity: 0.85; }
+
+.slide-busy-loader {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 100%;
+}
+
+.slide-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  animation: slide-liquid-pulse 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite both;
+}
+
+.slide-dot:nth-child(1) { animation-delay: -0.28s; }
+.slide-dot:nth-child(2) { animation-delay: -0.14s; }
+.slide-dot:nth-child(3) { animation-delay: 0s; }
+
+@keyframes slide-liquid-pulse {
+  0%, 100% {
+    transform: scale(0.65);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 1;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 1);
+  }
+}
+
+@keyframes slide-busy-flow {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
 
 @keyframes slide-shimmer {
   from { background-position: 150% 0; }
