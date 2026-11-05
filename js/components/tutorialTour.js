@@ -44,8 +44,8 @@ export const tutorialTour = {
       icon: "fa-credit-card",
       color: "#8B5CF6",
       badge: "Pestaña 4",
-      title: "Tarjetas • Líneas de Crédito",
-      description: "• <strong>Cupo Total y Disponible:</strong> Monitorea cuánto cupo te queda y tus deudas activas.<br>• <strong>Compras a Cuotas:</strong> Simulación de intereses mensuales con tu tasa % E.A.<br>• <strong>Avances en Efectivo:</strong> Retira cupo hacia tus cuentas de débito.<br>• <strong>Pagar Tarjeta:</strong> Abona a tu extracto y libera cupo automáticamente."
+      title: "Crédito • Tarjetas y Préstamos",
+      description: "• <strong>Dos secciones:</strong> arriba eliges <em>Tarjetas</em> (tu tarjeta de crédito de siempre) o <em>Préstamos</em> (apps como Addi, bancos o deudas con amigos).<br>• <strong>Tarjetas:</strong> cupo total y disponible, compras a cuotas con tu tasa % E.A., avances en efectivo y pago del extracto para liberar cupo.<br>• <strong>Préstamos:</strong> anota quién te prestó y cuánto; con cuotas fijas (y su interés) o con pago libre. Verás el saldo pendiente, el avance y la próxima fecha de pago.<br>• <strong>Registrar pago:</strong> elige la cuenta de la que sale el dinero; queda como gasto y baja tu deuda."
     },
     {
       tab: "subs",
