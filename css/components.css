@@ -1250,3 +1250,22 @@ html, body {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+
+/* Iconos con color de estado: el degradado recortado a texto (.text-success/.text-danger)
+   solo sirve para números; en los iconos de Font Awesome se ve como un cuadrado sólido. */
+i.text-success, i.text-danger,
+:root[data-theme="dark"] i.text-success, :root[data-theme="dark"] i.text-danger {
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  -webkit-text-fill-color: currentColor;
+  filter: none;
+}
+i.text-success, :root[data-theme="dark"] i.text-success { color: var(--success); }
+i.text-danger, :root[data-theme="dark"] i.text-danger { color: var(--danger); }
+
+/* El icono de una alerta no se encoge ni invade el texto */
+.pace-insight-banner > i,
+.top-expense-alert > i,
+.top-income-alert > i { flex-shrink: 0; }

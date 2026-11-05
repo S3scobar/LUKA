@@ -72,7 +72,41 @@ export const themeManager = {
     paint(theme);
   },
 
+  // El nuevo tema se riega en círculo desde el botón hasta cubrir toda la pantalla
   toggle() {
-    this.set(this.current === "dark" ? "light" : "dark");
+    const next = this.current === "dark" ? "light" : "dark";
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduceMotion) {
+      this.set(next);
+      return;
+    }
+
+    if (!document.startViewTransition || !toggleButton) {
+      // Navegadores sin View Transitions: los colores se funden suavemente
+      const root = document.documentElement;
+      root.classList.add("theme-fading");
+      this.set(next);
+      setTimeout(() => root.classList.remove("theme-fading"), 500);
+      return;
+    }
+
+    const box = toggleButton.getBoundingClientRect();
+    const x = box.left + box.width / 2;
+    const y = box.top + box.height / 2;
+    const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+
+    const transition = document.startViewTransition(() => this.set(next));
+    transition.ready.then(() => {
+      document.documentElement.animate(
+        { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
+        { duration: 800, easing: "cubic-bezier(0.22, 1, 0.36, 1)", pseudoElement: "::view-transition-new(root)" }
+      );
+    }).catch(() => {});
+
+    // El icono gira al cambiar (sol <-> luna)
+    toggleButton.classList.remove("theme-icon-spin");
+    void toggleButton.offsetWidth;
+    toggleButton.classList.add("theme-icon-spin");
   }
 };
