@@ -96,7 +96,15 @@ export const themeManager = {
     const y = box.top + box.height / 2;
     const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
 
-    const transition = document.startViewTransition(() => this.set(next));
+    // Mientras dura la animación se apagan transiciones, desenfoques y fondo animado
+    // (css/glass.css, .theme-switching): con todo activo el cambio iba a ~38 fps en móviles lentos.
+    // La clase se pone dentro del callback para que la captura "antes" conserve el aspecto original.
+    const root = document.documentElement;
+    const transition = document.startViewTransition(() => {
+      root.classList.add("theme-switching");
+      this.set(next);
+    });
+    transition.finished.finally(() => root.classList.remove("theme-switching"));
     transition.ready.then(() => {
       document.documentElement.animate(
         { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
