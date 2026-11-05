@@ -110,7 +110,7 @@ export const creditCardsView = {
                 <span class="statement-title"><i class="fa-solid fa-file-invoice-dollar"></i> Extracto a Pagar este Mes</span>
                 <p>${isPaidThisMonth ? "¡Ya pagaste tu cuota de este periodo!" : "Cuota vigente, intereses y cuota de manejo"}</p>
               </div>
-              <h2 class="statement-total" style="color: ${isPaidThisMonth ? "#10B981" : "var(--danger-text)"};">
+              <h2 class="statement-total ${isPaidThisMonth ? "text-success" : "text-danger"}">
                 $ ${amountDueThisMonth.toLocaleString("es-CO")}
               </h2>
             </div>

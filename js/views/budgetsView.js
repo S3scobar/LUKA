@@ -211,18 +211,18 @@ function showBudgetDetailModal({ budget, categories, onRefresh }) {
           </div>
           <div>
             <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Gastado</span>
-            <strong style="font-size: 0.95rem; color: var(--danger);">$ ${budget.spent.toLocaleString("es-CO")}</strong>
+            <strong class="text-danger" style="font-size: 0.95rem;">$ ${budget.spent.toLocaleString("es-CO")}</strong>
           </div>
           <div>
             <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">Disponible</span>
-            <strong style="font-size: 0.95rem; color: ${budget.isExceeded ? 'var(--danger)' : 'var(--success)'};">
+            <strong class="${budget.isExceeded ? 'text-danger' : 'text-success'}" style="font-size: 0.95rem;">
               $ ${budget.remaining.toLocaleString("es-CO")}
             </strong>
           </div>
         </div>
 
         <div class="budget-progress-track" style="margin-top: 10px;">
-          <div class="budget-progress-fill" style="width: ${Math.min(100, budget.percentage)}%; background-color: ${budget.isExceeded ? '#EF4444' : cat.color};"></div>
+          <div class="budget-progress-fill" style="width: ${Math.min(100, budget.percentage)}%; background-color: ${budget.isExceeded ? 'var(--danger)' : cat.color};"></div>
         </div>
       </div>
 
