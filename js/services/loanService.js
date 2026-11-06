@@ -204,5 +204,79 @@ export const loanService = {
       isOverdue: daysLate > 0, daysLate: Math.max(0, daysLate),
       monthlyRatePercentage: (monthlyRate * 100).toFixed(2)
     };
+  },
+
+  // Total a pagar de préstamos, para el banner de Inicio
+  async getTotalLoanSummary() {
+    const empty = { totalDue: 0, totalRemaining: 0, hasLoans: false, dueLabel: null, nextDueDate: null };
+
+    try {
+      const loans = await this.getLoans();
+      if (!loans || loans.length === 0) return empty;
+
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1;
+      const currentMonthStr = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
+
+      const rows = loans.map((loan) => ({ loan, summary: this.calculateSummary(loan) }));
+      const active = rows.filter((r) => !r.summary.isPaid);
+
+      if (active.length === 0) {
+        return {
+          totalDue: 0,
+          totalRemaining: 0,
+          hasLoans: true,
+          dueLabel: "¡Estás al día con tus préstamos!",
+          nextDueDate: null
+        };
+      }
+
+      let totalDue = 0;
+      let totalRemaining = 0;
+      let overdueLoan = null;
+      let earliestDue = null;
+
+      for (const r of active) {
+        totalRemaining += r.summary.remaining;
+
+        if (r.summary.nextDueDate) {
+          const dueMonth = r.summary.nextDueDate.slice(0, 7);
+          if (r.summary.isOverdue || dueMonth <= currentMonthStr) {
+            totalDue += (r.summary.nextPaymentAmount || r.summary.remaining);
+            if (r.summary.isOverdue) {
+              if (!overdueLoan || r.summary.daysLate > overdueLoan.summary.daysLate) {
+                overdueLoan = r;
+              }
+            } else if (!earliestDue || r.summary.nextDueDate < earliestDue.summary.nextDueDate) {
+              earliestDue = r;
+            }
+          }
+        } else {
+          totalDue += (r.summary.nextPaymentAmount || r.summary.remaining);
+        }
+      }
+
+      let dueLabel = "Cuota mensual pendiente";
+      if (overdueLoan) {
+        dueLabel = `¡Pago vencido hace ${overdueLoan.summary.daysLate} día(s)!`;
+      } else if (earliestDue && earliestDue.summary.nextDueDate) {
+        const [, , d] = earliestDue.summary.nextDueDate.split("-");
+        dueLabel = `Pagar antes del día ${parseInt(d)}`;
+      } else if (totalDue === 0) {
+        dueLabel = "¡Estás al día este mes!";
+      }
+
+      return {
+        totalDue: Math.round(totalDue),
+        totalRemaining: Math.round(totalRemaining),
+        hasLoans: true,
+        dueLabel,
+        earliestDueDate: overdueLoan?.summary.nextDueDate || earliestDue?.summary.nextDueDate || null,
+        activeCount: active.length
+      };
+    } catch {
+      return empty;
+    }
   }
 };
