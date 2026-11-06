@@ -282,20 +282,14 @@ body::before {
 ::view-transition-old(root) { z-index: 1; }
 ::view-transition-new(root) { z-index: 2; }
 
-/* Durante el cambio de tema: sin transiciones por elemento, sin desenfoque y con el fondo quieto.
-   Es lo que más fotogramas cuesta; al terminar la animación todo vuelve a su estado normal. */
-.theme-switching *,
-.theme-switching *::before,
-.theme-switching *::after {
-  transition: none !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-.theme-switching body::before { animation-play-state: paused !important; }
-
-/* Respaldo sin View Transitions: fundido de colores */
-.theme-fading *, .theme-fading *::before, .theme-fading *::after {
-  transition: background-color 0.45s ease, color 0.45s ease, border-color 0.45s ease, box-shadow 0.45s ease !important;
+/* Respaldo sin View Transitions: fundido limpio de superficies sin recalcular sombras en móvil */
+.theme-fading body,
+.theme-fading .navbar,
+.theme-fading .section-card,
+.theme-fading .metric-card,
+.theme-fading .card-statement-banner,
+.theme-fading .quick-expense-card {
+  transition: background-color 0.28s ease, color 0.28s ease, border-color 0.28s ease !important;
 }
 
 /* El icono sol/luna gira y rebota al cambiar */

@@ -3,6 +3,8 @@ import { walletService } from "../services/walletService.js";
 import { categoryService } from "../services/categoryService.js";
 import { transactionService } from "../services/transactionService.js";
 import { creditCardService } from "../services/creditCardService.js";
+import { loanService } from "../services/loanService.js";
+import { creditView } from "./creditView.js";
 import { quickExpenseBar } from "../components/quickExpenseBar.js";
 import { escapeHtml, resolveContainer, notifyError, formatShortDate } from "../utils.js";
 
@@ -18,12 +20,13 @@ export const dashboardView = {
     container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tu información...</div>`;
 
     try {
-      const [wallets, categories, transactions, creditCards, ccSummary] = await Promise.all([
+      const [wallets, categories, transactions, creditCards, ccSummary, loanSummary] = await Promise.all([
         walletService.getWallets(),
         categoryService.getCategories(),
         transactionService.getTransactions(),
         creditCardService.getCreditCards(),
-        creditCardService.getTotalStatementSummary()
+        creditCardService.getTotalStatementSummary(),
+        loanService.getTotalLoanSummary()
       ]);
 
       // Las billeteras de tarjetas guardan el cupo disponible, no dinero propio
@@ -66,31 +69,63 @@ export const dashboardView = {
             </div>
           </div>
 
-          <!-- Extracto de tarjetas del mes -->
-          ${ccSummary && ccSummary.hasCards ? `
-            <div class="card-statement-banner ${ccSummary.totalDue > 0 ? 'banner-due' : 'banner-paid'}">
-              <div class="banner-statement-left">
-                <div class="banner-statement-icon">
-                  <i class="fa-solid ${ccSummary.totalDue > 0 ? 'fa-credit-card' : 'fa-circle-check'}"></i>
-                </div>
-                <div class="banner-statement-text">
-                  <div class="banner-statement-title">
-                    ${ccSummary.totalDue > 0 ? 'Por pagar en tarjeta este mes' : 'Tarjetas de crédito'}
+          <!-- Banners de pagos pendientes (Tarjetas y Préstamos) -->
+          ${(ccSummary?.hasCards || loanSummary?.hasLoans) ? `
+            <div class="dashboard-banners-stack" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem;">
+              ${ccSummary && ccSummary.hasCards ? `
+                <div class="card-statement-banner ${ccSummary.totalDue > 0 ? 'banner-due' : 'banner-paid'}" style="margin-bottom: 0;">
+                  <div class="banner-statement-left">
+                    <div class="banner-statement-icon">
+                      <i class="fa-solid ${ccSummary.totalDue > 0 ? 'fa-credit-card' : 'fa-circle-check'}"></i>
+                    </div>
+                    <div class="banner-statement-text">
+                      <div class="banner-statement-title">
+                        ${ccSummary.totalDue > 0 ? 'Por pagar en tarjeta este mes' : 'Tarjetas de crédito'}
+                      </div>
+                      <div class="banner-statement-amount">
+                        $ ${ccSummary.totalDue.toLocaleString("es-CO", { maximumFractionDigits: 0 })}
+                      </div>
+                      <small class="banner-statement-sub">
+                        ${ccSummary.totalDue > 0 
+                          ? (ccSummary.earliestDueDay ? `Pagar antes del día ${ccSummary.earliestDueDay}` : 'Cuota mensual pendiente')
+                          : '¡Estás al día este mes!'}
+                      </small>
+                    </div>
                   </div>
-                  <div class="banner-statement-amount">
-                    $ ${ccSummary.totalDue.toLocaleString("es-CO", { maximumFractionDigits: 0 })}
-                  </div>
-                  <small class="banner-statement-sub">
-                    ${ccSummary.totalDue > 0 
-                      ? (ccSummary.earliestDueDay ? `Pagar antes del día ${ccSummary.earliestDueDay}` : 'Cuota mensual pendiente')
-                      : '¡Estás al día este mes!'}
-                  </small>
+                  ${ccSummary.totalDue > 0 ? `
+                    <button type="button" id="btn-pay-cc-from-dashboard" class="btn btn-sm btn-primary">
+                      <i class="fa-solid fa-money-bill-transfer"></i> Pagar
+                    </button>
+                  ` : ''}
                 </div>
-              </div>
-              ${ccSummary.totalDue > 0 ? `
-                <button type="button" id="btn-pay-cc-from-dashboard" class="btn btn-sm btn-primary">
-                  <i class="fa-solid fa-money-bill-transfer"></i> Pagar
-                </button>
+              ` : ''}
+
+              ${loanSummary && loanSummary.hasLoans ? `
+                <div class="card-statement-banner ${loanSummary.totalDue > 0 ? 'banner-due' : 'banner-paid'}" style="margin-bottom: 0;">
+                  <div class="banner-statement-left">
+                    <div class="banner-statement-icon">
+                      <i class="fa-solid ${loanSummary.totalDue > 0 ? 'fa-handshake-angle' : 'fa-circle-check'}"></i>
+                    </div>
+                    <div class="banner-statement-text">
+                      <div class="banner-statement-title">
+                        ${loanSummary.totalDue > 0 ? 'Por pagar en préstamos este mes' : 'Préstamos y deudas'}
+                      </div>
+                      <div class="banner-statement-amount">
+                        $ ${loanSummary.totalDue.toLocaleString("es-CO", { maximumFractionDigits: 0 })}
+                      </div>
+                      <small class="banner-statement-sub">
+                        ${loanSummary.totalDue > 0 
+                          ? loanSummary.dueLabel 
+                          : '¡Estás al día con tus préstamos!'}
+                      </small>
+                    </div>
+                  </div>
+                  ${loanSummary.totalDue > 0 ? `
+                    <button type="button" id="btn-pay-loan-from-dashboard" class="btn btn-sm btn-primary">
+                      <i class="fa-solid fa-money-bill-transfer"></i> Pagar
+                    </button>
+                  ` : ''}
+                </div>
               ` : ''}
             </div>
           ` : ''}
@@ -121,10 +156,21 @@ export const dashboardView = {
         }
       });
 
-      // "Pagar" lleva a la pestaña de Tarjetas
+      // "Pagar" tarjeta lleva a la pestaña de Tarjetas (sección tarjetas)
       const btnPayCC = container.querySelector("#btn-pay-cc-from-dashboard");
       if (btnPayCC) {
         btnPayCC.addEventListener("click", () => {
+          creditView.section = "cards";
+          const cardsTabBtn = document.querySelector('[data-tab="cards"]');
+          if (cardsTabBtn) cardsTabBtn.click();
+        });
+      }
+
+      // "Pagar" préstamo lleva a la pestaña de Tarjetas (sección préstamos)
+      const btnPayLoan = container.querySelector("#btn-pay-loan-from-dashboard");
+      if (btnPayLoan) {
+        btnPayLoan.addEventListener("click", () => {
+          creditView.section = "loans";
           const cardsTabBtn = document.querySelector('[data-tab="cards"]');
           if (cardsTabBtn) cardsTabBtn.click();
         });
