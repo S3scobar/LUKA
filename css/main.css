@@ -155,6 +155,13 @@ body {
   background-attachment: fixed;
 }
 
+@media (max-width: 768px) {
+  body,
+  :root[data-theme="dark"] body {
+    background-attachment: scroll;
+  }
+}
+
 .container {
   max-width: 720px;
   margin: 0 auto;
