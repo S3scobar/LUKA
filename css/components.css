@@ -231,31 +231,121 @@
 }
 .section-header p { font-size: 0.85rem; color: var(--text-muted); }
 
+/* Resumen de saldo total sobre la grilla de billeteras */
+.wallets-total {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  border-radius: var(--radius-md);
+  background: var(--liquid-bg-hero);
+  border: 1px solid var(--liquid-border);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 6px 18px -10px rgba(37, 99, 235, 0.25);
+}
+
+.wallets-total-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+}
+
+.wallets-total-value {
+  font-size: 1.7rem;
+  line-height: 1.15;
+}
+
+.wallets-total-meta {
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
 .wallets-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 0.85rem;
 }
 
 .wallet-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.85rem;
   background: var(--liquid-bg);
   backdrop-filter: blur(var(--liquid-blur));
   -webkit-backdrop-filter: blur(var(--liquid-blur));
-  padding: 1rem 1.15rem;
+  padding: 0.95rem 1.1rem 0.95rem 1.25rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--liquid-border);
-  box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.04), var(--liquid-shine);
+  box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.05), var(--liquid-shine);
   position: relative;
-  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+  overflow: hidden;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+/* Acento de color del banco como filo lateral, no como fondo saturado */
+.wallet-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--wallet-accent, var(--primary));
+  opacity: 0.85;
 }
 
 .wallet-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08), var(--liquid-shine);
+  box-shadow: 0 10px 24px -6px rgba(15, 23, 42, 0.12), var(--liquid-shine);
   border-color: var(--border-strong);
+}
+
+.wallet-share {
+  font-size: 0.72rem;
+  color: var(--text-faint);
+  font-weight: 500;
+}
+
+.wallet-actions {
+  display: flex;
+  gap: 0.1rem;
+  flex-shrink: 0;
+}
+
+.btn-edit-wallet {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 8px;
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.btn-edit-wallet:hover {
+  color: var(--primary);
+  background: var(--primary-soft);
+}
+
+.wallets-empty {
+  text-align: center;
+  padding: 2.25rem 1rem;
+  color: var(--text-muted);
+}
+
+.wallets-empty i {
+  font-size: 2.25rem;
+  color: var(--border-strong);
+  margin-bottom: 0.65rem;
+}
+
+.wallets-empty p {
+  font-size: 0.9rem;
+  max-width: 320px;
+  margin: 0 auto;
 }
 
 .wallets-module .section-card {
@@ -293,9 +383,11 @@
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 0.35rem;
+  padding: 0.4rem;
+  border-radius: 8px;
+  transition: color 0.2s ease, background 0.2s ease;
 }
-.btn-delete-wallet:hover { color: var(--danger); }
+.btn-delete-wallet:hover { color: var(--danger); background: var(--danger-soft); }
 
 /* Formulario inline de billetera */
 .form-inline-card {
@@ -985,8 +1077,8 @@ html, body {
 
 /* Estado pendiente de pago */
 .banner-due {
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(245, 158, 11, 0.08) 100%);
-  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: var(--danger-soft);
+  border: 1px solid rgba(225, 29, 72, 0.3);
 }
 
 .banner-due .banner-statement-icon {
@@ -1001,8 +1093,8 @@ html, body {
 
 /* Estado al día (pagado) */
 .banner-paid {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(59, 130, 246, 0.06) 100%);
-  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: var(--success-soft);
+  border: 1px solid var(--success-border);
 }
 
 .banner-paid .banner-statement-icon {
@@ -1083,13 +1175,10 @@ html, body {
 .trans-meta { flex-wrap: wrap; gap: 0.15rem 0.75rem; }
 .trans-amount { white-space: nowrap; }
 
-/* Celulares: la firma y el botón de tutorial dejan de tapar el contenido */
+/* Celulares: el pie de página se separa del botón flotante de tutorial */
 @media (max-width: 640px) {
-  .watermark-author {
-    position: static;
-    display: block;
-    width: fit-content;
-    margin: 1.5rem auto 5.5rem;
+  .app-footer {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
   }
 
   .tutorial-fab {

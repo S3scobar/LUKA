@@ -43,25 +43,26 @@ body::before {
   inset: -15%;
   z-index: -1;
   pointer-events: none;
+  /* Campo líquido sobrio: tonos de azul de marca con un único acento frío.
+     Sin la mezcla verde/índigo/cyan previa — menos "arcoíris", más vidrio real. */
   background:
-    radial-gradient(34vmax 34vmax at 18% 6%, rgba(37, 99, 235, 0.46), transparent 64%),
-    radial-gradient(30vmax 30vmax at 88% 30%, rgba(16, 185, 129, 0.34), transparent 64%),
-    radial-gradient(38vmax 38vmax at 30% 78%, rgba(99, 102, 241, 0.36), transparent 64%),
-    radial-gradient(28vmax 28vmax at 92% 92%, rgba(56, 189, 248, 0.32), transparent 64%);
-  animation: g-drift 28s ease-in-out infinite alternate;
+    radial-gradient(42vmax 42vmax at 14% 0%, rgba(37, 99, 235, 0.22), transparent 66%),
+    radial-gradient(38vmax 38vmax at 92% 20%, rgba(56, 130, 220, 0.14), transparent 64%),
+    radial-gradient(46vmax 46vmax at 60% 108%, rgba(79, 110, 190, 0.16), transparent 68%);
+  animation: g-drift 34s ease-in-out infinite alternate;
   will-change: transform;
 }
 
 :root[data-theme="dark"] body::before {
   background:
-    radial-gradient(38vmax 38vmax at 10% 0%, rgba(59, 130, 246, 0.26), transparent 62%),
-    radial-gradient(34vmax 34vmax at 96% 14%, rgba(16, 185, 129, 0.14), transparent 62%),
-    radial-gradient(42vmax 42vmax at 68% 104%, rgba(99, 102, 241, 0.22), transparent 62%);
+    radial-gradient(44vmax 44vmax at 10% -4%, rgba(59, 130, 246, 0.18), transparent 64%),
+    radial-gradient(40vmax 40vmax at 96% 16%, rgba(37, 99, 235, 0.1), transparent 62%),
+    radial-gradient(48vmax 48vmax at 66% 110%, rgba(67, 97, 173, 0.16), transparent 66%);
 }
 
 @keyframes g-drift {
   from { transform: translate3d(0, 0, 0) scale(1); }
-  to   { transform: translate3d(-3%, 4%, 0) scale(1.08); }
+  to   { transform: translate3d(-2%, 3%, 0) scale(1.05); }
 }
 
 /* ------------------------------------------------------------------
