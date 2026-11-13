@@ -137,9 +137,8 @@ html, body { overscroll-behavior-x: none; }
 body {
   background-color: var(--bg-primary);
   background-image:
-    radial-gradient(at 10% 15%, rgba(37, 99, 235, 0.06) 0px, transparent 45%),
-    radial-gradient(at 90% 20%, rgba(16, 185, 129, 0.05) 0px, transparent 45%),
-    radial-gradient(at 50% 85%, rgba(99, 102, 241, 0.05) 0px, transparent 55%);
+    radial-gradient(at 12% 12%, rgba(37, 99, 235, 0.05) 0px, transparent 48%),
+    radial-gradient(at 88% 88%, rgba(37, 99, 235, 0.03) 0px, transparent 50%);
   background-attachment: fixed;
   color: var(--text-main);
   line-height: 1.5;
@@ -149,9 +148,8 @@ body {
 
 :root[data-theme="dark"] body {
   background-image:
-    radial-gradient(at 10% 15%, rgba(59, 130, 246, 0.09) 0px, transparent 45%),
-    radial-gradient(at 90% 20%, rgba(16, 185, 129, 0.07) 0px, transparent 45%),
-    radial-gradient(at 50% 85%, rgba(139, 92, 246, 0.08) 0px, transparent 55%);
+    radial-gradient(at 12% 12%, rgba(59, 130, 246, 0.08) 0px, transparent 48%),
+    radial-gradient(at 88% 88%, rgba(59, 130, 246, 0.05) 0px, transparent 50%);
   background-attachment: fixed;
 }
 
@@ -185,27 +183,76 @@ body {
   align-items: center;
   gap: 0.5rem;
 }
-/* Marca de agua en la esquina inferior izquierda */
-.watermark-author {
-  position: fixed;
-  bottom: 14px;
-  left: 16px;
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  background: var(--liquid-bg);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  padding: 5px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--liquid-border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), var(--liquid-shine);
-  z-index: 1000;
-  pointer-events: none;
-  font-weight: 500;
-  letter-spacing: 0.3px;
+/* ==========================================
+   PIE DE PÁGINA — botón Instalar + autoría
+   ========================================== */
+.app-footer {
+  max-width: 720px;
+  margin: 1.5rem auto 0;
+  padding: 1.25rem 1rem calc(2rem + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  text-align: center;
 }
 
-.watermark-author span {
-  font-weight: 700;
-  color: var(--primary);
+.btn-install {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.7rem 1.4rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  color: var(--text-main);
+  background: var(--liquid-bg);
+  -webkit-backdrop-filter: blur(var(--liquid-blur)) saturate(140%);
+  backdrop-filter: blur(var(--liquid-blur)) saturate(140%);
+  border: 1px solid var(--liquid-border);
+  box-shadow: var(--liquid-shine), 0 6px 18px -8px rgba(15, 23, 42, 0.25);
+  transition: transform 0.3s cubic-bezier(0.34, 1.4, 0.5, 1), box-shadow 0.25s ease, border-color 0.25s ease;
 }
+
+.btn-install[hidden] { display: none; }
+
+.btn-install i {
+  color: var(--primary);
+  font-size: 0.95rem;
+}
+
+.btn-install:hover {
+  transform: translateY(-1px);
+  border-color: var(--border-strong);
+  box-shadow: var(--liquid-shine), 0 10px 24px -10px rgba(37, 99, 235, 0.4);
+}
+
+.btn-install:active { transform: scale(0.97); }
+
+.footer-author {
+  font-size: 0.78rem;
+  color: var(--text-faint);
+  letter-spacing: 0.2px;
+}
+
+.footer-author span {
+  font-weight: 650;
+  color: var(--text-muted);
+}
+
+/* Pasos de instalación dentro del modal */
+.install-steps {
+  margin: 0.85rem 0;
+  padding-left: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.install-steps li { padding-left: 0.2rem; }
+.install-steps i { color: var(--primary); margin: 0 0.1rem; }

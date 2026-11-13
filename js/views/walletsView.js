@@ -26,9 +26,12 @@ export const walletsView = {
           .sort((a, b) => a.favorite_order - b.favorite_order)
           .map(c => c.id);
 
+        const totalBalance = wallets.reduce((sum, w) => sum + Number(w.balance || 0), 0);
+        const fmt = (n) => Number(n).toLocaleString("es-CO", { maximumFractionDigits: 0 });
+
         container.innerHTML = `
           <div class="wallets-module">
-            <div class="section-card">
+            <div class="section-card wallets-card">
               <div class="section-header">
                 <div>
                   <h3><i class="fa-solid fa-wallet"></i> Mis Billeteras</h3>
@@ -36,37 +39,54 @@ export const walletsView = {
                 </div>
                 <div class="section-actions" style="display: flex; gap: 0.5rem; align-items: center;">
                   ${wallets.length >= 2 ? `
-                    <button id="btn-transfer-money" class="btn btn-primary btn-sm">
-                      <i class="fa-solid fa-arrow-right-arrow-left"></i> Transferir Dinero
+                    <button id="btn-transfer-money" class="btn btn-secondary btn-sm">
+                      <i class="fa-solid fa-arrow-right-arrow-left"></i> Transferir
                     </button>
                   ` : ""}
-                  <button id="btn-show-wallet-form" class="btn btn-secondary btn-sm">
-                    <i class="fa-solid fa-plus"></i> Nueva Billetera
+                  <button id="btn-show-wallet-form" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-plus"></i> Nueva
                   </button>
                 </div>
               </div>
 
-              <div class="wallets-grid">
-                ${wallets.map(w => `
-                  <div class="wallet-item" style="background: linear-gradient(135deg, ${w.color}15 0%, var(--liquid-bg) 70%); border: 1px solid ${w.color}40; box-shadow: 0 4px 14px -2px ${w.color}20, var(--liquid-shine);">
-                    <div class="wallet-item-icon" style="background-color: ${w.color}20; color: ${w.color};">
-                      <i class="fa-solid ${w.icon}"></i>
-                    </div>
-                    <div class="wallet-item-info">
-                      <span class="wallet-name">${escapeHtml(w.name)}</span>
-                      <span class="wallet-balance">$ ${Number(w.balance).toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
-                    </div>
-                    <div class="wallet-actions">
-                      <button class="btn-edit-wallet" data-id="${w.id}" title="Editar saldo o datos">
-                        <i class="fa-solid fa-pencil"></i>
-                      </button>
-                      <button class="btn-delete-wallet" data-id="${w.id}" title="Eliminar cuenta">
-                        <i class="fa-solid fa-trash-can"></i>
-                      </button>
-                    </div>
-                  </div>
-                `).join("")}
+              <div class="wallets-total">
+                <span class="wallets-total-label">Saldo total disponible</span>
+                <span class="wallets-total-value wallet-balance">$ ${fmt(totalBalance)}</span>
+                <span class="wallets-total-meta">${wallets.length} ${wallets.length === 1 ? "cuenta" : "cuentas"}</span>
               </div>
+
+              ${wallets.length === 0 ? `
+                <div class="wallets-empty">
+                  <i class="fa-solid fa-wallet"></i>
+                  <p>Aún no tienes billeteras. Crea la primera para empezar a registrar tu dinero.</p>
+                </div>
+              ` : `
+                <div class="wallets-grid">
+                  ${wallets.map(w => {
+                    const share = totalBalance > 0 ? Math.round((Number(w.balance || 0) / totalBalance) * 100) : 0;
+                    return `
+                    <div class="wallet-item" style="--wallet-accent: ${w.color};">
+                      <div class="wallet-item-icon" style="background-color: ${w.color}1F; color: ${w.color};">
+                        <i class="fa-solid ${w.icon}"></i>
+                      </div>
+                      <div class="wallet-item-info">
+                        <span class="wallet-name">${escapeHtml(w.name)}</span>
+                        <span class="wallet-balance">$ ${fmt(w.balance)}</span>
+                        <span class="wallet-share">${share}% del total</span>
+                      </div>
+                      <div class="wallet-actions">
+                        <button class="btn-edit-wallet" data-id="${w.id}" title="Editar saldo o datos">
+                          <i class="fa-solid fa-pencil"></i>
+                        </button>
+                        <button class="btn-delete-wallet" data-id="${w.id}" title="Eliminar cuenta">
+                          <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                      </div>
+                    </div>
+                  `;
+                  }).join("")}
+                </div>
+              `}
             </div>
 
             <div class="section-card">
