@@ -1,0 +1,246 @@
+/* css/liquid.css — liquid glass completo
+   Se carga al final. Para que el vidrio se note necesita tres cosas, que están aquí:
+   1) color detrás (fondo ambiental fijo), 2) superficies translúcidas con desenfoque,
+   3) filos de luz y brillo especular (que sigue al dedo/cursor: js/components/glassLight.js).
+   Quitar el <link> de este archivo devuelve el aspecto anterior. */
+
+:root {
+  --lg-fill: rgba(255, 255, 255, 0.34);
+  --lg-fill-soft: rgba(255, 255, 255, 0.24);
+  --lg-blur: blur(18px) saturate(190%);
+  /* arriba y a la izquierda llega la luz; abajo y a la derecha el borde se apaga */
+  --lg-border: rgba(255, 255, 255, 0.98) rgba(255, 255, 255, 0.55) rgba(255, 255, 255, 0.28) rgba(255, 255, 255, 0.75);
+  --lg-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 0 22px rgba(255, 255, 255, 0.32),
+    inset 0 -12px 20px -14px rgba(37, 99, 235, 0.22),
+    0 16px 36px -14px rgba(30, 64, 175, 0.42),
+    0 2px 4px rgba(15, 23, 42, 0.05);
+  --lg-sheen: rgba(255, 255, 255, 0.7);
+  --lg-input: rgba(255, 255, 255, 0.46);
+
+  /* tokens de glass.css (barra, chips y modales) */
+  --g-bar: rgba(255, 255, 255, 0.40);
+  --g-chip: rgba(255, 255, 255, 0.34);
+  --g-chip-hover: rgba(255, 255, 255, 0.62);
+  --g-panel: rgba(255, 255, 255, 0.52);
+}
+
+:root[data-theme="dark"] {
+  --lg-fill: rgba(30, 44, 76, 0.42);
+  --lg-fill-soft: rgba(30, 44, 76, 0.30);
+  --lg-blur: blur(20px) saturate(175%);
+  --lg-border: rgba(255, 255, 255, 0.38) rgba(255, 255, 255, 0.16) rgba(255, 255, 255, 0.07) rgba(255, 255, 255, 0.22);
+  --lg-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.30),
+    inset 0 0 22px rgba(120, 170, 255, 0.09),
+    inset 0 -12px 20px -14px rgba(59, 130, 246, 0.30),
+    0 18px 38px -14px rgba(0, 0, 0, 0.7);
+  --lg-sheen: rgba(150, 195, 255, 0.24);
+  --lg-input: rgba(255, 255, 255, 0.06);
+
+  --g-bar: rgba(14, 22, 40, 0.52);
+  --g-chip: rgba(255, 255, 255, 0.07);
+  --g-chip-hover: rgba(255, 255, 255, 0.14);
+  --g-panel: rgba(18, 28, 50, 0.60);
+}
+
+/* ------------------------------------------------------------------
+   1) Color detrás del vidrio. Fijo (sin deriva): un fondo que se mueve obliga a recalcular
+   todos los desenfoques en cada fotograma. El efecto "líquido" lo pone el scroll y el brillo.
+   ------------------------------------------------------------------ */
+body::before {
+  animation: none !important;
+  will-change: auto;
+  background:
+    radial-gradient(46vmax 46vmax at 6% 2%,   rgba(37, 99, 235, 0.40), transparent 62%),
+    radial-gradient(40vmax 40vmax at 98% 16%, rgba(14, 165, 233, 0.30), transparent 62%),
+    radial-gradient(44vmax 44vmax at 14% 56%, rgba(124, 92, 246, 0.24), transparent 62%),
+    radial-gradient(42vmax 42vmax at 96% 80%, rgba(16, 185, 129, 0.22), transparent 62%),
+    radial-gradient(40vmax 40vmax at 38% 104%, rgba(37, 99, 235, 0.28), transparent 62%);
+}
+:root[data-theme="dark"] body::before {
+  background:
+    radial-gradient(46vmax 46vmax at 6% 2%,   rgba(59, 130, 246, 0.34), transparent 62%),
+    radial-gradient(40vmax 40vmax at 98% 16%, rgba(6, 182, 212, 0.20), transparent 62%),
+    radial-gradient(44vmax 44vmax at 14% 56%, rgba(124, 92, 246, 0.24), transparent 62%),
+    radial-gradient(42vmax 42vmax at 96% 80%, rgba(16, 185, 129, 0.16), transparent 62%),
+    radial-gradient(40vmax 40vmax at 38% 104%, rgba(59, 130, 246, 0.24), transparent 62%);
+}
+
+/* ------------------------------------------------------------------
+   2) Superficies de vidrio: relleno translúcido + desenfoque + filo de luz + brillo especular
+   ------------------------------------------------------------------ */
+.metric-card,
+.quick-expense-card,
+.section-card {
+  background:
+    radial-gradient(circle at var(--mx, 14%) var(--my, 0%), var(--lg-sheen), transparent 55%),
+    radial-gradient(120% 140% at 0% 0%, rgba(var(--tint, 37, 99, 235), var(--tint-a, 0.12)), transparent 62%),
+    var(--lg-fill);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border: 1px solid;
+  border-color: var(--lg-border);
+  box-shadow: var(--lg-shadow);
+}
+
+/* Banners (tarjeta y préstamos): vidrio teñido de rojo o de verde */
+.card-statement-banner {
+  background:
+    radial-gradient(circle at var(--mx, 14%) var(--my, 0%), var(--lg-sheen), transparent 55%),
+    var(--lg-fill-soft);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border: 1px solid;
+  box-shadow: var(--lg-shadow);
+}
+.card-statement-banner.banner-due {
+  background:
+    radial-gradient(circle at var(--mx, 14%) var(--my, 0%), var(--lg-sheen), transparent 55%),
+    linear-gradient(135deg, rgba(244, 63, 94, 0.30), rgba(244, 63, 94, 0.10)),
+    var(--lg-fill-soft);
+  border-color: rgba(255, 205, 215, 0.95) rgba(244, 63, 94, 0.40) rgba(244, 63, 94, 0.28) rgba(255, 205, 215, 0.75);
+}
+.card-statement-banner.banner-paid {
+  background:
+    radial-gradient(circle at var(--mx, 14%) var(--my, 0%), var(--lg-sheen), transparent 55%),
+    linear-gradient(135deg, rgba(16, 185, 129, 0.30), rgba(16, 185, 129, 0.10)),
+    var(--lg-fill-soft);
+  border-color: rgba(200, 255, 232, 0.95) rgba(16, 185, 129, 0.40) rgba(16, 185, 129, 0.28) rgba(200, 255, 232, 0.75);
+}
+:root[data-theme="dark"] .card-statement-banner.banner-due { border-color: rgba(255, 150, 170, 0.5) rgba(244, 63, 94, 0.28) rgba(244, 63, 94, 0.16) rgba(255, 150, 170, 0.32); }
+:root[data-theme="dark"] .card-statement-banner.banner-paid { border-color: rgba(110, 231, 183, 0.5) rgba(16, 185, 129, 0.28) rgba(16, 185, 129, 0.16) rgba(110, 231, 183, 0.32); }
+
+/* Tarjetas de préstamo: conservan su franja de color a la izquierda */
+.loan-card {
+  background:
+    radial-gradient(circle at var(--mx, 14%) var(--my, 0%), var(--lg-sheen), transparent 55%),
+    radial-gradient(110% 90% at 0% 0%, color-mix(in srgb, var(--loan-color) 20%, transparent), transparent 60%),
+    var(--lg-fill);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border: 1px solid;
+  border-color: var(--lg-border);
+  border-left: 4px solid var(--loan-color);
+  box-shadow: var(--lg-shadow);
+}
+
+/* Barra superior: cristal con línea de luz en el borde inferior */
+.navbar {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.55), 0 10px 30px -16px rgba(30, 64, 175, 0.5);
+}
+:root[data-theme="dark"] .navbar {
+  border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.10), 0 10px 30px -16px rgba(0, 0, 0, 0.7);
+}
+
+/* Modales y tarjeta de acceso: más cristal */
+.modal-content { box-shadow: var(--lg-shadow), 0 30px 70px -20px rgba(15, 23, 42, 0.55) !important; }
+
+/* ------------------------------------------------------------------
+   3) Piezas pequeñas (sin desenfoque propio: ya están sobre una superficie difuminada)
+   ------------------------------------------------------------------ */
+.wallet-chip-btn,
+.btn-fav-category,
+.cuotas-select,
+.credit-info-box {
+  background: var(--g-chip);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border: 1px solid;
+  border-color: var(--lg-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 0 12px rgba(255, 255, 255, 0.18), 0 6px 14px -8px rgba(30, 64, 175, 0.35);
+}
+:root[data-theme="dark"] .wallet-chip-btn,
+:root[data-theme="dark"] .btn-fav-category,
+:root[data-theme="dark"] .cuotas-select,
+:root[data-theme="dark"] .credit-info-box {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), 0 6px 14px -8px rgba(0, 0, 0, 0.6);
+}
+
+/* Campos de texto: cristal "hundido". En algunas pantallas .input-field es un contenedor y el
+   campo real va dentro; el estilo va siempre en el campo, nunca en el contenedor. */
+input.input-field,
+select.input-field,
+textarea.input-field,
+div.input-field > input {
+  background: var(--lg-input);
+  border: 1px solid;
+  border-color: rgba(15, 23, 42, 0.10) rgba(255, 255, 255, 0.6) rgba(255, 255, 255, 0.7) rgba(15, 23, 42, 0.06);
+  box-shadow: inset 0 2px 6px rgba(15, 23, 42, 0.10), inset 0 -1px 0 rgba(255, 255, 255, 0.7);
+}
+:root[data-theme="dark"] input.input-field,
+:root[data-theme="dark"] select.input-field,
+:root[data-theme="dark"] textarea.input-field,
+:root[data-theme="dark"] div.input-field > input {
+  border-color: rgba(0, 0, 0, 0.35) rgba(255, 255, 255, 0.10) rgba(255, 255, 255, 0.14) rgba(0, 0, 0, 0.25);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+}
+input.input-field:focus,
+div.input-field > input:focus {
+  box-shadow: inset 0 2px 6px rgba(15, 23, 42, 0.08), 0 0 0 3px rgba(59, 130, 246, 0.28), 0 0 22px -4px rgba(59, 130, 246, 0.5);
+}
+
+/* Selector Gasto/Ingreso y Tarjetas/Préstamos: carril de vidrio hundido */
+.type-toggle-pill,
+.credit-switch,
+.loan-type-btn {
+  background: var(--g-chip);
+  border: 1px solid;
+  border-color: rgba(15, 23, 42, 0.08) rgba(255, 255, 255, 0.6) rgba(255, 255, 255, 0.7) rgba(15, 23, 42, 0.05);
+  box-shadow: inset 0 2px 6px rgba(15, 23, 42, 0.08), inset 0 -1px 0 rgba(255, 255, 255, 0.6);
+}
+:root[data-theme="dark"] .type-toggle-pill,
+:root[data-theme="dark"] .credit-switch,
+:root[data-theme="dark"] .loan-type-btn {
+  border-color: rgba(0, 0, 0, 0.3) rgba(255, 255, 255, 0.10) rgba(255, 255, 255, 0.14) rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.35), inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+}
+.loan-type-btn.active { background: var(--primary-soft); border-color: var(--primary); }
+
+/* Sin desenfoque anidado: dentro de una tarjeta de vidrio ya se difumina el fondo. Repetirlo dibuja
+   parches cuadrados en las esquinas y cuesta fotogramas. */
+.quick-expense-card *,
+.section-card .input-field,
+.modal-content * {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Las filas que se deslizan recortan las sombras de sus chips (parche cuadrado detrás del chip activo):
+   se les da aire alrededor y se compensa con margen negativo. */
+.wallet-chips-row,
+.quick-icons-row {
+  padding: 8px 10px 18px;
+  margin: -8px -10px -12px;
+}
+
+/* Botón secundario: vidrio con filo de luz (reemplaza el relleno opaco de glass.css) */
+.btn-secondary,
+:root[data-theme="dark"] .btn-secondary {
+  background: var(--g-chip-hover);
+  border: 1px solid;
+  border-color: var(--lg-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 0 14px rgba(255, 255, 255, 0.2), 0 10px 22px -12px rgba(30, 64, 175, 0.5);
+}
+:root[data-theme="dark"] .btn-secondary { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 10px 22px -12px rgba(0, 0, 0, 0.7); }
+
+/* Menos blur donde no aporta: botones primarios y nav chips no necesitan muestrear el fondo */
+.btn-primary, .nav-item-btn, .tutorial-fab { -webkit-backdrop-filter: none; backdrop-filter: none; }
+.tutorial-fab { -webkit-backdrop-filter: blur(14px) saturate(180%); backdrop-filter: blur(14px) saturate(180%); }
+
+@media (prefers-reduced-transparency: reduce) {
+  :root { --lg-fill: var(--bg-card); --lg-fill-soft: var(--bg-card); --g-chip: var(--bg-hover); --g-panel: var(--bg-card); --g-bar: var(--bg-card); --lg-input: var(--bg-card); }
+  .metric-card, .quick-expense-card, .section-card, .loan-card, .card-statement-banner { -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+
+/* Cambio de tema: mientras dura la animación no hay transiciones ni desenfoque (se restauran al terminar) */
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
