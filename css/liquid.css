@@ -18,6 +18,10 @@
     0 2px 4px rgba(15, 23, 42, 0.05);
   --lg-sheen: rgba(255, 255, 255, 0.7);
   --lg-input: rgba(255, 255, 255, 0.46);
+  --lg-item: rgba(255, 255, 255, 0.36);
+  --lg-item-hover: rgba(255, 255, 255, 0.58);
+  --lg-item-border: rgba(255, 255, 255, 0.95) rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.7);
+  --lg-item-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -10px 16px -12px rgba(37, 99, 235, 0.18), 0 8px 18px -12px rgba(30, 64, 175, 0.35);
 
   /* tokens de glass.css (barra, chips y modales) */
   --g-bar: rgba(255, 255, 255, 0.40);
@@ -38,6 +42,10 @@
     0 18px 38px -14px rgba(0, 0, 0, 0.7);
   --lg-sheen: rgba(150, 195, 255, 0.24);
   --lg-input: rgba(255, 255, 255, 0.06);
+  --lg-item: rgba(255, 255, 255, 0.06);
+  --lg-item-hover: rgba(255, 255, 255, 0.12);
+  --lg-item-border: rgba(255, 255, 255, 0.30) rgba(255, 255, 255, 0.13) rgba(255, 255, 255, 0.06) rgba(255, 255, 255, 0.18);
+  --lg-item-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -10px 16px -12px rgba(59, 130, 246, 0.26), 0 8px 18px -12px rgba(0, 0, 0, 0.6);
 
   --g-bar: rgba(14, 22, 40, 0.52);
   --g-chip: rgba(255, 255, 255, 0.07);
@@ -73,7 +81,9 @@ body::before {
    ------------------------------------------------------------------ */
 .metric-card,
 .quick-expense-card,
-.section-card {
+.section-card,
+.section-card.history-section,
+.wallets-module .section-card {
   background:
     radial-gradient(circle at var(--mx, 14%) var(--my, 0%), var(--lg-sheen), transparent 55%),
     radial-gradient(120% 140% at 0% 0%, rgba(var(--tint, 37, 99, 235), var(--tint-a, 0.12)), transparent 62%),
@@ -243,4 +253,72 @@ div.input-field > input:focus {
   transition: none !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
+}
+
+/* ------------------------------------------------------------------
+   3) Segundo nivel: ítems de listas y cajas internas. Vidrio claro con filo de luz, SIN desenfoque
+   propio (un blur dentro de otro blur deja esquinas cuadradas y cuesta fps).
+   ------------------------------------------------------------------ */
+.transaction-item, .wallet-item, .wallets-total, .budget-card, .budget-hero-card, .period-navigator-card,
+.fund-card, .fund-balance-row, .goal-card, .sub-card, .statement-card, .purchase-item,
+.category-manage-card, .category-select-card, .form-inline-card, .wallet-chips-section,
+.loan-due, .cat-preview, .icon-picker, .icon-picker-grid, .breakdown-toggle-pills,
+.card-tab-btn, .cat-tab-btn, .mode-pill, .nav-arrow-btn, .badge-count, .sub-date-badge {
+  background:
+    radial-gradient(circle at var(--mx, 12%) var(--my, 0%), var(--lg-sheen), transparent 60%) ,
+    var(--lg-item);
+  border: 1px solid;
+  border-color: var(--lg-item-border);
+  box-shadow: var(--lg-item-shadow);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.transaction-item:hover, .wallet-item:hover, .budget-card:hover, .fund-card:hover,
+.sub-card:hover, .category-manage-card:hover, .category-select-card:hover {
+  background:
+    radial-gradient(circle at 12% 0%, var(--lg-sheen), transparent 60%),
+    var(--lg-item-hover);
+}
+.sub-card.sub-paused { background: var(--lg-item-soft, var(--lg-item)); opacity: .75; }
+.category-manage-card.is-selected {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.42), rgba(59, 130, 246, 0.16)), var(--lg-item);
+  border-color: rgba(147, 197, 253, 0.9) rgba(59, 130, 246, 0.5) rgba(59, 130, 246, 0.35) rgba(147, 197, 253, 0.7);
+}
+/* pestañas activas: azul más firme para que el texto blanco se lea */
+.card-tab-btn.active, .cat-tab-btn.active, .mode-pill.active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(37, 99, 235, 0.80));
+  border-color: rgba(147, 197, 253, 0.9) rgba(59, 130, 246, 0.5) rgba(59, 130, 246, 0.35) rgba(147, 197, 253, 0.7);
+}
+.wallet-item::before { opacity: .9; }
+
+/* Modales, login y tour: vidrio más opaco para que el texto se lea bien */
+.modal-content, .auth-card, .tour-card {
+  background:
+    radial-gradient(circle at var(--mx, 14%) var(--my, 0%), var(--lg-sheen), transparent 55%),
+    var(--g-panel);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border: 1px solid;
+  border-color: var(--lg-border);
+}
+
+/* Más color detrás en toda la página, para que el vidrio se vea también en el centro y abajo */
+body::before {
+  background:
+    radial-gradient(46vmax 46vmax at 6% 2%,   rgba(37, 99, 235, 0.40), transparent 62%),
+    radial-gradient(40vmax 40vmax at 98% 16%, rgba(14, 165, 233, 0.32), transparent 62%),
+    radial-gradient(46vmax 46vmax at 10% 42%, rgba(124, 92, 246, 0.30), transparent 62%),
+    radial-gradient(44vmax 44vmax at 92% 58%, rgba(14, 165, 233, 0.26), transparent 62%),
+    radial-gradient(44vmax 44vmax at 8% 82%,  rgba(16, 185, 129, 0.24), transparent 62%),
+    radial-gradient(44vmax 44vmax at 88% 100%, rgba(37, 99, 235, 0.32), transparent 62%);
+}
+:root[data-theme="dark"] body::before {
+  background:
+    radial-gradient(46vmax 46vmax at 6% 2%,   rgba(59, 130, 246, 0.36), transparent 62%),
+    radial-gradient(40vmax 40vmax at 98% 16%, rgba(6, 182, 212, 0.24), transparent 62%),
+    radial-gradient(46vmax 46vmax at 10% 42%, rgba(124, 92, 246, 0.30), transparent 62%),
+    radial-gradient(44vmax 44vmax at 92% 58%, rgba(6, 182, 212, 0.20), transparent 62%),
+    radial-gradient(44vmax 44vmax at 8% 82%,  rgba(16, 185, 129, 0.20), transparent 62%),
+    radial-gradient(44vmax 44vmax at 88% 100%, rgba(59, 130, 246, 0.30), transparent 62%);
 }
