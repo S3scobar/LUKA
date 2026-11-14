@@ -12,6 +12,7 @@ const SHELL = [
   "/css/components.css",
   "/css/views.css",
   "/css/glass.css",
+  "/css/splash.css",
   "/js/main.js",
   "/favicon.svg",
   "/icon-192.png",
