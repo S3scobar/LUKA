@@ -97,9 +97,15 @@ export const themeManager = {
     const isMobile = window.innerWidth < 768;
     const duration = isMobile ? 380 : 480;
 
+    // Durante la animación se congelan transiciones y desenfoques (css/liquid.css, .theme-switching):
+    // con todo activo el cambio caía a ~35 fps en móviles lentos. La clase entra dentro del callback
+    // para que la captura "antes" conserve el aspecto original.
+    const root = document.documentElement;
     const transition = document.startViewTransition(() => {
+      root.classList.add("theme-switching");
       this.set(next);
     });
+    transition.finished.finally(() => root.classList.remove("theme-switching"));
 
     transition.ready.then(() => {
       document.documentElement.animate(
