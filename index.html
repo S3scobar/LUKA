@@ -22,6 +22,18 @@
     })();
   </script>
 
+  <!-- Pantalla de apertura: una vez por sesión del navegador y nunca con "reducir movimiento" -->
+  <script>
+    (function () {
+      try {
+        var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reduce || sessionStorage.getItem("luka_splash")) return;
+        sessionStorage.setItem("luka_splash", "1");
+      } catch (e) {}
+      document.documentElement.classList.add("splash-on");
+    })();
+  </script>
+
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="apple-touch-icon" href="icon-192.png" />
   <link rel="manifest" href="manifest.webmanifest" />
@@ -31,12 +43,25 @@
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-  <link rel="stylesheet" href="css/main.css?v=1.4" />
-  <link rel="stylesheet" href="css/components.css?v=1.4" />
-  <link rel="stylesheet" href="css/views.css?v=1.4" />
-  <link rel="stylesheet" href="css/glass.css?v=1.4" />
+  <link rel="stylesheet" href="css/main.css?v=1.5" />
+  <link rel="stylesheet" href="css/components.css?v=1.5" />
+  <link rel="stylesheet" href="css/views.css?v=1.5" />
+  <link rel="stylesheet" href="css/glass.css?v=1.5" />
+  <link rel="stylesheet" href="css/splash.css?v=1.5" />
 </head>
 <body>
+  <div id="splash" aria-hidden="true">
+    <div class="splash-bg"></div>
+    <div class="splash-stage">
+      <div class="splash-ripple"></div>
+      <div class="splash-ripple r2"></div>
+      <svg class="splash-ring" viewBox="0 0 200 200"><circle cx="100" cy="100" r="92" /></svg>
+      <img class="splash-logo" src="favicon.svg" alt="" />
+      <div class="splash-word"><span>L</span><span>U</span><span>K</span><span>A</span></div>
+      <p class="splash-tag">Tus finanzas, <em>bajo control.</em></p>
+    </div>
+  </div>
+
   <header class="navbar">
     <div class="brand">
       <img src="favicon.svg" alt="LUKA" style="width: 22px; height: 22px; border-radius: 6px; vertical-align: middle;" /> LUKA
@@ -83,7 +108,7 @@
     <span>Tutorial</span>
   </button>
 
-  <script type="module" src="js/main.js?v=1.4"></script>
+  <script type="module" src="js/main.js?v=1.5"></script>
   <script>
     // Registro del service worker: habilita la instalación y el arranque offline.
     if ("serviceWorker" in navigator) {

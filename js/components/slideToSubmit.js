@@ -18,6 +18,7 @@ export const slideToSubmit = {
     const fill = host.querySelector(".slide-fill");
     const labelEl = host.querySelector(".slide-label");
     const thumb = host.querySelector(".slide-thumb");
+    const thumbIcon = thumb.querySelector("i");
 
     let dragging = false;
     let startX = 0;
@@ -87,6 +88,7 @@ export const slideToSubmit = {
           labelEl.textContent = val;
         }
         labelEl.style.opacity = "1";
+        thumbIcon.className = "fa-solid fa-check";
       },
       // Vuelve al inicio (por ejemplo tras un error o un formulario incompleto)
       reset() {
@@ -94,6 +96,7 @@ export const slideToSubmit = {
         thumb.disabled = false;
         host.classList.remove("is-done", "is-busy");
         labelEl.textContent = label;
+        thumbIcon.className = "fa-solid fa-chevron-right";
         springBack();
       }
     };
