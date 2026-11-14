@@ -398,6 +398,9 @@ body::before {
     inset 0 -3px 6px rgba(15, 23, 42, 0.3),
     0 6px 16px rgba(37, 99, 235, 0.55);
 }
+.slide-track.is-done {
+  background: linear-gradient(#10B981, #10B981) padding-box, linear-gradient(150deg, #A7F3D0, #10B981) border-box;
+}
 .slide-track.is-done .slide-fill { background: linear-gradient(90deg, #10B981, #34D399); }
 .slide-track.is-done .slide-thumb {
   background:

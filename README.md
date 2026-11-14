@@ -78,6 +78,7 @@ La pestaña **Crédito** tiene dos secciones, porque funcionan distinto.
 * Navegación entre meses y años.
 
 ### 3.8. Tutorial interactivo
+* Pantalla de apertura animada (logo, "LUKA" y lema) una vez por sesión; un toque la salta y se omite con "reducir movimiento" (`css/splash.css`, `js/components/splash.js`).
 * Guía paso a paso por cada pestaña (Inicio, Billeteras, Presupuesto, Crédito, Suscripciones, Ahorros y Análisis), disponible desde un botón flotante.
 
 ### 3.9. Modo oscuro
