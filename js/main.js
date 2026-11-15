@@ -37,6 +37,7 @@ const VIEWS = {
 };
 
 let currentTab = "dashboard";
+let activeName = "";
 let activeUserId = null;
 let initPromise = null;
 
@@ -147,8 +148,12 @@ async function bootstrap() {
     // Esta sesión ya está en pantalla (por ejemplo, el evento de login llegó junto con el callback del formulario)
     if (user.id === activeUserId) return;
 
+    const friendlyName = user.user_metadata?.full_name 
+      || (user.email?.endsWith("@phone.luka.app") ? user.email.split("@")[0] : user.email);
+    activeName = friendlyName;
+
     // Face ID activado: se exige antes de mostrar nada de la cuenta
-    if (!(await biometricLock.require(user.id))) {
+    if (!(await biometricLock.require(user.id, friendlyName))) {
       biometricService.disable(user.id);
       try { await authService.signOut(); } finally { showAuth(); }
       return;
@@ -160,8 +165,6 @@ async function bootstrap() {
     activeUserId = user.id;
 
     setLoggedInUi(true);
-    const friendlyName = user.user_metadata?.full_name 
-      || (user.email?.endsWith("@phone.luka.app") ? user.email.split("@")[0] : user.email);
     userName.textContent = friendlyName;
 
     authService.recordActivity();
@@ -210,6 +213,7 @@ authService.onAuthStateChanged((user) => {
 
 biometricLock.watchVisibility({
   getUserId: () => activeUserId,
+  getName: () => activeName,
   onOtherAccount: async () => {
     biometricService.disable(activeUserId);
     try { await authService.signOut(); } finally { showAuth(); }
