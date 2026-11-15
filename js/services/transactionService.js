@@ -67,6 +67,8 @@ export const transactionService = {
         .gte("transaction_date", startDate)
         .lte("transaction_date", endDate)
         .order("transaction_date", { ascending: false })
+        // Dentro del mismo día, el último registrado va primero (el id es aleatorio, no sirve para ordenar)
+        .order("created_at", { ascending: false })
         .order("id", { ascending: false })
     );
   },
@@ -82,6 +84,7 @@ export const transactionService = {
         .gte("transaction_date", `${targetYear}-01-01`)
         .lte("transaction_date", `${targetYear}-12-31`)
         .order("transaction_date", { ascending: true })
+        .order("created_at", { ascending: true })
         .order("id", { ascending: true })
     );
   },
