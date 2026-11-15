@@ -322,3 +322,56 @@ body::before {
     radial-gradient(44vmax 44vmax at 8% 82%,  rgba(16, 185, 129, 0.20), transparent 62%),
     radial-gradient(44vmax 44vmax at 88% 100%, rgba(59, 130, 246, 0.30), transparent 62%);
 }
+
+/* ------------------------------------------------------------------
+   4) Pantalla de acceso: distribución más limpia y vidrio en sus controles
+   ------------------------------------------------------------------ */
+.auth-card {
+  width: calc(100% - 2rem);
+  max-width: 400px;
+  margin: clamp(1.25rem, 9vh, 4.5rem) auto 2rem;
+  padding: 1.75rem 1.5rem 1.5rem;
+}
+.auth-header { margin-bottom: 1.25rem; }
+.auth-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 3.6rem; height: 3.6rem; margin-bottom: 0.85rem;
+  font-size: 1.5rem; color: #fff; border-radius: 1.1rem;
+  background: linear-gradient(145deg, #60a5fa, #2563eb);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 10px 22px -8px rgba(37, 99, 235, 0.7);
+}
+.auth-header h2 { font-size: 1.45rem; margin: 0 0 0.2rem; }
+.auth-header p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
+
+/* Los campos ocupaban solo parte del ancho */
+.input-with-icon { width: 100%; }
+.input-with-icon input { flex: 1; width: 100%; min-width: 0; }
+.auth-form .form-group { margin-bottom: 0.85rem; }
+.auth-form .form-group label { font-size: 0.8rem; margin-left: 0.15rem; }
+.auth-form #auth-slider { margin-top: 1.1rem; }
+
+/* Campos y botón de Google en vidrio */
+.auth-form .input-with-icon input {
+  background: var(--lg-input);
+  border: 1px solid;
+  border-color: var(--lg-item-border);
+  box-shadow: inset 0 2px 6px rgba(15, 23, 42, 0.10), 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.auth-form .input-with-icon input:focus {
+  border-color: rgba(96, 165, 250, 0.95);
+  box-shadow: inset 0 2px 6px rgba(15, 23, 42, 0.10), 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+.btn-google {
+  background:
+    radial-gradient(circle at 20% 0%, var(--lg-sheen), transparent 60%),
+    var(--lg-item);
+  border: 1px solid;
+  border-color: var(--lg-item-border);
+  box-shadow: var(--lg-item-shadow);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.btn-google:hover { background: radial-gradient(circle at 20% 0%, var(--lg-sheen), transparent 60%), var(--lg-item-hover); }
+.auth-divider { margin: 1.1rem 0 1.2rem; }
+.auth-divider::before, .auth-divider::after { border-color: var(--lg-item-border); }
+.auth-toggle { margin-top: 1.2rem; }
