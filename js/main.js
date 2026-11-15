@@ -15,6 +15,8 @@ import { liquidNav } from "./components/liquidNav.js";
 import { installPrompt } from "./components/installPrompt.js";
 import { initSplash } from "./components/splash.js";
 import { glassLight } from "./components/glassLight.js";
+import { biometricLock } from "./components/biometricLock.js";
+import { biometricService } from "./services/biometricService.js";
 
 const app = document.getElementById("app");
 const navTabs = document.getElementById("nav-tabs");
@@ -35,6 +37,7 @@ const VIEWS = {
 };
 
 let currentTab = "dashboard";
+let activeName = "";
 let activeUserId = null;
 let initPromise = null;
 
@@ -145,17 +148,30 @@ async function bootstrap() {
     // Esta sesión ya está en pantalla (por ejemplo, el evento de login llegó junto con el callback del formulario)
     if (user.id === activeUserId) return;
 
+    const friendlyName = user.user_metadata?.full_name 
+      || (user.email?.endsWith("@phone.luka.app") ? user.email.split("@")[0] : user.email);
+    activeName = friendlyName;
+
+    // Face ID activado: se exige antes de mostrar nada de la cuenta
+    if (!(await biometricLock.require(user.id, friendlyName))) {
+      biometricService.disable(user.id);
+      try { await authService.signOut(); } finally { showAuth(); }
+      return;
+    }
+
     // Otro usuario en el mismo navegador no hereda filtros, pestaña ni selecciones del anterior
     resetViews();
     currentTab = "dashboard";
     activeUserId = user.id;
 
     setLoggedInUi(true);
-    const friendlyName = user.user_metadata?.full_name 
-      || (user.email?.endsWith("@phone.luka.app") ? user.email.split("@")[0] : user.email);
     userName.textContent = friendlyName;
 
+    authService.recordActivity();
+
     switchView(currentTab);
+
+    biometricLock.offer(user.id, friendlyName);
 
     tutorialTour.init({
       userId: user.id,
@@ -195,8 +211,18 @@ authService.onAuthStateChanged((user) => {
   }
 });
 
+biometricLock.watchVisibility({
+  getUserId: () => activeUserId,
+  getName: () => activeName,
+  onOtherAccount: async () => {
+    biometricService.disable(activeUserId);
+    try { await authService.signOut(); } finally { showAuth(); }
+  }
+});
+
 logoutBtn.addEventListener("click", async () => {
   try {
+    if (activeUserId) biometricService.disable(activeUserId); // cerrar sesión también quita el candado
     await authService.signOut();
   } finally {
     showAuth();
