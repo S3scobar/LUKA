@@ -125,6 +125,23 @@ async function bootstrap() {
       return;
     }
 
+    // Si inició con celular, auto-registrar en user_phones si aún no existía
+    if (user.email && user.email.endsWith("@phone.luka.app")) {
+      const p = user.email.split("@")[0];
+      try {
+        await authService.linkPhone(p, "phone");
+      } catch {}
+    }
+
+    // Regla de seguridad: verificar si el usuario tiene celular vinculado
+    const phoneStatus = await authService.getPhoneStatus();
+    if (!phoneStatus.has_phone) {
+      activeUserId = null;
+      setLoggedInUi(false);
+      authView.renderPhoneLink(mountHost(), user, () => initApp());
+      return;
+    }
+
     // Esta sesión ya está en pantalla (por ejemplo, el evento de login llegó junto con el callback del formulario)
     if (user.id === activeUserId) return;
 
@@ -134,7 +151,9 @@ async function bootstrap() {
     activeUserId = user.id;
 
     setLoggedInUi(true);
-    userName.textContent = user.user_metadata?.full_name || user.email;
+    const friendlyName = user.user_metadata?.full_name 
+      || (user.email?.endsWith("@phone.luka.app") ? user.email.split("@")[0] : user.email);
+    userName.textContent = friendlyName;
 
     switchView(currentTab);
 
