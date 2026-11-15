@@ -179,6 +179,146 @@
   font-size: 0.85rem;
 }
 
+/* Botón Google OAuth — Liquid Glass */
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.85rem 1.25rem;
+  background: var(--liquid-bg);
+  color: var(--text-main);
+  border: 1px solid var(--liquid-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05), var(--liquid-shine);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(var(--liquid-blur));
+  -webkit-backdrop-filter: blur(var(--liquid-blur));
+}
+
+.btn-google:hover {
+  transform: translateY(-2px);
+  border-color: rgba(66, 133, 244, 0.5);
+  box-shadow: 0 6px 20px rgba(66, 133, 244, 0.2), var(--liquid-shine);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.btn-google:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Animación Liquid Glow al iniciar sesión con Google */
+.btn-google.authenticating {
+  pointer-events: none;
+  border-color: rgba(66, 133, 244, 0.8);
+  animation: googleLiquidPulse 1.4s infinite ease-in-out;
+}
+
+@keyframes googleLiquidPulse {
+  0% {
+    box-shadow: 0 0 15px rgba(66, 133, 244, 0.4), inset 0 0 10px rgba(66, 133, 244, 0.2);
+    transform: scale(0.99);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(66, 133, 244, 0.7), inset 0 0 20px rgba(66, 133, 244, 0.4);
+    transform: scale(1.02);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(66, 133, 244, 0.4), inset 0 0 10px rgba(66, 133, 244, 0.2);
+    transform: scale(0.99);
+  }
+}
+
+/* Divisor elegante "o con tu celular" */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.35rem 0;
+  color: var(--text-muted);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid var(--liquid-border);
+  opacity: 0.6;
+}
+
+.auth-divider span {
+  padding: 0 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Input con icono prefijo */
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-with-icon .input-icon-prefix {
+  position: absolute;
+  left: 0.95rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.input-with-icon input {
+  padding-left: 2.65rem !important;
+}
+
+/* Modal y badges de vinculación de celular */
+.phone-link-card {
+  max-width: 440px;
+}
+
+.rule-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-full);
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  color: #3b82f6;
+  font-size: 0.78rem;
+  font-weight: 500;
+  margin-top: 0.6rem;
+}
+
+:root[data-theme="dark"] .rule-badge {
+  color: #60a5fa;
+  background: rgba(59, 130, 246, 0.18);
+}
+
+.user-avatar-badge {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.4) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.85rem auto;
+  font-size: 1.5rem;
+  color: #60a5fa;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
 /* Tarjetas de Sección — Liquid Morph */
 .section-card {
   background: var(--liquid-bg);
