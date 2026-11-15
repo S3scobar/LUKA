@@ -375,3 +375,46 @@ body::before {
 .auth-divider { margin: 1.1rem 0 1.2rem; }
 .auth-divider::before, .auth-divider::after { border-color: var(--lg-item-border); }
 .auth-toggle { margin-top: 1.2rem; }
+
+/* ------------------------------------------------------------------
+   5) Face ID: pantalla de bloqueo y oferta de activación
+   ------------------------------------------------------------------ */
+.bio-lock {
+  position: fixed; inset: 0; z-index: 10000;
+  display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+  background: radial-gradient(60vmax 60vmax at 20% 0%, rgba(59, 130, 246, 0.35), transparent 60%), var(--bg-primary);
+  -webkit-backdrop-filter: blur(22px); backdrop-filter: blur(22px);
+  animation: bio-in 0.25s ease both;
+}
+.bio-lock.is-out { opacity: 0; transition: opacity 0.25s ease; pointer-events: none; }
+.bio-lock-card {
+  width: 100%; max-width: 340px; text-align: center; padding: 2rem 1.5rem 1.5rem;
+  border-radius: var(--radius-lg); border: 1px solid; border-color: var(--lg-border);
+  background: radial-gradient(circle at 20% 0%, var(--lg-sheen), transparent 55%), var(--g-panel);
+  box-shadow: var(--lg-shadow);
+}
+.bio-lock-icon {
+  width: 4rem; height: 4rem; margin: 0 auto 1rem; border-radius: 1.2rem; font-size: 1.6rem; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(145deg, #60a5fa, #2563eb);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 10px 22px -8px rgba(37, 99, 235, 0.7);
+}
+.bio-lock-card h2 { margin: 0 0 0.25rem; font-size: 1.35rem; }
+.bio-lock-msg { margin: 0 0 1.25rem; color: var(--text-muted); font-size: 0.9rem; }
+.bio-lock .bio-other { margin-top: 1rem; }
+.bio-offer {
+  position: fixed; left: 50%; bottom: max(1rem, env(safe-area-inset-bottom)); transform: translateX(-50%);
+  z-index: 9000; width: calc(100% - 2rem); max-width: 420px;
+  display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.85rem;
+  border-radius: var(--radius-lg); border: 1px solid; border-color: var(--lg-border);
+  background: radial-gradient(circle at 15% 0%, var(--lg-sheen), transparent 60%), var(--g-panel);
+  -webkit-backdrop-filter: var(--lg-blur); backdrop-filter: var(--lg-blur);
+  box-shadow: var(--lg-shadow); animation: bio-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.bio-offer-icon { font-size: 1.6rem; color: var(--primary); }
+.bio-offer-text { flex: 1; display: flex; flex-direction: column; font-size: 0.8rem; color: var(--text-muted); line-height: 1.25; }
+.bio-offer-text strong { color: var(--text-main); font-size: 0.9rem; }
+.bio-offer .btn { padding: 0.5rem 0.9rem; }
+.bio-no { background: none; border: 0; color: var(--text-muted); padding: 0.4rem; cursor: pointer; }
+@keyframes bio-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes bio-up { from { opacity: 0; transform: translate(-50%, 16px); } to { opacity: 1; transform: translate(-50%, 0); } }
