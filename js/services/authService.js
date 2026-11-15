@@ -154,5 +154,14 @@ export const authService = {
       throw new Error(data.error || "No se pudo vincular el celular.");
     }
     return data;
+  },
+
+  // Registra actividad del usuario para mantener la cuenta viva (evita purga por inactividad de 2 meses)
+  async recordActivity() {
+    try {
+      await supabase.rpc("record_user_activity");
+    } catch {
+      // Silencioso: no interrumpe el flujo si la función aún no se ha creado
+    }
   }
 };

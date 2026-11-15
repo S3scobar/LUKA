@@ -155,6 +155,8 @@ async function bootstrap() {
       || (user.email?.endsWith("@phone.luka.app") ? user.email.split("@")[0] : user.email);
     userName.textContent = friendlyName;
 
+    authService.recordActivity();
+
     switchView(currentTab);
 
     tutorialTour.init({
