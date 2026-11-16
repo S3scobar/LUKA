@@ -4,6 +4,33 @@ Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, 
 
 ---
 
+## Vista previa
+
+Modo claro y oscuro, con datos de demostración.
+
+<p align="center"><img src="docs/screenshots/inicio.png" alt="Inicio en modo claro y oscuro" width="560" /></p>
+
+<details>
+<summary>Billeteras, presupuestos y ahorros</summary>
+
+<p align="center">
+  <img src="docs/screenshots/billeteras.png" alt="Billeteras" width="420" />
+  <img src="docs/screenshots/presupuestos.png" alt="Presupuestos" width="420" />
+  <img src="docs/screenshots/ahorros.png" alt="Ahorros" width="420" />
+</p>
+
+</details>
+
+## Qué demuestra este proyecto
+
+* **Datos y seguridad:** aislamiento por usuario con RLS en PostgreSQL, funciones RPC atómicas para saldos, un trigger que impide tocar billeteras ajenas y permisos de funciones revisados con los avisos de seguridad de Supabase.
+* **Sin dependencias de build:** ES Modules nativos, sin framework ni bundler, organizado en servicios, componentes y vistas.
+* **Experiencia móvil:** PWA instalable, navegación por gestos, esqueletos de carga, tema claro/oscuro animado y desbloqueo con Face ID o huella (WebAuthn).
+* **Rendimiento medido:** el cambio de tema y el desplazamiento se midieron con la CPU limitada 6× y se ajustaron hasta mantener unos 50 a 60 fps.
+* **Accesibilidad y preferencias del sistema:** respeta `prefers-reduced-motion` y `prefers-reduced-transparency`, y el deslizador de ingreso funciona también con teclado.
+
+---
+
 ## 1. Qué resuelve
 
 * Registrar un gasto con un solo toque, sin pantallas intermedias.

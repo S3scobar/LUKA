@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  syntax:
+    name: Sintaxis de JavaScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Revisar módulos ES
+        run: |
+          status=0
+          for f in $(git ls-files 'js/*.js' 'js/**/*.js'); do
+            node --input-type=module --check < "$f" || { echo "Error de sintaxis en $f"; status=1; }
+          done
+          exit $status
+      - name: Revisar el service worker
+        run: node --check sw.js
