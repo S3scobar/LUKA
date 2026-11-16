@@ -7,6 +7,7 @@ import { loanService } from "../services/loanService.js";
 import { creditView } from "./creditView.js";
 import { quickExpenseBar } from "../components/quickExpenseBar.js";
 import { escapeHtml, resolveContainer, notifyError, formatShortDate } from "../utils.js";
+import { skeletonHtml } from "../components/skeleton.js";
 
 export const dashboardView = {
   showAllTransactions: false,
@@ -17,7 +18,7 @@ export const dashboardView = {
 
   async render(target) {
     const container = resolveContainer(target);
-    container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tu información...</div>`;
+    container.innerHTML = skeletonHtml();
 
     try {
       const [wallets, categories, transactions, creditCards, ccSummary, loanSummary] = await Promise.all([
@@ -63,7 +64,7 @@ export const dashboardView = {
             </div>
             <div class="metric-card card-balance">
               <span class="metric-label"><i class="fa-solid fa-scale-balanced"></i> Balance</span>
-              <span class="metric-value ${netBalance < 0 ? "text-danger" : "text-success"}">
+              <span class="metric-value ${netBalance < 0 ? "text-danger" : "text-balance"}">
                 $ ${netBalance.toLocaleString("es-CO", { maximumFractionDigits: 0 })}
               </span>
             </div>
@@ -94,7 +95,7 @@ export const dashboardView = {
                   </div>
                   ${ccSummary.totalDue > 0 ? `
                     <button type="button" id="btn-pay-cc-from-dashboard" class="btn btn-sm btn-primary">
-                      <i class="fa-solid fa-money-bill-transfer"></i> Pagar
+                      Pagar <i class="fa-solid fa-arrow-right"></i>
                     </button>
                   ` : ''}
                 </div>
@@ -122,7 +123,7 @@ export const dashboardView = {
                   </div>
                   ${loanSummary.totalDue > 0 ? `
                     <button type="button" id="btn-pay-loan-from-dashboard" class="btn btn-sm btn-primary">
-                      <i class="fa-solid fa-money-bill-transfer"></i> Pagar
+                      Pagar <i class="fa-solid fa-arrow-right"></i>
                     </button>
                   ` : ''}
                 </div>

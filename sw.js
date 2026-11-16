@@ -16,6 +16,7 @@ const SHELL = [
   "/css/liquid.css",
   "/js/main.js",
   "/js/components/biometricLock.js",
+  "/js/components/skeleton.js",
   "/js/services/biometricService.js",
   "/favicon.svg",
   "/icon-192.png",

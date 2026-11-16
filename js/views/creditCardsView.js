@@ -5,6 +5,7 @@ import { walletService } from "../services/walletService.js";
 import { categoryService } from "../services/categoryService.js";
 import { transactionService } from "../services/transactionService.js";
 import { escapeHtml, resolveContainer, notifyError } from "../utils.js";
+import { skeletonHtml } from "../components/skeleton.js";
 
 export const creditCardsView = {
   selectedCardId: null,
@@ -15,7 +16,7 @@ export const creditCardsView = {
 
   async render(target) {
     const container = resolveContainer(target);
-    container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tus tarjetas de crédito...</div>`;
+    container.innerHTML = skeletonHtml();
 
     try {
       const [cards, wallets, categories, monthTransactions] = await Promise.all([
