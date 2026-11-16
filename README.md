@@ -1,6 +1,6 @@
 # LUKA
 
-Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, presupuestos por categoría, tarjetas de crédito, suscripciones y fondos de ahorro. Es un sitio estático (HTML, CSS y JavaScript con módulos ES) que usa Supabase para la base de datos y la autenticación, y se despliega en Vercel.
+Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, presupuestos por categoría, tarjetas de crédito, suscripciones y fondos de ahorro. Es un sitio estático (HTML, CSS y JavaScript con módulos ES) que usa Supabase para la base de datos y la autenticación, se despliega en Vercel y se puede instalar como app (PWA).
 
 ---
 
@@ -16,7 +16,7 @@ Aplicación web de finanzas personales: registro de gastos e ingresos, cuentas, 
 
 * **Sin framework ni bundler:** ES Modules nativos y dos dependencias por CDN (Font Awesome y `supabase-js`).
 * **Aislamiento entre usuarios con RLS:** cada fila tiene `user_id` y las políticas limitan el acceso a `auth.uid() = user_id` (ver `supabase/schema.sql`).
-* **Saldos coherentes:** el trigger `tr_transaction_balance` ajusta el saldo de la billetera al crear o borrar una transacción, por lo que el código no lo toca a mano en esos casos. Para el cupo de las tarjetas y las transferencias, `walletService.adjustBalance()` usa funciones RPC atómicas (`supabase/functions.sql`); si no están desplegadas, lee y escribe.
+* **Saldos coherentes:** el trigger `tr_transaction_balance` ajusta el saldo de la billetera al crear o borrar una transacción, por lo que el código no lo toca a mano en esos casos. Para el cupo de las tarjetas y las transferencias, `walletService.adjustBalance()` usa funciones RPC atómicas (`supabase/schema.sql`); si no están desplegadas, lee y escribe.
 * **Móvil primero:** pestañas deslizables, montos con separador de miles (`es-CO`) y tutorial en el primer ingreso.
 * **Tema claro y oscuro:** los colores salen de variables CSS en `css/main.css`; el tema oscuro solo las redefine.
 
@@ -81,12 +81,19 @@ La pestaña **Crédito** tiene dos secciones, porque funcionan distinto.
 * Pantalla de apertura animada (logo, "LUKA" y lema) una vez por sesión; un toque la salta y se omite con "reducir movimiento" (`css/splash.css`, `js/components/splash.js`).
 * Guía paso a paso por cada pestaña (Inicio, Billeteras, Presupuesto, Crédito, Suscripciones, Ahorros y Análisis), disponible desde un botón flotante.
 
-### 3.9. Modo oscuro
+### 3.9. Acceso y bloqueo con Face ID
+* Ingreso con celular, correo o Google, con un deslizador «desliza para ingresar».
+* **Face ID / huella (opcional):** tras iniciar sesión se ofrece activar el desbloqueo biométrico (WebAuthn con autenticador de la plataforma, `js/services/biometricService.js`). Con él activo, la app pide la verificación al abrirse y al volver tras más de un minuto en segundo plano. Es un candado local sobre la sesión ya guardada: no inicia sesión por sí solo ni guarda datos biométricos. Cerrar sesión lo desactiva.
+* Cada celular puede vincularse a un máximo de 2 cuentas.
+
+### 3.10. Modo oscuro y estilo visual
 * Botón de luna/sol en el header (visible también en la pantalla de acceso).
 * Orden de prioridad: preferencia guardada por el usuario (`localStorage`, clave `luka_theme`) > preferencia del sistema (`prefers-color-scheme`).
 * Un pequeño script en `<head>` aplica el tema antes de pintar, evitando el parpadeo blanco al cargar.
 * Si el usuario nunca eligió manualmente, la app sigue los cambios del sistema en tiempo real.
 * Actualiza el `theme-color` del navegador móvil y usa `color-scheme` para que los controles nativos (fechas, selects, scrollbars) también se vean oscuros.
+* El cambio de tema se anima desde el botón (View Transitions API, con respaldo por fundido).
+* Estilo «liquid glass» (`css/glass.css`, `css/liquid.css`): superficies translúcidas con desenfoque y borde de luz, y esqueletos de carga al cambiar de pestaña. Respeta `prefers-reduced-motion` y `prefers-reduced-transparency`.
 
 ---
 
@@ -101,10 +108,11 @@ La pestaña **Crédito** tiene dos secciones, porque funcionan distinto.
 ### Capa de Datos (Backend as a Service)
 * **Plataforma:** Supabase.
 * **Base de datos:** PostgreSQL con Row Level Security.
-* **Autenticación:** Supabase Auth (correo y contraseña) con JWT.
+* **Autenticación:** Supabase Auth con JWT: correo y contraseña, celular (correo interno `@phone.luka.app`) y Google.
 
 ### Infraestructura
 * **Despliegue:** Vercel (sitio estático con `cleanUrls` y reescritura de todas las rutas a `index.html`).
+* **PWA:** `manifest.webmanifest` y `sw.js` (red primero para HTML, JS y CSS; caché con revalidación para iconos).
 * **Control de versiones:** Git / GitHub.
 
 ---
@@ -117,15 +125,18 @@ La pestaña **Crédito** tiene dos secciones, porque funcionan distinto.
 ├── favicon.svg                     # Icono de la app
 ├── .gitignore
 ├── README.md
+├── manifest.webmanifest            # PWA: nombre, iconos y colores
+├── sw.js                           # Service worker
 ├── supabase/
-│   ├── schema.sql                  # Tablas, RLS y triggers (referencia del esquema actual)
-│   ├── indexes.sql                 # Índices por usuario y por fecha
-│   ├── default_categories.sql      # Categorías Ahorro y Gasto hormiga (usuarios nuevos y existentes)
-│   └── functions.sql               # Ajustes de saldo y transferencias atómicas
+│   ├── schema.sql                  # Esquema completo: tablas, índices, RLS, funciones y triggers
+│   └── migrations/                 # Cambios aplicados sobre el esquema, con fecha
 ├── css/
 │   ├── main.css                    # Tokens de diseño (tema claro y oscuro), reset y tipografía
 │   ├── components.css              # Botones, tarjetas, modales y formularios
-│   └── views.css                   # Estilos específicos de cada vista
+│   ├── views.css                   # Estilos específicos de cada vista
+│   ├── glass.css                   # Barra, píldora de navegación, transiciones y deslizador
+│   ├── splash.css                  # Pantalla de apertura
+│   └── liquid.css                  # Capa «liquid glass», esqueletos, Face ID y pantalla de acceso
 └── js/
     ├── main.js                     # Punto de entrada: sesión, navegación entre vistas y tema
     ├── config.js                   # URL y clave pública (anon) de Supabase
@@ -136,7 +147,8 @@ La pestaña **Crédito** tiene dos secciones, porque funcionan distinto.
     ├── icons.js                    # Iconos disponibles para categorías, billeteras y ahorros, y su selector
     ├── colorSwatches.js            # Colores rápidos para categorías y billeteras
     ├── services/
-    │   ├── authService.js          # Registro, login, logout y sesión
+    │   ├── authService.js          # Registro, login (correo, celular, Google), logout y sesión
+    │   ├── biometricService.js     # Face ID / huella con WebAuthn
     │   ├── walletService.js        # Billeteras, ajustes de saldo y transferencias
     │   ├── categoryService.js      # Categorías y favoritas
     │   ├── transactionService.js   # Transacciones (consulta mensual/anual, alta y baja)
@@ -148,7 +160,15 @@ La pestaña **Crédito** tiene dos secciones, porque funcionan distinto.
     ├── components/
     │   ├── quickExpenseBar.js      # Barra de registro rápido
     │   ├── modalCategoryPicker.js  # Selector modal de categorías
-    │   └── tutorialTour.js         # Tutorial interactivo
+    │   ├── tutorialTour.js         # Tutorial interactivo
+    │   ├── slideToSubmit.js        # Deslizador de ingreso
+    │   ├── swipeNav.js             # Cambio de pestaña deslizando
+    │   ├── liquidNav.js            # Píldora animada de la barra
+    │   ├── glassLight.js           # Brillo que sigue al puntero
+    │   ├── biometricLock.js        # Pantalla de bloqueo y oferta de Face ID
+    │   ├── skeleton.js             # Esqueleto de carga
+    │   ├── splash.js               # Pantalla de apertura
+    │   └── installPrompt.js        # Botón de instalación (PWA)
     └── views/
         ├── authView.js             # Login y registro
         ├── dashboardView.js        # Inicio: métricas, registro rápido e historial
@@ -168,7 +188,7 @@ La pestaña **Crédito** tiene dos secciones, porque funcionan distinto.
 
 ## 6. Modelo de Datos
 
-El código consume las siguientes tablas de Supabase. Las políticas RLS, los índices y las funciones están en `supabase/`; las tablas en sí no están versionadas:
+Las tablas, políticas RLS, índices, funciones y triggers están en `supabase/schema.sql`:
 
 | Tabla | Propósito |
 |---|---|
@@ -180,8 +200,13 @@ El código consume las siguientes tablas de Supabase. Las políticas RLS, los í
 | `credit_card_purchases` | Compras y avances con número de cuotas, cuotas pagadas y comisión |
 | `subscriptions` | Pagos recurrentes con día de cobro y estado activo |
 | `saving_goals` | Fondos de ahorro con meta, monto actual, tasa de rendimiento y fecha de última liquidación |
+| `loans` | Préstamos (de app, persona o banco) con monto, interés, cuotas y primera fecha de pago |
+| `loan_payments` | Pagos de cada préstamo, enlazados a su gasto |
+| `profiles` | Datos básicos del usuario, creados al registrarse |
+| `user_phones` | Celular vinculado (máximo 2 cuentas por número) |
+| `user_activity` | Última actividad, para limpiar cuentas inactivas |
 
-Todas las tablas incluyen `user_id` y deben tener RLS activado con políticas basadas en `auth.uid()`.
+Todas las tablas tienen RLS activado, con una política que limita cada fila a su dueño (`auth.uid()`).
 
 ---
 
@@ -194,7 +219,7 @@ No requiere compilación ni `npm install`: es un sitio estático.
    git clone https://github.com/S3scobar/LUKA.git
    cd LUKA
    ```
-2. Crea tu propio proyecto en [Supabase](https://supabase.com), crea las tablas de la sección 6 y activa RLS con políticas por `user_id`.
+2. Crea tu propio proyecto en [Supabase](https://supabase.com), ejecuta `supabase/schema.sql` en el SQL Editor (crea tablas, RLS, índices y funciones).
 3. Edita `js/config.js` con la URL y la **anon key** de tu proyecto (nunca uses la `service_role` key en el cliente).
 4. Sirve la carpeta con cualquier servidor estático (los ES Modules no funcionan abriendo el archivo directamente):
    ```bash
@@ -211,8 +236,8 @@ Importa el repositorio en Vercel como proyecto estático, sin comando de build. 
 
 ## 8. Varios usuarios a la vez
 
-* **Datos:** cada usuario solo ve sus filas gracias a RLS. `supabase/schema.sql` define las políticas de las nueve tablas; confirma en el panel de Supabase que todas tienen RLS activo. Ejecuta `supabase/indexes.sql`: las políticas filtran por `user_id` en cada consulta y sin índices la base se vuelve más lenta con cada usuario nuevo.
-* **Saldos:** dos pestañas o dispositivos del mismo usuario pueden modificar una cuenta a la vez. Con `supabase/functions.sql` desplegado, el ajuste es una sola sentencia SQL y no se pierde ninguna actualización.
+* **Datos:** cada usuario solo ve sus filas gracias a RLS. `supabase/schema.sql` define las políticas de todas las tablas y los índices por `user_id` que las respaldan.
+* **Saldos:** dos pestañas o dispositivos del mismo usuario pueden modificar una cuenta a la vez. Con las funciones de `supabase/schema.sql` desplegadas, el ajuste es una sola sentencia SQL y no se pierde ninguna actualización.
 * **Sesión compartida entre pestañas:** `supabase-js` guarda la sesión en `localStorage`. Si en otra pestaña se cierra sesión o entra otro usuario, esta pestaña vuelve al login o recarga los datos del usuario nuevo; no sigue mostrando los del anterior.
 * **Estado en pantalla:** al cambiar de usuario se reinician los filtros de mes, la tarjeta seleccionada y la pestaña activa.
 * **Respuestas tardías:** cada pestaña se pinta en su propio contenedor, así una consulta lenta no sobrescribe la pestaña que el usuario abrió después.
@@ -224,6 +249,9 @@ Importa el repositorio en Vercel como proyecto estático, sin comando de build. 
 * **Fondos de ahorro:** aportes y retiros siguen leyendo y escribiendo `saving_goals.current_amount` en pasos separados; falta una función RPC como la de las billeteras.
 * **Compras con tarjeta:** registrar una compra implica varias llamadas (compra, cupo, transacción). Si una falla a mitad, los datos pueden quedar a medias. Lo ideal es una función SQL que haga todo en una transacción.
 * **Pagos de tarjeta y avances anteriores:** hasta esta versión `payCard()` y el avance de `addPurchase()` ajustaban el saldo a mano y además el trigger lo ajustaba al registrar la transacción, así que el movimiento se contaba dos veces. Ya no ocurre, pero los saldos de pagos y avances hechos antes pueden estar desviados: corrígelos con el lápiz de editar en Billeteras.
+* **Funciones de base de datos:** las de uso interno (disparadores y la limpieza de inactivos) no son ejecutables desde la API pública; el disparador de saldo comprueba que la billetera pertenezca al usuario. Las políticas RLS aplican solo al rol `authenticated`.
+* **Limpieza de inactivos:** `purge_inactive_users()` elimina las cuentas sin actividad en 2 meses (tarea diaria con `pg_cron`).
+* **Face ID:** es un candado local; no sustituye la contraseña ni protege la cuenta desde otro dispositivo.
 * **Correo sin verificar:** el trigger `auto_confirm_user` confirma cualquier correo al registrarse, por lo que nadie comprueba que el correo sea real. Es cómodo, pero no comprueba que el correo pertenezca a quien se registra.
 * **Pago de suscripciones y tarjetas:** se detecta por el texto del título del movimiento («Pago: nombre», «Pago Tarjeta: nombre»). Si el usuario edita ese texto, el estado cambia.
 * **Escape de HTML:** el texto escrito por el usuario pasa por `escapeHtml()` antes de entrar a una plantilla. Al agregar vistas nuevas, haz lo mismo.
@@ -236,7 +264,10 @@ Importa el repositorio en Vercel como proyecto estático, sin comando de build. 
 
 - [ ] Mover aportes de ahorro y compras con tarjeta a funciones RPC.
 - [ ] Fijar la versión de `supabase-js`.
-- [ ] PWA instalable.
+- [x] PWA instalable.
+- [x] Desbloqueo con Face ID / huella.
+- [ ] Contraseñas filtradas: activar «Leaked password protection» en Supabase Auth.
+- [ ] Calcular totales en la base de datos en lugar del navegador.
 - [ ] Exportar movimientos a CSV.
 
 ---
