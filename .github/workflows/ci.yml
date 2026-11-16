@@ -6,8 +6,8 @@ on:
   pull_request:
 
 jobs:
-  syntax:
-    name: Sintaxis de JavaScript
+  checks:
+    name: Sintaxis y pruebas
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,3 +23,5 @@ jobs:
           exit $status
       - name: Revisar el service worker
         run: node --check sw.js
+      - name: Pruebas
+        run: node --import ./tests/helpers/register.mjs --test tests/*.test.mjs
