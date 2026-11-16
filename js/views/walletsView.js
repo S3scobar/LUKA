@@ -5,11 +5,12 @@ import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js
 import { escapeHtml, resolveContainer, notifyError } from "../utils.js";
 import { CATEGORY_ICON_GROUPS, WALLET_ICONS, iconPickerHtml, bindIconPicker } from "../icons.js";
 import { colorSwatchesHtml, bindColorSwatches } from "../colorSwatches.js";
+import { skeletonHtml } from "../components/skeleton.js";
 
 export const walletsView = {
   async render(target) {
     const container = resolveContainer(target);
-    container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando billeteras y categorías...</div>`;
+    container.innerHTML = skeletonHtml();
 
     try {
       const [wallets, allCategories] = await Promise.all([

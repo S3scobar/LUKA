@@ -4,11 +4,12 @@ import { walletService } from "../services/walletService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 import { escapeHtml, resolveContainer, notifyError } from "../utils.js";
 import { SAVING_ICONS, iconPickerHtml, bindIconPicker } from "../icons.js";
+import { skeletonHtml } from "../components/skeleton.js";
 
 export const savingsView = {
   async render(target) {
     const container = resolveContainer(target);
-    container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tus fondos de ahorro...</div>`;
+    container.innerHTML = skeletonHtml();
 
     try {
       const [savingsFunds, wallets] = await Promise.all([

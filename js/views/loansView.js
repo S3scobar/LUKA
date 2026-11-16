@@ -3,6 +3,7 @@ import { loanService, LENDER_TYPES, isMissingLoansTable } from "../services/loan
 import { walletService } from "../services/walletService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 import { escapeHtml, resolveContainer, notifyError, formatShortDate } from "../utils.js";
+import { skeletonHtml } from "../components/skeleton.js";
 
 const money = (value) => `$ ${Number(value).toLocaleString("es-CO", { maximumFractionDigits: 0 })}`;
 const todayIso = () => {
@@ -13,7 +14,7 @@ const todayIso = () => {
 export const loansView = {
   async render(target) {
     const container = resolveContainer(target);
-    container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tus préstamos...</div>`;
+    container.innerHTML = skeletonHtml();
 
     try {
       const [loans, wallets] = await Promise.all([loanService.getLoans(), walletService.getWallets()]);
