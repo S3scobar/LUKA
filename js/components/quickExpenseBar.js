@@ -3,6 +3,7 @@ import { transactionService } from "../services/transactionService.js";
 import { creditCardService } from "../services/creditCardService.js";
 import { modalCategoryPicker } from "./modalCategoryPicker.js";
 import { escapeHtml } from "../utils.js";
+import { iconHtml } from "../icons.js";
 
 // Animación breve al guardar: el dinero sale en un gasto y entra en un ingreso
 function showExpenseAnimation(amount, type = "expense") {
@@ -13,12 +14,12 @@ function showExpenseAnimation(amount, type = "expense") {
   overlay.innerHTML = `
     <div class="expense-anim-card ${isExpense ? "is-expense" : "is-income"}">
       <div class="anim-illustration">
-        <span class="flying-particle particle-1"><i class="fa-solid ${isExpense ? "fa-money-bill-wave" : "fa-coins"}"></i></span>
-        <span class="flying-particle particle-2"><i class="fa-solid ${isExpense ? "fa-coins" : "fa-money-bill-wave"}"></i></span>
-        <span class="flying-particle particle-3"><i class="fa-solid ${isExpense ? "fa-money-bill" : "fa-hand-holding-dollar"}"></i></span>
+        <span class="flying-particle particle-1">${iconHtml(isExpense ? "ph-money" : "ph-coins")}</span>
+        <span class="flying-particle particle-2">${iconHtml(isExpense ? "ph-coins" : "ph-money")}</span>
+        <span class="flying-particle particle-3">${iconHtml(isExpense ? "ph-trend-down" : "ph-hand-coins")}</span>
 
         <div class="wallet-anim-box">
-          <i class="fa-solid fa-wallet"></i>
+          <i class="ph-duotone ph-wallet"></i>
         </div>
       </div>
 
@@ -69,23 +70,23 @@ export const quickExpenseBar = {
           <div class="type-toggle-pill ${activeType === "expense" ? "is-expense" : "is-income"}">
             <span class="toggle-slider-blob" aria-hidden="true"></span>
             <button type="button" id="tab-expense" class="toggle-btn ${activeType === "expense" ? "active expense" : ""}">
-              <i class="fa-solid fa-arrow-trend-down"></i> Gasto
+              <i class="ph-bold ph-trend-down"></i> Gasto
             </button>
             <button type="button" id="tab-income" class="toggle-btn ${activeType === "income" ? "active income" : ""}">
-              <i class="fa-solid fa-arrow-trend-up"></i> Ingreso
+              <i class="ph-bold ph-trend-up"></i> Ingreso
             </button>
           </div>
 
           <div class="wallet-chips-section">
             <span class="action-hint">
-              <i class="fa-solid fa-wallet"></i> ${activeType === "expense" ? "¿Con qué cuenta pagas?" : "¿A qué cuenta entra el dinero?"}
+              <i class="ph-duotone ph-wallet"></i> ${activeType === "expense" ? "¿Con qué cuenta pagas?" : "¿A qué cuenta entra el dinero?"}
             </span>
             <div class="wallet-chips-row">
               ${wallets.map(w => {
                 const isSelected = w.id === selectedWalletId;
                 return `
                   <button type="button" class="wallet-chip-btn ${isSelected ? "selected" : ""}" data-id="${w.id}" style="${isSelected ? `border-color: ${w.color}; background-color: ${w.color}15; color: ${w.color};` : ""}">
-                    <i class="fa-solid ${w.icon}"></i>
+                    ${iconHtml(w.icon)}
                     <span class="chip-name">${escapeHtml(w.name)}</span>
                   </button>
                 `;
@@ -97,7 +98,7 @@ export const quickExpenseBar = {
           ${linkedCard && activeType === "expense" ? `
             <div class="credit-cuotas-bar">
               <div class="cuotas-row">
-                <label for="quick-installments"><i class="fa-solid fa-layer-group text-primary"></i> Cuotas de la compra:</label>
+                <label for="quick-installments"><i class="ph-duotone ph-stack text-primary"></i> Cuotas de la compra:</label>
                 <select id="quick-installments" class="cuotas-select">
                   <option value="1">1 cuota (Sin interés)</option>
                   <option value="2">2 cuotas</option>
@@ -113,12 +114,12 @@ export const quickExpenseBar = {
               <div id="quick-zero-interest-wrap" class="zero-interest-wrap" style="display: none; margin: 6px 0 2px;">
                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
                   <input type="checkbox" id="quick-zero-interest" ${savedZeroInterest ? "checked" : ""} style="width: 16px; height: 16px; accent-color: var(--success, #10B981); cursor: pointer;" />
-                  <span><i class="fa-solid fa-tag text-success"></i> 0% Interés (Convenio con el comercio)</span>
+                  <span><i class="ph-duotone ph-tag-chevron text-success"></i> 0% Interés (Convenio con el comercio)</span>
                 </label>
               </div>
 
               <div id="quick-credit-info" class="credit-info-box">
-                <i class="fa-solid fa-shield-halved text-success"></i> 1 cuota: Pagas al corte sin intereses corrientes.
+                <i class="ph-duotone ph-shield-check text-success"></i> 1 cuota: Pagas al corte sin intereses corrientes.
               </div>
             </div>
           ` : ""}
@@ -145,7 +146,7 @@ export const quickExpenseBar = {
                 ${expenseFavorites.map(cat => `
                   <button type="button" class="btn-fav-category" data-id="${cat.id}" title="${escapeHtml(cat.name)}">
                     <div class="fav-icon-box" style="background-color: ${cat.color}20; color: ${cat.color};">
-                      <i class="fa-solid ${catIcon(cat)}"></i>
+                      ${iconHtml(catIcon(cat))}
                     </div>
                     <span class="fav-label">${escapeHtml(cat.name)}</span>
                   </button>
@@ -153,7 +154,7 @@ export const quickExpenseBar = {
 
                 <button type="button" id="btn-more-categories" class="btn-fav-category btn-more" title="Otras categorías">
                   <div class="fav-icon-box">
-                    <i class="fa-solid fa-plus"></i>
+                    <i class="ph-bold ph-plus"></i>
                   </div>
                   <span class="fav-label">Más</span>
                 </button>
@@ -161,7 +162,7 @@ export const quickExpenseBar = {
                 ${allTypeCategories.map(cat => `
                   <button type="button" class="btn-fav-category" data-id="${cat.id}">
                     <div class="fav-icon-box" style="background-color: ${cat.color}20; color: ${cat.color};">
-                      <i class="fa-solid ${catIcon(cat)}"></i>
+                      ${iconHtml(catIcon(cat))}
                     </div>
                     <span class="fav-label">${escapeHtml(cat.name)}</span>
                   </button>

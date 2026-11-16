@@ -457,3 +457,744 @@ body::before {
 .sk-row { height: 4.2rem; }
 @keyframes sk-shimmer { from { background-position: 120% 0; } to { background-position: -120% 0; } }
 @media (prefers-reduced-motion: reduce) { .sk { animation: none; } }
+
+/* ==================================================================
+   SISTEMA DE DISEÑO APPLE + LIQUID GLASS PRO (Fintech Senior Architecture)
+   ================================================================== */
+
+/* 1. Inmediatez física táctil (Apple Gesture & Motion Foundations) */
+button,
+.btn,
+.nav-item-btn,
+.wallet-chip-btn,
+.btn-fav-category,
+.category-manage-card,
+.toggle-btn,
+.credit-switch-btn,
+.modal-close-btn,
+.btn-theme-icon,
+.btn-logout-icon {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button:active:not(:disabled),
+.btn:active:not(:disabled),
+.nav-item-btn:active,
+.wallet-chip-btn:active,
+.btn-fav-category:active,
+.toggle-btn:active,
+.credit-switch-btn:active,
+.btn-theme-icon:active,
+.btn-logout-icon:active {
+  transform: scale(0.965) !important;
+  transition: transform 0.1s cubic-bezier(0.32, 0.72, 0, 1) !important;
+}
+
+/* 2. Barra de navegación flotante estilo Apple Chrome */
+.navbar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+  -webkit-backdrop-filter: blur(24px) saturate(190%) !important;
+  backdrop-filter: blur(24px) saturate(190%) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.55) !important;
+  box-shadow: 0 4px 20px -6px rgba(15, 23, 42, 0.08), inset 0 -1px 0 rgba(255, 255, 255, 0.4) !important;
+}
+:root[data-theme="dark"] .navbar {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+  box-shadow: 0 4px 20px -6px rgba(0, 0, 0, 0.5), inset 0 -1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+/* 3. Controles Segmentados Apple (Lava Lamp / Segmented Controls) */
+.type-toggle-pill,
+.credit-switch {
+  position: relative;
+  border-radius: 999px !important;
+  padding: 3px !important;
+  background: rgba(148, 163, 184, 0.16) !important;
+  box-shadow: inset 0 1.5px 3px rgba(0, 0, 0, 0.08), inset 0 -1px 0 rgba(255, 255, 255, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
+}
+:root[data-theme="dark"] .type-toggle-pill,
+:root[data-theme="dark"] .credit-switch {
+  background: rgba(15, 23, 42, 0.45) !important;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4), inset 0 -1px 0 rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.toggle-btn,
+.credit-switch-btn {
+  border-radius: 999px !important;
+  font-size: 0.85rem !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* 4. Tarjetas con bisel especular Apple Liquid Glass */
+.metric-card,
+.quick-expense-card,
+.section-card {
+  border-radius: 20px !important;
+}
+
+.metric-card {
+  position: relative;
+  transition: transform 0.35s cubic-bezier(0.34, 1.45, 0.5, 1), box-shadow 0.25s ease !important;
+}
+
+.metric-card:hover {
+  transform: translateY(-2.5px) !important;
+}
+
+.metric-card:active {
+  transform: scale(0.985) !important;
+}
+
+/* Reflejo especular superior en tarjeta rápida y tarjetas métricas */
+.quick-expense-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.8) 50%, transparent 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+:root[data-theme="dark"] .quick-expense-card::before {
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.25) 50%, transparent 100%);
+}
+
+/* 5. Entradas de formulario Apple Liquid Glass */
+input.input-field,
+select.input-field,
+textarea.input-field,
+div.input-field > input {
+  border-radius: 12px !important;
+  font-size: 0.95rem !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+input.input-field:focus,
+div.input-field > input:focus {
+  border-color: var(--primary) !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06), 0 0 0 3.5px rgba(37, 99, 235, 0.22) !important;
+}
+
+:root[data-theme="dark"] input.input-field:focus,
+:root[data-theme="dark"] div.input-field > input:focus {
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 3.5px rgba(59, 130, 246, 0.35) !important;
+}
+
+/* 6. Optimización de rendimiento móvil (containment para evitar recálculos en scroll) */
+@media (max-width: 768px) {
+  .metric-card,
+  .quick-expense-card,
+  .section-card,
+  .transaction-item {
+    contain: layout style;
+  }
+
+  /* Desvanecimiento suave en los bordes de la barra deslizable */
+  .nav-links {
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 3%, #000 97%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, #000 3%, #000 97%, transparent 100%);
+  }
+}
+
+/* ==================================================================
+   SISTEMA DE NOTIFICACIONES APPLE LIQUID GLASS (In-App & Bell Center)
+   ================================================================== */
+
+/* Botón de campana en la barra */
+.btn-notification-bell {
+  position: relative !important;
+}
+
+.btn-notification-bell .notification-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  background: #EF4444;
+  color: #FFFFFF;
+  font-size: 0.68rem;
+  font-weight: 800;
+  min-width: 17px;
+  height: 17px;
+  border-radius: 999px;
+  padding: 0 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--bg-card);
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+  animation: notif-bounce 0.4s cubic-bezier(0.34, 1.45, 0.5, 1);
+}
+
+@keyframes notif-bounce {
+  0% { transform: scale(0); }
+  70% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.btn-notification-bell.has-unread i {
+  color: var(--primary);
+}
+
+/* Banner de alerta in-app contextual en Inicio (llamativo pero no invasivo) */
+.luka-alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 16px;
+  margin-bottom: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: notif-slide-down 0.35s cubic-bezier(0.34, 1.45, 0.5, 1) backwards;
+}
+
+@keyframes notif-slide-down {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.luka-alert-banner.alert-warning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.05) 100%), var(--bg-card);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.luka-alert-banner.alert-danger {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(239, 68, 68, 0.05) 100%), var(--bg-card);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.luka-alert-banner.alert-info {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(59, 130, 246, 0.05) 100%), var(--bg-card);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.alert-banner-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.alert-warning .alert-banner-icon {
+  background: rgba(245, 158, 11, 0.2);
+  color: #D97706;
+}
+
+.alert-danger .alert-banner-icon {
+  background: rgba(239, 68, 68, 0.2);
+  color: #DC2626;
+}
+
+.alert-info .alert-banner-icon {
+  background: rgba(59, 130, 246, 0.2);
+  color: #2563EB;
+}
+
+.alert-banner-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-banner-body strong {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.25;
+}
+
+.alert-banner-body p {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.alert-banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btn-alert-action {
+  padding: 0.4rem 0.85rem !important;
+  font-size: 0.78rem !important;
+  font-weight: 700 !important;
+  border-radius: 999px !important;
+}
+
+.alert-warning .btn-alert-action {
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  color: #FFFFFF;
+}
+
+.alert-danger .btn-alert-action {
+  background: linear-gradient(135deg, #EF4444, #DC2626);
+  color: #FFFFFF;
+}
+
+.alert-info .btn-alert-action {
+  background: linear-gradient(135deg, #3B82F6, #2563EB);
+  color: #FFFFFF;
+}
+
+.btn-alert-dismiss {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.3rem;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.btn-alert-dismiss:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-main);
+}
+
+/* Panel Desplegable de Notificaciones (Estilo iOS Notification Center) */
+.notification-panel {
+  position: fixed;
+  top: 60px;
+  right: 14px;
+  width: calc(100vw - 28px);
+  max-width: 380px;
+  max-height: calc(100vh - 85px);
+  z-index: 1005;
+  background: var(--g-panel);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border: 1px solid var(--lg-border);
+  box-shadow: 0 18px 45px -10px rgba(15, 23, 42, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px) scale(0.97);
+  transition: opacity 0.22s ease, transform 0.25s cubic-bezier(0.34, 1.45, 0.5, 1);
+}
+
+.notification-panel.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.panel-header {
+  padding: 1rem 1.15rem 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+:root[data-theme="dark"] .panel-header {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.panel-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--primary);
+  font-size: 1.15rem;
+}
+
+.panel-header-title h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 750;
+  color: var(--text-main);
+  letter-spacing: -0.015em;
+}
+
+.panel-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+}
+
+.panel-body {
+  padding: 0.85rem;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.panel-empty-state {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.empty-icon-capsule {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(16, 185, 129, 0.12);
+  color: #10B981;
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.35rem;
+}
+
+.panel-empty-state strong {
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.panel-empty-state p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  max-width: 260px;
+  margin: 0;
+}
+
+.notification-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.notif-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 14px;
+  background: var(--lg-item);
+  border: 1px solid var(--lg-item-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  position: relative;
+}
+
+.notif-card-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.notif-warning .notif-card-icon {
+  background: rgba(245, 158, 11, 0.18);
+  color: #D97706;
+}
+
+.notif-danger .notif-card-icon {
+  background: rgba(239, 68, 68, 0.18);
+  color: #DC2626;
+}
+
+.notif-info .notif-card-icon {
+  background: rgba(59, 130, 246, 0.18);
+  color: #2563EB;
+}
+
+.notif-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-card-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.25;
+}
+
+.notif-card-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+  line-height: 1.35;
+}
+
+.notif-card-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.3rem 0;
+  margin-top: 0.35rem;
+}
+
+.notif-card-btn:hover {
+  text-decoration: underline;
+}
+
+.notif-item-dismiss {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.2rem;
+  font-size: 0.85rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+}
+
+.notif-item-dismiss:hover {
+  color: var(--text-main);
+}
+
+.panel-footer {
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.02);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+:root[data-theme="dark"] .panel-footer {
+  background: rgba(255, 255, 255, 0.02);
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+.panel-push-optin {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--text-main);
+  font-weight: 600;
+}
+
+.panel-footer-note {
+  font-size: 0.7rem;
+  color: var(--text-faint);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  justify-content: center;
+}
+
+/* ==================================================================
+   MODAL PANTALLA GRANDE DE PERMISOS DE NOTIFICACIONES (Apple Liquid Glass)
+   ================================================================== */
+
+.notif-permission-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(11, 18, 32, 0.65);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.notif-permission-overlay.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.notif-permission-card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  background: var(--g-card);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  border: 1px solid var(--lg-border);
+  border-radius: 28px;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  padding: 2.2rem 1.85rem 1.75rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  transform: scale(0.92) translateY(12px);
+  transition: transform 0.32s cubic-bezier(0.34, 1.45, 0.5, 1);
+}
+
+:root[data-theme="dark"] .notif-permission-card {
+  box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.notif-permission-overlay.is-visible .notif-permission-card {
+  transform: scale(1) translateY(0);
+}
+
+.notif-modal-glow {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.35) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.notif-modal-icon-wrap {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(96, 165, 250, 0.12) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: var(--primary);
+  margin-bottom: 1.25rem;
+  z-index: 1;
+}
+
+.notif-modal-icon-pulse {
+  position: absolute;
+  inset: -6px;
+  border-radius: 28px;
+  border: 2px solid rgba(59, 130, 246, 0.4);
+  animation: notif-pulse 2s infinite cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+
+@keyframes notif-pulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.08); opacity: 0; }
+  100% { transform: scale(0.95); opacity: 0; }
+}
+
+.notif-modal-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+  margin: 0 0 0.5rem;
+  z-index: 1;
+}
+
+.notif-modal-desc {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  margin: 0 0 1.25rem;
+  max-width: 340px;
+  z-index: 1;
+}
+
+.notif-modal-features {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  background: var(--lg-item);
+  border: 1px solid var(--lg-item-border);
+  border-radius: 18px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+  z-index: 1;
+}
+
+.notif-feature-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.notif-feature-row i {
+  font-size: 1.15rem;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.notif-modal-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 1;
+}
+
+.notif-btn-allow {
+  height: 48px;
+  border-radius: 14px;
+  font-size: 0.96rem;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 8px 20px -4px rgba(37, 99, 235, 0.4);
+}
+
+.notif-btn-later {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  font-weight: 600;
+  padding: 0.6rem;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.notif-btn-later:hover {
+  color: var(--text-main);
+}
+
+

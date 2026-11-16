@@ -6,6 +6,7 @@ import { transactionService } from "../services/transactionService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 import { escapeHtml, resolveContainer, notifyError } from "../utils.js";
 import { skeletonHtml } from "../components/skeleton.js";
+import { iconHtml } from "../icons.js";
 
 export const subscriptionsView = {
   async render(target) {
@@ -31,11 +32,11 @@ export const subscriptionsView = {
         <div class="subscriptions-module">
           <div class="summary-cards-grid">
             <div class="metric-card">
-              <span class="metric-label"><i class="fa-solid fa-repeat text-primary"></i> Gasto Fijo Mensual</span>
+              <span class="metric-label"><i class="ph-duotone ph-repeat text-primary"></i> Gasto Fijo Mensual</span>
               <span class="metric-value">$ ${totalMonthly.toLocaleString("es-CO", { minimumFractionDigits: 0 })}</span>
             </div>
             <div class="metric-card">
-              <span class="metric-label"><i class="fa-solid fa-circle-check text-success"></i> Pagadas este mes</span>
+              <span class="metric-label"><i class="ph-duotone ph-check-circle text-success"></i> Pagadas este mes</span>
               <span class="metric-value">${paidSubsCount} de ${activeSubs.length}</span>
             </div>
           </div>
@@ -43,11 +44,11 @@ export const subscriptionsView = {
           <div class="section-card">
             <div class="section-header">
               <div>
-                <h3><i class="fa-solid fa-calendar-days"></i> Mis Pagos Fijos y Suscripciones</h3>
+                <h3><i class="ph-duotone ph-calendar-check"></i> Mis Pagos Fijos y Suscripciones</h3>
                 <p>Gestiona tus mensualidades y márcalas como pagadas para sumarlas a tus gastos</p>
               </div>
               <button id="btn-new-sub" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-plus"></i> Nueva Suscripción
+                <i class="ph-bold ph-plus"></i> Nueva Suscripción
               </button>
             </div>
 
@@ -78,17 +79,17 @@ export const subscriptionsView = {
                           ${!sub.is_active ? `
                             <span class="badge-sub-status badge-paused">Pausada</span>
                           ` : isPaid ? `
-                            <span class="badge-sub-status badge-paid"><i class="fa-solid fa-circle-check"></i> Pagada</span>
+                            <span class="badge-sub-status badge-paid"><i class="ph-duotone ph-check-circle"></i> Pagada</span>
                           ` : `
-                            <span class="badge-sub-status badge-pending"><i class="fa-solid fa-clock"></i> Pendiente</span>
+                            <span class="badge-sub-status badge-pending"><i class="ph-duotone ph-clock"></i> Pendiente</span>
                           `}
                         </div>
 
                         <span class="sub-amount">$ ${Number(sub.amount).toLocaleString("es-CO", { minimumFractionDigits: 0 })} / mes</span>
                         
                         <div class="sub-meta">
-                          ${sub.wallet ? `<span><i class="fa-solid fa-wallet"></i> ${escapeHtml(sub.wallet.name)}</span>` : ""}
-                          ${sub.category ? `<span><i class="fa-solid ${sub.category.icon}"></i> ${escapeHtml(sub.category.name)}</span>` : ""}
+                          ${sub.wallet ? `<span><i class="ph-duotone ph-wallet"></i> ${escapeHtml(sub.wallet.name)}</span>` : ""}
+                          ${sub.category ? `<span>${iconHtml(sub.category.icon)} ${escapeHtml(sub.category.name)}</span>` : ""}
                         </div>
                       </div>
 
@@ -96,11 +97,11 @@ export const subscriptionsView = {
                         ${sub.is_active ? (
                           isPaid ? `
                             <div class="paid-indicator" title="Pagado el ${paidTx.transaction_date}">
-                              <i class="fa-solid fa-check-double"></i> Al día
+                              <i class="ph-bold ph-check-circle"></i> Al día
                             </div>
                           ` : `
                             <button class="btn btn-primary btn-sm btn-pay-sub" data-id="${sub.id}">
-                              <i class="fa-solid fa-receipt"></i> Marcar Pagada
+                              <i class="ph-duotone ph-receipt"></i> Marcar Pagada
                             </button>
                           `
                         ) : ""}

@@ -4,6 +4,7 @@ import { categoryService } from "../services/categoryService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 import { escapeHtml, resolveContainer, notifyError, formatShortDate } from "../utils.js";
 import { skeletonHtml } from "../components/skeleton.js";
+import { iconHtml } from "../icons.js";
 
 const MONTH_NAMES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -105,7 +106,7 @@ export const budgetsView = {
                       <div class="budget-card-header">
                         <div class="budget-cat-info">
                           <div class="budget-cat-icon" style="background-color: ${cat.color}20; color: ${cat.color};">
-                            <i class="fa-solid ${cat.icon}"></i>
+                            ${iconHtml(cat.icon)}
                           </div>
                           <div class="budget-meta">
                             <span class="budget-title">${escapeHtml(cat.name)}</span>
@@ -194,7 +195,7 @@ function showBudgetDetailModal({ budget, categories, onRefresh }) {
       <div class="modal-header">
         <div style="display: flex; align-items: center; gap: 0.65rem;">
           <div class="budget-cat-icon" style="background-color: ${cat.color}20; color: ${cat.color}; width: 38px; height: 38px; font-size: 1.1rem;">
-            <i class="fa-solid ${cat.icon}"></i>
+            ${iconHtml(cat.icon)}
           </div>
           <div>
             <h4 style="margin: 0;">${escapeHtml(cat.name)}</h4>
@@ -245,12 +246,12 @@ function showBudgetDetailModal({ budget, categories, onRefresh }) {
               return `
                 <div class="transaction-item" style="padding: 0.65rem 0.85rem;">
                   <div class="trans-cat-icon" style="background-color: ${cat.color}20; color: ${cat.color}; width: 34px; height: 34px;">
-                    <i class="fa-solid ${cat.icon}"></i>
+                    ${iconHtml(cat.icon)}
                   </div>
                   <div class="trans-info">
                     <span class="trans-title" style="font-size: 0.85rem;">${escapeHtml(t.title)}</span>
                     <div class="trans-meta">
-                      <span class="trans-wallet"><i class="fa-solid fa-wallet"></i> ${escapeHtml(walletName)}</span>
+                      <span class="trans-wallet"><i class="ph-duotone ph-wallet"></i> ${escapeHtml(walletName)}</span>
                       <span class="trans-date">${formatShortDate(t.transaction_date)}</span>
                     </div>
                   </div>

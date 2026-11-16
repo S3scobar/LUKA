@@ -437,3 +437,114 @@ body::before {
   .nav-links.has-liquid .nav-item-btn,
   .metric-card, .btn, .btn-theme-icon, .btn-logout-icon { transition: none !important; }
 }
+
+/* ==================================================================
+   SISTEMA DE ICONOS LIQUID GLASS GEM (Inspiración iOS / Fintech Pro)
+   ================================================================== */
+
+.nav-item-btn i {
+  font-size: 1.18rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), filter 0.25s ease;
+}
+.nav-item-btn:hover i {
+  transform: scale(1.1);
+}
+.nav-item-btn.active i {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.55));
+}
+
+/* ==================================================================
+   SISTEMA DE ICONOS FINTECH PRO (Apple Human Interface Guidelines)
+   Limpio, con contraste óptimo, sin destellos artificiales ni brillos plásticos.
+   ================================================================== */
+
+.fav-icon-box,
+.cat-icon-box,
+.cat-icon-circle,
+.cat-preview-icon,
+.wallet-item-icon,
+.trans-cat-icon,
+.budget-cat-icon {
+  position: relative !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 12px !important; /* Apple Squircle limpio */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: visible !important;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+:root[data-theme="dark"] .fav-icon-box,
+:root[data-theme="dark"] .cat-icon-box,
+:root[data-theme="dark"] .cat-icon-circle,
+:root[data-theme="dark"] .cat-preview-icon,
+:root[data-theme="dark"] .wallet-item-icon,
+:root[data-theme="dark"] .trans-cat-icon,
+:root[data-theme="dark"] .budget-cat-icon {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+}
+
+/* CERO reflejo plástico / burbuja blanca superior */
+.fav-icon-box::before,
+.cat-icon-box::before,
+.cat-icon-circle::before,
+.cat-preview-icon::before,
+.wallet-item-icon::before,
+.trans-cat-icon::before,
+.budget-cat-icon::before {
+  content: none !important;
+  display: none !important;
+}
+
+/* El icono dentro: nítido, de trazo sólido, sin desenfoques ni sombras artificiales */
+.fav-icon-box i,
+.cat-icon-box i,
+.cat-icon-circle i,
+.cat-preview-icon i,
+.wallet-item-icon i,
+.trans-cat-icon i,
+.budget-cat-icon i {
+  position: static !important;
+  font-size: 1.45rem !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  filter: none !important;
+  color: inherit !important;
+  opacity: 1 !important;
+}
+
+/* Microinteracción táctil suave estilo Apple */
+.btn-fav-category:hover .fav-icon-box,
+.category-manage-card:hover .cat-icon-box,
+.wallet-item:hover .wallet-item-icon {
+  transform: translateY(-1.5px) scale(1.03) !important;
+  filter: none !important;
+}
+
+.btn-fav-category:active .fav-icon-box,
+.category-manage-card:active .cat-icon-box,
+.wallet-item:active .wallet-item-icon {
+  transform: scale(0.95) !important;
+}
+
+/* Acciones y botones de header */
+.btn-theme-icon i,
+.btn-logout-icon i {
+  font-size: 1.25rem;
+  line-height: 1;
+}

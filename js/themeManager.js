@@ -38,7 +38,7 @@ function paint(theme) {
   if (toggleButton) {
     const isDark = theme === "dark";
     const icon = toggleButton.querySelector("i");
-    if (icon) icon.className = isDark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+    if (icon) icon.className = isDark ? "ph-bold ph-sun" : "ph-bold ph-moon-stars";
     toggleButton.setAttribute("aria-pressed", String(isDark));
     toggleButton.title = isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro";
     toggleButton.setAttribute("aria-label", toggleButton.title);
