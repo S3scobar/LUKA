@@ -3,7 +3,7 @@ import { walletService } from "../services/walletService.js";
 import { categoryService } from "../services/categoryService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 import { escapeHtml, resolveContainer, notifyError } from "../utils.js";
-import { CATEGORY_ICON_GROUPS, WALLET_ICONS, iconPickerHtml, bindIconPicker } from "../icons.js";
+import { CATEGORY_ICON_GROUPS, WALLET_ICONS, iconPickerHtml, bindIconPicker, iconHtml } from "../icons.js";
 import { colorSwatchesHtml, bindColorSwatches } from "../colorSwatches.js";
 import { skeletonHtml } from "../components/skeleton.js";
 
@@ -68,7 +68,7 @@ export const walletsView = {
                     return `
                     <div class="wallet-item" style="--wallet-accent: ${w.color};">
                       <div class="wallet-item-icon" style="background-color: ${w.color}1F; color: ${w.color};">
-                        <i class="fa-solid ${w.icon}"></i>
+                        ${iconHtml(w.icon)}
                       </div>
                       <div class="wallet-item-info">
                         <span class="wallet-name">${escapeHtml(w.name)}</span>
@@ -77,10 +77,10 @@ export const walletsView = {
                       </div>
                       <div class="wallet-actions">
                         <button class="btn-edit-wallet" data-id="${w.id}" title="Editar saldo o datos">
-                          <i class="fa-solid fa-pencil"></i>
+                          <i class="ph-bold ph-pencil-simple"></i>
                         </button>
                         <button class="btn-delete-wallet" data-id="${w.id}" title="Eliminar cuenta">
-                          <i class="fa-solid fa-trash-can"></i>
+                          <i class="ph-bold ph-trash"></i>
                         </button>
                       </div>
                     </div>
@@ -93,16 +93,16 @@ export const walletsView = {
             <div class="section-card">
               <div class="section-header">
                 <div>
-                  <h3><i class="fa-solid fa-tags"></i> Categorías</h3>
+                  <h3><i class="ph-duotone ph-tags"></i> Categorías</h3>
                   <p>Crea, edita o elimina categorías. En Gastos, toca una tarjeta para fijarla como favorita.</p>
                 </div>
                 <div class="section-actions">
                   <button id="btn-new-category" class="btn btn-secondary btn-sm">
-                    <i class="fa-solid fa-plus"></i> Nueva Categoría
+                    <i class="ph-bold ph-plus"></i> Nueva Categoría
                   </button>
                   ${activeCategoryTab === "expense" ? `
                     <button id="btn-save-favorites" class="btn btn-primary btn-sm">
-                      <i class="fa-solid fa-check"></i> <span>Guardar Favoritas (<span id="fav-count">${selectedFavoriteIds.length}</span>/4)</span>
+                      <i class="ph-bold ph-check"></i> <span>Guardar Favoritas (<span id="fav-count">${selectedFavoriteIds.length}</span>/4)</span>
                     </button>
                   ` : ""}
                 </div>
@@ -130,16 +130,16 @@ export const walletsView = {
                       ` : ""}
                       
                       <div class="cat-icon-box" style="background-color: ${cat.color}25; color: ${cat.color};">
-                        <i class="fa-solid ${cat.icon}"></i>
+                        ${iconHtml(cat.icon)}
                       </div>
                       <span class="cat-name">${escapeHtml(cat.name)}</span>
 
                       <div class="cat-card-actions">
                         <button type="button" class="btn-edit-cat" data-id="${cat.id}" title="Editar">
-                          <i class="fa-solid fa-pencil"></i>
+                          <i class="ph-bold ph-pencil-simple"></i>
                         </button>
                         <button type="button" class="btn-delete-cat" data-id="${cat.id}" title="Eliminar">
-                          <i class="fa-solid fa-trash-can"></i>
+                          <i class="ph-bold ph-trash"></i>
                         </button>
                       </div>
                     </div>
@@ -494,7 +494,7 @@ function showCategoryModal({ category = null, type = "expense", onSave }) {
       <form id="category-modal-form">
         <div class="cat-preview" aria-hidden="true">
           <div class="cat-preview-icon" id="cat-preview-icon" style="background-color: ${selectedColor}25; color: ${selectedColor};">
-            <i class="fa-solid ${selectedIcon}"></i>
+            ${iconHtml(selectedIcon)}
           </div>
           <span class="cat-preview-name" id="cat-preview-name">${escapeHtml(isEditing ? category.name : "Nombre de la categoría")}</span>
         </div>
@@ -553,7 +553,7 @@ function showCategoryModal({ category = null, type = "expense", onSave }) {
     const color = colorInput.value;
     previewIcon.style.backgroundColor = `${color}25`;
     previewIcon.style.color = color;
-    previewIcon.innerHTML = `<i class="fa-solid ${selectedIcon}"></i>`;
+    previewIcon.innerHTML = iconHtml(selectedIcon);
     previewName.textContent = nameInput.value.trim() || "Nombre de la categoría";
   };
 

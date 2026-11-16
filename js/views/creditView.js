@@ -2,6 +2,7 @@
 import { creditCardsView } from "./creditCardsView.js";
 import { loansView } from "./loansView.js";
 import { resolveContainer } from "../utils.js";
+import { iconHtml } from "../icons.js";
 
 const SECTIONS = {
   cards: { view: creditCardsView, label: "Tarjetas", icon: "fa-credit-card" },
@@ -24,7 +25,7 @@ export const creditView = {
         <span class="credit-switch-pill" aria-hidden="true"></span>
         ${Object.entries(SECTIONS).map(([key, s]) => `
           <button type="button" role="tab" class="credit-switch-btn ${key === this.section ? "active" : ""}" data-section="${key}" aria-selected="${key === this.section}">
-            <i class="fa-solid ${s.icon}"></i> ${s.label}
+            ${iconHtml(s.icon)} ${s.label}
           </button>`).join("")}
       </div>
       <div class="credit-section"></div>
