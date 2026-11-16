@@ -26,6 +26,7 @@ Modo claro y oscuro, con datos de demostración.
 * **Datos y seguridad:** aislamiento por usuario con RLS en PostgreSQL, funciones RPC atómicas para saldos, un trigger que impide tocar billeteras ajenas y permisos de funciones revisados con los avisos de seguridad de Supabase.
 * **Sin dependencias de build:** ES Modules nativos, sin framework ni bundler, organizado en servicios, componentes y vistas.
 * **Experiencia móvil:** PWA instalable, navegación por gestos, esqueletos de carga, tema claro/oscuro animado y desbloqueo con Face ID o huella (WebAuthn).
+* **Pruebas de la lógica financiera:** el cálculo de cuotas, saldos y fechas de préstamos tiene pruebas automáticas que corren en cada PR.
 * **Rendimiento medido:** el cambio de tema y el desplazamiento se midieron con la CPU limitada 6× y se ajustaron hasta mantener unos 50 a 60 fps.
 * **Accesibilidad y preferencias del sistema:** respeta `prefers-reduced-motion` y `prefers-reduced-transparency`, y el deslizador de ingreso funciona también con teclado.
 
@@ -152,6 +153,9 @@ La pestaña **Crédito** tiene dos secciones, porque funcionan distinto.
 ├── favicon.svg                     # Icono de la app
 ├── .gitignore
 ├── README.md
+├── LICENSE                         # MIT
+├── tests/                          # Pruebas de la lógica de préstamos (node:test)
+├── .github/workflows/ci.yml        # Sintaxis de los módulos y pruebas
 ├── manifest.webmanifest            # PWA: nombre, iconos y colores
 ├── sw.js                           # Service worker
 ├── supabase/
@@ -261,6 +265,16 @@ Importa el repositorio en Vercel como proyecto estático, sin comando de build. 
 
 ---
 
+### Pruebas
+
+La lógica de préstamos (cuota con sistema francés, saldo, progreso y próxima fecha) se prueba con el ejecutor de pruebas de Node, sin dependencias (Node 20 o superior):
+
+```bash
+node --import ./tests/helpers/register.mjs --test tests/*.test.mjs
+```
+
+El archivo `tests/helpers/` sustituye la importación de `supabase-js` por CDN para poder cargar los servicios sin red. En cada push y PR, GitHub Actions comprueba además la sintaxis de todos los módulos.
+
 ## 8. Varios usuarios a la vez
 
 * **Datos:** cada usuario solo ve sus filas gracias a RLS. `supabase/schema.sql` define las políticas de todas las tablas y los índices por `user_id` que las respaldan.
@@ -302,3 +316,9 @@ Importa el repositorio en Vercel como proyecto estático, sin comando de build. 
 ## Autor
 
 Desarrollado por **Santiago Escobar**.
+
+---
+
+## 11. Licencia
+
+MIT. Ver [LICENSE](LICENSE).
