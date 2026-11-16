@@ -4,7 +4,7 @@
 // - Estáticos propios (css/js/iconos): stale-while-revalidate, se actualizan en segundo plano.
 // - Nada de Supabase ni CDNs externos pasa por caché: siempre va a la red.
 
-const CACHE = "luka-shell-v1";
+const CACHE = "luka-shell-v2";
 const SHELL = [
   "/",
   "/index.html",
@@ -65,7 +65,24 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Estáticos propios: responde de caché al instante y revalida en segundo plano.
+  // Código (js/css): red primero. Con "caché primero" tras un despliegue se mezclaban módulos nuevos con viejos
+  // hasta la segunda carga. Vercel ya manda must-revalidate, así que casi siempre es un 304 barato.
+  if (req.destination === "script" || req.destination === "style") {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          if (res && res.status === 200 && res.type === "basic") {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(req, copy));
+          }
+          return res;
+        })
+        .catch(() => caches.match(req))
+    );
+    return;
+  }
+
+  // Imágenes e iconos: responde de caché al instante y revalida en segundo plano.
   event.respondWith(
     caches.match(req).then((cached) => {
       const network = fetch(req)
