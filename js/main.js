@@ -17,6 +17,7 @@ import { initSplash } from "./components/splash.js";
 import { glassLight } from "./components/glassLight.js";
 import { biometricLock } from "./components/biometricLock.js";
 import { biometricService } from "./services/biometricService.js";
+import { notificationCenter } from "./components/notificationCenter.js";
 
 const app = document.getElementById("app");
 const navTabs = document.getElementById("nav-tabs");
@@ -170,6 +171,11 @@ async function bootstrap() {
     authService.recordActivity();
 
     switchView(currentTab);
+
+    // Sistema de notificaciones financieras inteligente
+    notificationCenter.init({
+      onNavigateTab: (tab) => switchView(tab)
+    });
 
     biometricLock.offer(user.id, friendlyName);
 

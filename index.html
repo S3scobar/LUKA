@@ -41,14 +41,18 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="LUKA" />
 
+  <!-- Phosphor Icons Web (Duotone, Bold, Regular) -->
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/duotone/style.css" />
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css" />
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-  <link rel="stylesheet" href="css/main.css?v=1.7" />
-  <link rel="stylesheet" href="css/components.css?v=1.7" />
-  <link rel="stylesheet" href="css/views.css?v=1.7" />
-  <link rel="stylesheet" href="css/glass.css?v=1.7" />
-  <link rel="stylesheet" href="css/splash.css?v=1.7" />
-  <link rel="stylesheet" href="css/liquid.css?v=2.1" />
+  <link rel="stylesheet" href="css/main.css?v=2.5" />
+  <link rel="stylesheet" href="css/components.css?v=2.5" />
+  <link rel="stylesheet" href="css/views.css?v=2.5" />
+  <link rel="stylesheet" href="css/glass.css?v=2.5" />
+  <link rel="stylesheet" href="css/splash.css?v=2.0" />
+  <link rel="stylesheet" href="css/liquid.css?v=2.5" />
 </head>
 <body>
   <div id="splash" aria-hidden="true">
@@ -70,23 +74,23 @@
 
     <!-- Las pestañas se deslizan en horizontal en pantallas pequeñas -->
     <div id="nav-tabs" class="nav-links" style="display: none;">
-      <button class="nav-item-btn active" data-tab="dashboard"><i class="fa-solid fa-house"></i> Inicio</button>
-      <button class="nav-item-btn" data-tab="wallets"><i class="fa-solid fa-wallet"></i> Billeteras</button>
-      <button class="nav-item-btn" data-tab="budgets"><i class="fa-solid fa-bullseye"></i> Presupuesto</button>
-      <button class="nav-item-btn" data-tab="cards"><i class="fa-solid fa-credit-card"></i> Crédito</button>
-      <button class="nav-item-btn" data-tab="subs"><i class="fa-solid fa-calendar-days"></i> Suscripciones</button>
-      <button class="nav-item-btn" data-tab="savings"><i class="fa-solid fa-piggy-bank"></i> Ahorros</button>
-      <button class="nav-item-btn" data-tab="analytics"><i class="fa-solid fa-chart-pie"></i> Análisis</button>
+      <button class="nav-item-btn active" data-tab="dashboard"><i class="ph-bold ph-house-line"></i> Inicio</button>
+      <button class="nav-item-btn" data-tab="wallets"><i class="ph-bold ph-wallet"></i> Billeteras</button>
+      <button class="nav-item-btn" data-tab="budgets"><i class="ph-bold ph-chart-pie-slice"></i> Presupuesto</button>
+      <button class="nav-item-btn" data-tab="cards"><i class="ph-bold ph-credit-card"></i> Crédito</button>
+      <button class="nav-item-btn" data-tab="subs"><i class="ph-bold ph-calendar-check"></i> Suscripciones</button>
+      <button class="nav-item-btn" data-tab="savings"><i class="ph-bold ph-vault"></i> Ahorros</button>
+      <button class="nav-item-btn" data-tab="analytics"><i class="ph-bold ph-chart-polar"></i> Análisis</button>
     </div>
 
     <div class="nav-actions">
       <button id="btn-theme" class="btn-theme-icon" type="button" title="Cambiar a modo oscuro" aria-label="Cambiar a modo oscuro" aria-pressed="false">
-        <i class="fa-solid fa-moon"></i>
+        <i class="ph-bold ph-moon-stars"></i>
       </button>
       <div id="user-menu" class="user-menu-box" style="display: none;">
         <span id="user-name" style="display: none;"></span>
         <button id="btn-logout" class="btn-logout-icon" title="Cerrar sesión" aria-label="Cerrar sesión">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          <i class="ph-duotone ph-sign-out"></i>
         </button>
       </div>
     </div>
@@ -98,18 +102,18 @@
 
   <footer class="app-footer">
     <button id="btn-install" class="btn-install" type="button" hidden>
-      <i class="fa-solid fa-arrow-down-to-line"></i>
+      <i class="ph-duotone ph-arrow-circle-down"></i>
       <span>Instalar app</span>
     </button>
     <span class="footer-author">by <span>Santiago Escobar</span></span>
   </footer>
 
   <button id="btn-start-tutorial" class="tutorial-fab" title="Ver Guía de LUKA" style="display: none;">
-    <i class="fa-solid fa-lightbulb"></i>
+    <i class="ph-duotone ph-sparkle"></i>
     <span>Tutorial</span>
   </button>
 
-  <script type="module" src="js/main.js?v=1.7"></script>
+  <script type="module" src="js/main.js?v=2.0"></script>
   <script>
     // Registro del service worker: habilita la instalación y el arranque offline.
     if ("serviceWorker" in navigator) {

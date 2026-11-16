@@ -117,7 +117,31 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "Segoe UI", Roboto, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Tipografía Apple: títulos con optical tracking negativo */
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.024em;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* Cifras financieras: siempre alineadas con tabular-nums */
+.metric-value,
+.wallet-balance,
+.statement-total,
+.sub-amount,
+.budget-hero-spent,
+.budget-cat-spent,
+.hero-amount,
+.trans-amount {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1;
+  letter-spacing: -0.028em;
 }
 
 /* Campos de formulario: hereda el tema (especificidad 0 para no pisar estilos de clase) */
@@ -161,9 +185,15 @@ body {
 }
 
 .container {
-  max-width: 720px;
+  max-width: 768px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 1.15rem 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 1.75rem 1.5rem;
+  }
 }
 
 .navbar {

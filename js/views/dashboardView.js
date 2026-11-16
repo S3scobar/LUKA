@@ -8,6 +8,7 @@ import { creditView } from "./creditView.js";
 import { quickExpenseBar } from "../components/quickExpenseBar.js";
 import { escapeHtml, resolveContainer, notifyError, formatShortDate } from "../utils.js";
 import { skeletonHtml } from "../components/skeleton.js";
+import { iconHtml } from "../icons.js";
 
 export const dashboardView = {
   showAllTransactions: false,
@@ -51,19 +52,19 @@ export const dashboardView = {
         <div class="dashboard-module">
           <div class="summary-cards-grid">
             <div class="metric-card card-total">
-              <span class="metric-label"><i class="fa-solid fa-wallet"></i> Saldo Total</span>
+              <span class="metric-label">${iconHtml("fa-wallet")} Saldo Total</span>
               <span class="metric-value text-primary">$ ${totalBalance.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
             </div>
             <div class="metric-card card-income">
-              <span class="metric-label"><i class="fa-solid fa-arrow-down"></i> Ingresos</span>
+              <span class="metric-label"><i class="ph-bold ph-arrow-down-left text-success"></i> Ingresos</span>
               <span class="metric-value text-success">$ ${totalIncome.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
             </div>
             <div class="metric-card card-expense">
-              <span class="metric-label"><i class="fa-solid fa-arrow-up"></i> Gastos</span>
+              <span class="metric-label"><i class="ph-bold ph-arrow-up-right text-danger"></i> Gastos</span>
               <span class="metric-value text-danger">$ ${totalExpense.toLocaleString("es-CO", { maximumFractionDigits: 0 })}</span>
             </div>
             <div class="metric-card card-balance">
-              <span class="metric-label"><i class="fa-solid fa-scale-balanced"></i> Balance</span>
+              <span class="metric-label"><i class="ph-duotone ph-scales"></i> Balance</span>
               <span class="metric-value ${netBalance < 0 ? "text-danger" : "text-balance"}">
                 $ ${netBalance.toLocaleString("es-CO", { maximumFractionDigits: 0 })}
               </span>
@@ -77,7 +78,7 @@ export const dashboardView = {
                 <div class="card-statement-banner ${ccSummary.totalDue > 0 ? 'banner-due' : 'banner-paid'}" style="margin-bottom: 0;">
                   <div class="banner-statement-left">
                     <div class="banner-statement-icon">
-                      <i class="fa-solid ${ccSummary.totalDue > 0 ? 'fa-credit-card' : 'fa-circle-check'}"></i>
+                      ${iconHtml(ccSummary.totalDue > 0 ? 'fa-credit-card' : 'fa-circle-check')}
                     </div>
                     <div class="banner-statement-text">
                       <div class="banner-statement-title">
@@ -95,7 +96,7 @@ export const dashboardView = {
                   </div>
                   ${ccSummary.totalDue > 0 ? `
                     <button type="button" id="btn-pay-cc-from-dashboard" class="btn btn-sm btn-primary">
-                      Pagar <i class="fa-solid fa-arrow-right"></i>
+                      Pagar <i class="ph-bold ph-caret-right"></i>
                     </button>
                   ` : ''}
                 </div>
@@ -105,7 +106,7 @@ export const dashboardView = {
                 <div class="card-statement-banner ${loanSummary.totalDue > 0 ? 'banner-due' : 'banner-paid'}" style="margin-bottom: 0;">
                   <div class="banner-statement-left">
                     <div class="banner-statement-icon">
-                      <i class="fa-solid ${loanSummary.totalDue > 0 ? 'fa-handshake-angle' : 'fa-circle-check'}"></i>
+                      ${iconHtml(loanSummary.totalDue > 0 ? 'fa-handshake' : 'fa-circle-check')}
                     </div>
                     <div class="banner-statement-text">
                       <div class="banner-statement-title">
@@ -123,7 +124,7 @@ export const dashboardView = {
                   </div>
                   ${loanSummary.totalDue > 0 ? `
                     <button type="button" id="btn-pay-loan-from-dashboard" class="btn btn-sm btn-primary">
-                      Pagar <i class="fa-solid fa-arrow-right"></i>
+                      Pagar <i class="ph-bold ph-caret-right"></i>
                     </button>
                   ` : ''}
                 </div>
@@ -136,7 +137,7 @@ export const dashboardView = {
           <div class="section-card history-section">
             <div class="section-header">
               <div>
-                <h3><i class="fa-solid fa-clock-rotate-left"></i> Movimientos Recientes</h3>
+                <h3><i class="ph-duotone ph-clock-counter-clockwise"></i> Movimientos Recientes</h3>
                 <p>Tus últimos registros de este mes</p>
               </div>
               <span class="badge-count">${transactions.length} en total</span>
@@ -204,12 +205,12 @@ export const dashboardView = {
               return `
                 <div class="transaction-item">
                   <div class="trans-cat-icon" style="background-color: ${catColor}20; color:${catColor};">
-                    <i class="fa-solid ${catIcon}"></i>
+                    ${iconHtml(catIcon)}
                   </div>
                   <div class="trans-info">
                     <span class="trans-title">${escapeHtml(t.title)}</span>
                     <div class="trans-meta">
-                      <span class="trans-wallet"><i class="fa-solid fa-wallet"></i> ${escapeHtml(walletName)}</span>
+                      <span class="trans-wallet"><i class="ph-duotone ph-wallet"></i> ${escapeHtml(walletName)}</span>
                       <span class="trans-date">${formatShortDate(t.transaction_date)}</span>
                     </div>
                   </div>
@@ -217,7 +218,7 @@ export const dashboardView = {
                     ${isExpense ? "-" : "+"} $ ${Number(t.amount).toLocaleString("es-CO", { maximumFractionDigits: 0 })}
                   </div>
                   <button class="btn-delete-trans" data-id="${t.id}" title="Eliminar movimiento">
-                    <i class="fa-solid fa-trash-can"></i>
+                    <i class="ph-bold ph-trash"></i>
                   </button>
                 </div>
               `;
@@ -227,7 +228,7 @@ export const dashboardView = {
           ${transactions.length > 5 ? `
             <div style="margin-top: 0.85rem;">
               <button type="button" id="btn-toggle-all-trans" class="btn btn-secondary btn-block btn-sm" style="font-weight: 700; gap: 0.4rem;">
-                <i class="fa-solid ${this.showAllTransactions ? "fa-chevron-up" : "fa-chevron-down"}"></i>
+                <i class="ph-bold ${this.showAllTransactions ? "ph-caret-up" : "ph-caret-down"}"></i>
                 ${this.showAllTransactions ? "Mostrar menos (solo los últimos 5)" : `Ver todos los movimientos (${transactions.length})`}
               </button>
             </div>

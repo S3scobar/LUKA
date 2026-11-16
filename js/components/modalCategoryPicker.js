@@ -1,5 +1,6 @@
 // js/components/modalCategoryPicker.js
 import { escapeHtml } from "../utils.js";
+import { iconHtml } from "../icons.js";
 
 export const modalCategoryPicker = {
   render({ categories, onSelect }) {
@@ -20,7 +21,7 @@ export const modalCategoryPicker = {
           ${categories.map(cat => `
             <button class="cat-modal-btn" data-id="${cat.id}">
               <div class="cat-icon-circle" style="background-color: ${cat.color}20; color: ${cat.color};">
-                <i class="fa-solid ${cat.icon}"></i>
+                ${iconHtml(cat.icon)}
               </div>
               <span class="cat-modal-label">${escapeHtml(cat.name)}</span>
             </button>
