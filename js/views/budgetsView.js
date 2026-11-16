@@ -3,6 +3,7 @@ import { budgetService } from "../services/budgetService.js";
 import { categoryService } from "../services/categoryService.js";
 import { attachCurrencyInput, parseCurrencyInput } from "../currencyFormatter.js";
 import { escapeHtml, resolveContainer, notifyError, formatShortDate } from "../utils.js";
+import { skeletonHtml } from "../components/skeleton.js";
 
 const MONTH_NAMES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
@@ -20,7 +21,7 @@ export const budgetsView = {
 
   async render(target) {
     const container = resolveContainer(target);
-    container.innerHTML = `<div class="loading-spinner"><i class="fa-solid fa-spinner fa-spin"></i> Cargando tus presupuestos...</div>`;
+    container.innerHTML = skeletonHtml();
 
     try {
       const [budgetData, allCategories] = await Promise.all([
