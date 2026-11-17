@@ -31,26 +31,27 @@
 }
 
 :root[data-theme="dark"] {
-  --lg-fill: rgba(30, 44, 76, 0.42);
-  --lg-fill-soft: rgba(30, 44, 76, 0.30);
-  --lg-blur: blur(20px) saturate(175%);
-  --lg-border: rgba(255, 255, 255, 0.38) rgba(255, 255, 255, 0.16) rgba(255, 255, 255, 0.07) rgba(255, 255, 255, 0.22);
-  --lg-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.30),
-    inset 0 0 22px rgba(120, 170, 255, 0.09),
-    inset 0 -12px 20px -14px rgba(59, 130, 246, 0.30),
-    0 18px 38px -14px rgba(0, 0, 0, 0.7);
-  --lg-sheen: rgba(150, 195, 255, 0.24);
-  --lg-input: rgba(255, 255, 255, 0.06);
-  --lg-item: rgba(255, 255, 255, 0.06);
-  --lg-item-hover: rgba(255, 255, 255, 0.12);
-  --lg-item-border: rgba(255, 255, 255, 0.30) rgba(255, 255, 255, 0.13) rgba(255, 255, 255, 0.06) rgba(255, 255, 255, 0.18);
-  --lg-item-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -10px 16px -12px rgba(59, 130, 246, 0.26), 0 8px 18px -12px rgba(0, 0, 0, 0.6);
+  /* Tema "Tinta": fondo plano casi negro azulado, superficies sólidas con filo de luz fino */
+  --bg-primary: #0B0D12;
+  --text-main: #EDEFF4;
+  --text-muted: #8B93A7;
+  --primary: #4C8DFF;
+  --lg-fill: rgba(22, 26, 35, 0.92);
+  --lg-fill-soft: rgba(22, 26, 35, 0.80);
+  --lg-blur: blur(12px);
+  --lg-border: rgba(255, 255, 255, 0.09);
+  --lg-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 24px -14px rgba(0, 0, 0, 0.7);
+  --lg-sheen: transparent;
+  --lg-input: rgba(255, 255, 255, 0.04);
+  --lg-item: rgba(255, 255, 255, 0.04);
+  --lg-item-hover: rgba(255, 255, 255, 0.07);
+  --lg-item-border: rgba(255, 255, 255, 0.07);
+  --lg-item-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 
-  --g-bar: rgba(14, 22, 40, 0.52);
+  --g-bar: rgba(11, 13, 18, 0.88);
   --g-chip: rgba(255, 255, 255, 0.07);
   --g-chip-hover: rgba(255, 255, 255, 0.14);
-  --g-panel: rgba(18, 28, 50, 0.60);
+  --g-panel: rgba(22, 26, 35, 0.96);
 }
 
 /* ------------------------------------------------------------------
@@ -1198,3 +1199,25 @@ div.input-field > input:focus {
 }
 
 
+
+/* ------------------------------------------------------------------
+   Modo oscuro "Tinta": sin manchas de color ni degradados, y banner de tarjeta neutro
+   ------------------------------------------------------------------ */
+:root[data-theme="dark"] body { background-image: none; background: var(--bg-primary); }
+:root[data-theme="dark"] body::before { background: none; }
+:root[data-theme="dark"] .metric-card { --tint-a: 0.07; }
+:root[data-theme="dark"] .quick-expense-card { --tint-a: 0; }
+:root[data-theme="dark"] .card-statement-banner.banner-due,
+:root[data-theme="dark"] .card-statement-banner.banner-paid { background: rgba(255, 255, 255, 0.04); }
+:root[data-theme="dark"] .card-statement-banner.banner-due { border-color: rgba(244, 63, 94, 0.30); }
+:root[data-theme="dark"] .card-statement-banner.banner-paid { border-color: rgba(16, 185, 129, 0.30); }
+
+/* Banner "Por pagar" más compacto */
+.card-statement-banner { padding: 0.7rem 1rem; }
+.card-statement-banner .banner-statement-icon { width: 36px; height: 36px; font-size: 1.1rem; }
+.card-statement-banner .banner-statement-amount { font-size: 1.1rem; }
+.card-statement-banner .banner-statement-title { font-size: 0.72rem; }
+.card-statement-banner .banner-statement-sub { font-size: 0.7rem; }
+
+/* Más aire entre "¿Con qué cuenta pagas?" y los botones de cuenta */
+.wallet-chips-section .action-hint { display: flex; margin-bottom: 0.7rem; }
